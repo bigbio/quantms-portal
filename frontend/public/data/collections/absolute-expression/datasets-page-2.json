@@ -12,7 +12,8 @@
       "peptides": 14549,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD017052.2"
     },
     {
       "accession": "PXD017052",
@@ -24,7 +25,8 @@
       "peptides": 29694,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD017052.2"
     },
     {
       "accession": "PXD017834",
@@ -36,7 +38,8 @@
       "peptides": 2716,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD017834.2"
     },
     {
       "accession": "PXD017834",
@@ -48,7 +51,8 @@
       "peptides": 5004,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD017834.2"
     },
     {
       "accession": "PXD018678",
@@ -60,7 +64,8 @@
       "peptides": 35387,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD018678.2"
     },
     {
       "accession": "PXD018678",
@@ -72,7 +77,8 @@
       "peptides": 67611,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD018678.2"
     },
     {
       "accession": "PXD019123",
@@ -84,7 +90,8 @@
       "peptides": 24714,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD019123"
     },
     {
       "accession": "PXD019817",
@@ -96,7 +103,8 @@
       "peptides": 3469,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD019817"
     },
     {
       "accession": "PXD019909",
@@ -108,7 +116,8 @@
       "peptides": 243137,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD019909.1"
     },
     {
       "accession": "PXD019909",
@@ -120,7 +129,8 @@
       "peptides": 127893,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD019909.1"
     },
     {
       "accession": "PXD020192",
@@ -132,7 +142,8 @@
       "peptides": 59994,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD020192"
     },
     {
       "accession": "PXD020727",
@@ -144,7 +155,8 @@
       "peptides": 7398,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD020727"
     },
     {
       "accession": "PXD022469",
@@ -156,7 +168,8 @@
       "peptides": 18239,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD022469"
     },
     {
       "accession": "PXD022661",
@@ -168,7 +181,8 @@
       "peptides": 12788,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD022661"
     },
     {
       "accession": "PXD023650",
@@ -180,7 +194,8 @@
       "peptides": 29383,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650"
     },
     {
       "accession": "PXD024364",
@@ -192,7 +207,8 @@
       "peptides": 469414,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2"
     },
     {
       "accession": "PXD024364",
@@ -204,7 +220,8 @@
       "peptides": 143556,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2"
     },
     {
       "accession": "PXD027125",
@@ -216,7 +233,8 @@
       "peptides": 3015,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD027125"
     },
     {
       "accession": "PXD029009",
@@ -228,7 +246,8 @@
       "peptides": 1901,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD029009"
     },
     {
       "accession": "PXD030304",
@@ -240,7 +259,8 @@
       "peptides": 118322,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304"
     },
     {
       "accession": "PXD030598",
@@ -252,7 +272,8 @@
       "peptides": 3827,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030598"
     },
     {
       "accession": "PXD032212",
@@ -264,7 +285,8 @@
       "peptides": 37557,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD032212"
     },
     {
       "accession": "PXD034244",
@@ -276,7 +298,8 @@
       "peptides": 40832,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD034244"
     },
     {
       "accession": "PXD036609",
@@ -288,7 +311,8 @@
       "peptides": 8919,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD036609"
     },
     {
       "accession": "PXD037340",
@@ -300,7 +324,8 @@
       "peptides": 15276,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037340.2"
     },
     {
       "accession": "PXD037340",
@@ -312,7 +337,8 @@
       "peptides": 36550,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037340.2"
     },
     {
       "accession": "PXD037682",
@@ -324,7 +350,8 @@
       "peptides": 2113,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682"
     },
     {
       "accession": "PXD038526",
@@ -336,7 +363,8 @@
       "peptides": 2103,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD038526"
     },
     {
       "accession": "PXD038669",
@@ -348,7 +376,8 @@
       "peptides": 2288,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD038669.2"
     },
     {
       "accession": "PXD038669",
@@ -360,7 +389,8 @@
       "peptides": 4211,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD038669.2"
     },
     {
       "accession": "PXD038674",
@@ -372,7 +402,8 @@
       "peptides": 13871,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD038674"
     },
     {
       "accession": "PXD039023",
@@ -384,7 +415,8 @@
       "peptides": 2620,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023"
     },
     {
       "accession": "PXD040438",
@@ -396,7 +428,8 @@
       "peptides": 5759,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD040438"
     },
     {
       "accession": "PMID22068331.1",
@@ -408,7 +441,8 @@
       "peptides": 113075,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.1/"
     },
     {
       "accession": "PMID22068331.2",
@@ -420,7 +454,8 @@
       "peptides": 69811,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.2/"
     },
     {
       "accession": "PMID22068331",
@@ -432,7 +467,8 @@
       "peptides": 74442,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.3/"
     },
     {
       "accession": "PXD000269",
@@ -444,7 +480,8 @@
       "peptides": 149913,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD000269/"
     },
     {
       "accession": "PXD000396",
@@ -456,7 +493,8 @@
       "peptides": 44780,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD000396/"
     },
     {
       "accession": "PXD001305",
@@ -468,7 +506,8 @@
       "peptides": 211568,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD001305/"
     },
     {
       "accession": "PXD004452",
@@ -480,7 +519,8 @@
       "peptides": 243677,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD004452/"
     },
     {
       "accession": "PXD004940",
@@ -492,7 +532,8 @@
       "peptides": 81944,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD004940/"
     },
     {
       "accession": "PXD005841",
@@ -504,7 +545,8 @@
       "peptides": 42251,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD005481/"
     },
     {
       "accession": "PXD009273",
@@ -516,7 +558,8 @@
       "peptides": 48512,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD009273.1/"
     },
     {
       "accession": "PXD009875",
@@ -528,7 +571,8 @@
       "peptides": 85643,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD009875/"
     },
     {
       "accession": "PXD010150",
@@ -540,7 +584,8 @@
       "peptides": 83395,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD010150/"
     },
     {
       "accession": "PXD013658.1",
@@ -552,7 +597,8 @@
       "peptides": 214831,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD013658.1/"
     },
     {
       "accession": "PXD013658.2",
@@ -564,7 +610,8 @@
       "peptides": 220025,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD013658.2/"
     },
     {
       "accession": "PXD014058",
@@ -576,7 +623,8 @@
       "peptides": 130498,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD014058/"
     },
     {
       "accession": "PXD030406",
@@ -588,7 +636,8 @@
       "peptides": 87638,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD030406/"
     },
     {
       "accession": "PXD039414",
@@ -600,7 +649,8 @@
       "peptides": 17953,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD039414/"
     }
   ]
 }

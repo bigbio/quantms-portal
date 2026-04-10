@@ -15,13 +15,19 @@
           </p>
           <!-- Stats -->
           <div style="display:flex; gap:32px; flex-wrap:wrap;">
-            <div v-for="(val, key) in collection.stats" :key="key" style="text-align:left;">
-              <div class="stat-value" style="font-size:24px;">{{ formatBig(val) }}</div>
-              <div class="stat-label">{{ formatLabel(key) }}</div>
-            </div>
             <div style="text-align:left;">
               <div class="stat-value" style="font-size:24px;">{{ collection.dataset_count }}</div>
               <div class="stat-label">Datasets</div>
+            </div>
+            <template v-for="(val, key) in collection.stats" :key="key">
+              <div v-if="typeof val === 'number'" style="text-align:left;">
+                <div class="stat-value" style="font-size:24px;">{{ formatBig(val) }}</div>
+                <div class="stat-label">{{ formatLabel(key) }}</div>
+              </div>
+            </template>
+            <div v-if="collection.organisms && collection.organisms.length" style="text-align:left;">
+              <div class="stat-value" style="font-size:24px;">{{ collection.organisms.length }}</div>
+              <div class="stat-label">Organisms</div>
             </div>
           </div>
         </div>

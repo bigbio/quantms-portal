@@ -14,7 +14,8 @@
       "peptides": 0,
       "psm_count": 2334922,
       "species": "Rhinolophus sinicus",
-      "instrument": "timsTOF"
+      "instrument": "timsTOF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/HuiYan-Bat/"
     },
     {
       "accession": "HuiYan-E480",
@@ -28,7 +29,8 @@
       "peptides": 0,
       "psm_count": 58527901,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Exploris 480"
+      "instrument": "Orbitrap Exploris 480",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/HuiYan-E480/"
     },
     {
       "accession": "IPX0000937001",
@@ -42,7 +44,8 @@
       "peptides": 0,
       "psm_count": 24924726,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion"
+      "instrument": "Orbitrap Fusion",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0000937001/"
     },
     {
       "accession": "IPX0000937003",
@@ -56,7 +59,8 @@
       "peptides": 0,
       "psm_count": 6551233,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion"
+      "instrument": "Orbitrap Fusion",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0000937003/"
     },
     {
       "accession": "IPX0001289001",
@@ -70,7 +74,8 @@
       "peptides": 0,
       "psm_count": 17387674,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0001289001/"
     },
     {
       "accession": "IPX0001590001",
@@ -84,7 +89,8 @@
       "peptides": 0,
       "psm_count": 7488098,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0001590001/"
     },
     {
       "accession": "IPX0001804001",
@@ -98,7 +104,8 @@
       "peptides": 0,
       "psm_count": 23982246,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion"
+      "instrument": "Orbitrap Fusion",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0001804001/"
     },
     {
       "accession": "IPX0001804002",
@@ -112,7 +119,8 @@
       "peptides": 0,
       "psm_count": 1426890,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion"
+      "instrument": "Orbitrap Fusion",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0001804002/"
     },
     {
       "accession": "IPX0002031000",
@@ -126,7 +134,8 @@
       "peptides": 0,
       "psm_count": 27013882,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF-X"
+      "instrument": "Q Exactive HF-X",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0002031000/"
     },
     {
       "accession": "IPX0004073001",
@@ -140,7 +149,8 @@
       "peptides": 0,
       "psm_count": 1018214,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/IPX0004073001/"
     },
     {
       "accession": "PXD000561",
@@ -154,7 +164,8 @@
       "peptides": 0,
       "psm_count": 10334261,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD000561/"
     },
     {
       "accession": "PXD000612",
@@ -168,7 +179,8 @@
       "peptides": 0,
       "psm_count": 6416764,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive"
+      "instrument": "Q Exactive",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD000612/"
     },
     {
       "accession": "PXD000865",
@@ -182,7 +194,8 @@
       "peptides": 0,
       "psm_count": 148896,
       "species": "Homo sapiens",
-      "instrument": "LTQ Orbitrap Velos"
+      "instrument": "LTQ Orbitrap Velos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD000865/"
     },
     {
       "accession": "PXD000865",
@@ -196,7 +209,8 @@
       "peptides": 0,
       "psm_count": 529187,
       "species": "Homo sapiens",
-      "instrument": "LTQ Orbitrap Elite"
+      "instrument": "LTQ Orbitrap Elite",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD000865/"
     },
     {
       "accession": "PXD000865",
@@ -210,7 +224,8 @@
       "peptides": 0,
       "psm_count": 4990620,
       "species": "Homo sapiens",
-      "instrument": "LTQ Orbitrap Velos"
+      "instrument": "LTQ Orbitrap Velos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD000865/"
     },
     {
       "accession": "PXD002137",
@@ -224,7 +239,8 @@
       "peptides": 0,
       "psm_count": 18775812,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive"
+      "instrument": "Q Exactive",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002137/"
     },
     {
       "accession": "PXD002395",
@@ -238,7 +254,8 @@
       "peptides": 0,
       "psm_count": 3796473,
       "species": "Homo sapiens",
-      "instrument": "LTQ Orbitrap Velos"
+      "instrument": "LTQ Orbitrap Velos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002395/"
     },
     {
       "accession": "PXD002767",
@@ -252,7 +269,8 @@
       "peptides": 0,
       "psm_count": 2666095,
       "species": "Solanum tuberosum",
-      "instrument": "Q Exactive"
+      "instrument": "Q Exactive",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002767/"
     },
     {
       "accession": "PXD002854",
@@ -266,7 +284,8 @@
       "peptides": 0,
       "psm_count": 548653,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002854/"
     },
     {
       "accession": "PXD003903",
@@ -280,7 +299,8 @@
       "peptides": 0,
       "psm_count": 7325444,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD003903/"
     },
     {
       "accession": "PXD003947",
@@ -294,7 +314,8 @@
       "peptides": 0,
       "psm_count": 740197,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD003947/"
     },
     {
       "accession": "PXD004242",
@@ -308,7 +329,8 @@
       "peptides": 0,
       "psm_count": 5197467,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD004242/"
     },
     {
       "accession": "PXD004452",
@@ -322,7 +344,8 @@
       "peptides": 0,
       "psm_count": 154347,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD004452/"
     },
     {
       "accession": "PXD004452",
@@ -336,7 +359,8 @@
       "peptides": 0,
       "psm_count": 5495744,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD004452/"
     },
     {
       "accession": "PXD004732",
@@ -350,7 +374,8 @@
       "peptides": 0,
       "psm_count": 14298028,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD004732/"
     },
     {
       "accession": "PXD006225",
@@ -364,7 +389,8 @@
       "peptides": 0,
       "psm_count": 536276,
       "species": "Drosophila melanogaster",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD006225/"
     },
     {
       "accession": "PXD006675",
@@ -378,7 +404,8 @@
       "peptides": 0,
       "psm_count": 9272915,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD006675/"
     },
     {
       "accession": "PXD008333",
@@ -392,7 +419,8 @@
       "peptides": 0,
       "psm_count": 2036467,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD008333/"
     },
     {
       "accession": "PXD008722",
@@ -406,7 +434,8 @@
       "peptides": 0,
       "psm_count": 3642440,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD008722/"
     },
     {
       "accession": "PXD008840",
@@ -420,7 +449,8 @@
       "peptides": 0,
       "psm_count": 9733821,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion"
+      "instrument": "Orbitrap Fusion",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD008840/"
     },
     {
       "accession": "PXD009348",
@@ -434,7 +464,8 @@
       "peptides": 0,
       "psm_count": 386933,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009348/"
     },
     {
       "accession": "PXD009449",
@@ -448,7 +479,8 @@
       "peptides": 0,
       "psm_count": 201402,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009449-HCD/"
     },
     {
       "accession": "PXD009449",
@@ -462,7 +494,8 @@
       "peptides": 0,
       "psm_count": 697583,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009449-HCD/"
     },
     {
       "accession": "PXD009737",
@@ -476,7 +509,8 @@
       "peptides": 0,
       "psm_count": 349187,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF-X"
+      "instrument": "Q Exactive HF-X",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009737-Trypsin/"
     },
     {
       "accession": "PXD009737",
@@ -490,7 +524,8 @@
       "peptides": 0,
       "psm_count": 430334,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF-X"
+      "instrument": "Q Exactive HF-X",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009737-Trypsin/"
     },
     {
       "accession": "PXD009737",
@@ -504,7 +539,8 @@
       "peptides": 0,
       "psm_count": 573528,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF-X"
+      "instrument": "Q Exactive HF-X",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009737-Trypsin/"
     },
     {
       "accession": "PXD010154",
@@ -518,7 +554,8 @@
       "peptides": 0,
       "psm_count": 16819411,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus"
+      "instrument": "Q Exactive Plus",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010154/"
     },
     {
       "accession": "PXD010595",
@@ -532,7 +569,8 @@
       "peptides": 0,
       "psm_count": 8840962,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010595/"
     },
     {
       "accession": "PXD010899",
@@ -546,7 +584,8 @@
       "peptides": 0,
       "psm_count": 1570723,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive"
+      "instrument": "Q Exactive",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010899/"
     },
     {
       "accession": "PXD010957",
@@ -560,7 +599,8 @@
       "peptides": 0,
       "psm_count": 22686367,
       "species": "Mus musculus",
-      "instrument": "Q Exactive"
+      "instrument": "Q Exactive",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010957/"
     },
     {
       "accession": "PXD012131",
@@ -574,7 +614,8 @@
       "peptides": 0,
       "psm_count": 4563808,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012131/"
     },
     {
       "accession": "PXD012174",
@@ -588,7 +629,8 @@
       "peptides": 0,
       "psm_count": 15621996,
       "species": "Homo sapiens",
-      "instrument": "LTQ Orbitrap Velos"
+      "instrument": "LTQ Orbitrap Velos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012174/"
     },
     {
       "accession": "PXD012636",
@@ -602,7 +644,8 @@
       "peptides": 0,
       "psm_count": 98759,
       "species": "Danio rerio",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD012636",
@@ -616,7 +659,8 @@
       "peptides": 0,
       "psm_count": 134634,
       "species": "Equus caballus",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD012636",
@@ -630,7 +674,8 @@
       "peptides": 0,
       "psm_count": 1568361,
       "species": "Mus musculus",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD012636",
@@ -644,7 +689,8 @@
       "peptides": 0,
       "psm_count": 417991,
       "species": "Sus scrofa domesticus",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD012636",
@@ -658,7 +704,8 @@
       "peptides": 0,
       "psm_count": 937801,
       "species": "Rattus norvegicus",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD012636",
@@ -672,7 +719,8 @@
       "peptides": 0,
       "psm_count": 1132652,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD012636-Homo/"
     },
     {
       "accession": "PXD013231",
@@ -686,7 +734,8 @@
       "peptides": 0,
       "psm_count": 468370,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
+      "instrument": "Orbitrap Fusion Lumos",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD013231/"
     },
     {
       "accession": "PXD013868",
@@ -700,7 +749,8 @@
       "peptides": 0,
       "psm_count": 17606574,
       "species": "Arabidopsis",
-      "instrument": "Q Exactive HF"
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD013868/"
     }
   ]
 }

@@ -12,7 +12,8 @@
       "peptides": 175954,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PDC000126"
     },
     {
       "accession": "PXD003497",
@@ -24,7 +25,8 @@
       "peptides": 22914,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD003497/"
     },
     {
       "accession": "PXD012574",
@@ -36,7 +38,8 @@
       "peptides": 47577,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD012574/"
     },
     {
       "accession": "PXD030881",
@@ -48,7 +51,8 @@
       "peptides": 116306,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD030881/"
     },
     {
       "accession": "PXD003539",
@@ -60,7 +64,8 @@
       "peptides": 23413,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD003539/"
     },
     {
       "accession": "PXD028618",
@@ -72,7 +77,8 @@
       "peptides": 26261,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/"
     },
     {
       "accession": "PXD004873",
@@ -84,7 +90,8 @@
       "peptides": 31725,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD004873/"
     },
     {
       "accession": "PXD025864",
@@ -96,7 +103,8 @@
       "peptides": 31954,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD025864/"
     },
     {
       "accession": "PXD014414",
@@ -108,7 +116,8 @@
       "peptides": 21693,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD014414/"
     },
     {
       "accession": "PXD002137",
@@ -120,7 +129,8 @@
       "peptides": 166811,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD002137/"
     },
     {
       "accession": "PXD004683",
@@ -132,7 +142,8 @@
       "peptides": 64235,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD004683/"
     },
     {
       "accession": "PXD020248",
@@ -144,7 +155,8 @@
       "peptides": 34042,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD020248/"
     },
     {
       "accession": "PXD027817",
@@ -156,7 +168,8 @@
       "peptides": 2373,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/"
     },
     {
       "accession": "PXD020109",
@@ -168,7 +181,8 @@
       "peptides": 7736,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD020109/"
     },
     {
       "accession": "PXD010429",
@@ -180,7 +194,8 @@
       "peptides": 162572,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD010429/"
     },
     {
       "accession": "PXD018830",
@@ -192,7 +207,8 @@
       "peptides": 64270,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD018830/"
     },
     {
       "accession": "PXD002395",
@@ -204,7 +220,8 @@
       "peptides": 181082,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD002395/"
     },
     {
       "accession": "PXD025560",
@@ -216,7 +233,8 @@
       "peptides": 88199,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD025560/"
     },
     {
       "accession": "PXD014145",
@@ -228,7 +246,8 @@
       "peptides": 79960,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD014145/"
     },
     {
       "accession": "PXD032263",
@@ -240,7 +259,8 @@
       "peptides": 112288,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD032263/"
     },
     {
       "accession": "PXD021394",
@@ -252,7 +272,8 @@
       "peptides": 63072,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/"
     },
     {
       "accession": "PXD004684",
@@ -264,7 +285,8 @@
       "peptides": 30074,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD004684/"
     },
     {
       "accession": "PXD000672",
@@ -276,7 +298,8 @@
       "peptides": 25636,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD000672/"
     },
     {
       "accession": "PXD023423",
@@ -288,7 +311,8 @@
       "peptides": 94888,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD023423/"
     },
     {
       "accession": "PXD023508",
@@ -300,7 +324,8 @@
       "peptides": 1553,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD023508/"
     },
     {
       "accession": "PXD023508",
@@ -312,7 +337,8 @@
       "peptides": 1544,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD023508/"
     },
     {
       "accession": "PXD028251",
@@ -324,7 +350,8 @@
       "peptides": 7134,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028251/"
     },
     {
       "accession": "PXD014194",
@@ -336,7 +363,8 @@
       "peptides": 22926,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD014194/"
     },
     {
       "accession": "PXD022992",
@@ -348,7 +376,8 @@
       "peptides": 135706,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/"
     },
     {
       "accession": "PXD027008",
@@ -360,7 +389,8 @@
       "peptides": 37299,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027008/"
     },
     {
       "accession": "PXD014943",
@@ -372,7 +402,8 @@
       "peptides": 57115,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD014943/"
     },
     {
       "accession": "PXD023508",
@@ -384,7 +415,8 @@
       "peptides": 2805,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD023508/"
     },
     {
       "accession": "PXD030671",
@@ -396,7 +428,8 @@
       "peptides": 64775,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD030671/"
     },
     {
       "accession": "PXD004691",
@@ -408,7 +441,8 @@
       "peptides": 26493,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD004691/"
     },
     {
       "accession": "PXD033169",
@@ -420,7 +454,8 @@
       "peptides": 5190,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/"
     }
   ]
 }

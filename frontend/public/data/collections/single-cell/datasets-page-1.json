@@ -12,7 +12,8 @@
       "peptides": 11980,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD016921/"
     },
     {
       "accession": "PXD023366",
@@ -24,7 +25,8 @@
       "peptides": 24177,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/"
     },
     {
       "accession": "PXD023904",
@@ -36,7 +38,8 @@
       "peptides": 25876,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
     },
     {
       "accession": "PXD023904",
@@ -48,7 +51,8 @@
       "peptides": 8639,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
     },
     {
       "accession": "PXD024043",
@@ -60,7 +64,8 @@
       "peptides": 8734,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
     },
     {
       "accession": "PXD024043",
@@ -72,7 +77,8 @@
       "peptides": 20903,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
     }
   ]
 }

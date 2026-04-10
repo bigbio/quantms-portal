@@ -69,7 +69,16 @@
             @click="navigateTo(ds)"
           >
             <td>
-              <router-link
+              <a v-if="ds.ftp_url"
+                :href="ds.ftp_url"
+                target="_blank"
+                class="accession-link"
+                @click.stop
+                :title="'Open FTP: ' + ds.accession"
+              >
+                {{ ds.accession }} <span style="font-size:10px;opacity:0.5;">&#8599;</span>
+              </a>
+              <router-link v-else
                 :to="`/collections/${collectionName}/${ds.accession}`"
                 class="accession-link"
                 @click.stop

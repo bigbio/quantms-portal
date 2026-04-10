@@ -12,7 +12,8 @@
       "peptides": 469814,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD042233/"
     },
     {
       "accession": "PXD048325",
@@ -24,7 +25,8 @@
       "peptides": 133306,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD048325/"
     },
     {
       "accession": "PXD054015",
@@ -36,7 +38,8 @@
       "peptides": 122297,
       "psm_count": 0,
       "species": "",
-      "instrument": ""
+      "instrument": "",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.1/"
     }
   ]
 }
