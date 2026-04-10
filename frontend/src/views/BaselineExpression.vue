@@ -163,13 +163,25 @@ const sourceLabel = computed(() =>
 )
 
 // ── Load gzip JSON ─────────────────────────────────────────────────────────────
+// The .gz file may be transparently decompressed by the server/browser
+// (Content-Encoding: gzip) or served as raw bytes. Handle both cases.
 async function loadGzipJson(url) {
   const response = await fetch(url)
   if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`)
-  const ds = new DecompressionStream('gzip')
-  const stream = response.body.pipeThrough(ds)
-  const text = await new Response(stream).text()
-  return JSON.parse(text)
+
+  // Clone response so we can retry if first approach fails
+  const clone = response.clone()
+
+  // Try 1: server already decompressed it (Content-Encoding: gzip) — just parse
+  try {
+    return await response.json()
+  } catch {
+    // Try 2: raw gzip bytes — decompress manually
+    const ds = new DecompressionStream('gzip')
+    const stream = clone.body.pipeThrough(ds)
+    const text = await new Response(stream).text()
+    return JSON.parse(text)
+  }
 }
 
 // Build index: { name -> entry, gene_name -> entry } from array
@@ -187,7 +199,8 @@ async function getDb() {
     if (!tissueDb.value) {
       loadingData.value = true
       try {
-        const raw = await loadGzipJson('./data/tissueJson.json.gz')
+        const base = import.meta.env.BASE_URL
+        const raw = await loadGzipJson(`${base}data/tissueJson.json.gz`)
         tissueDb.value = buildIndex(Array.isArray(raw) ? raw : Object.values(raw))
       } finally {
         loadingData.value = false
@@ -198,7 +211,8 @@ async function getDb() {
     if (!cellDb.value) {
       loadingData.value = true
       try {
-        const raw = await loadGzipJson('./data/cellJson.json.gz')
+        const base = import.meta.env.BASE_URL
+        const raw = await loadGzipJson(`${base}data/cellJson.json.gz`)
         cellDb.value = buildIndex(Array.isArray(raw) ? raw : Object.values(raw))
       } finally {
         loadingData.value = false
