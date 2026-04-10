@@ -1,0 +1,49 @@
+{
+  "accession": "PXD021394",
+  "collection": "differential-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "DIA-MS analysis of 24 breast cancer tissues",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 24,
+  "runs_total": 24,
+  "proteins_total": 6577,
+  "peptides_total": 63072,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/pipeline_info/PXD021394.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD021394",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/pipeline_info/PXD021394.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/diannconvert/PXD021394.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/summarypipeline/multiqc_report.html"
+    },
+    {
+      "id": 5,
+      "title": "differential_analysis",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD021394/msstats/"
+    }
+  ]
+}

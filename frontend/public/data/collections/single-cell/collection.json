@@ -1,0 +1,19 @@
+{
+  "name": "single-cell",
+  "title": "Single Cell Proteomics",
+  "description": "Single-cell resolution proteomics datasets reanalyzed with the quantms pipeline.",
+  "type": "quantification",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "dataset_count": 6,
+  "total_pages": 1,
+  "datasets_per_page": 50,
+  "organisms": [
+    "Homo sapiens"
+  ],
+  "stats": {
+    "total_proteins": 14304,
+    "total_peptides": 100309,
+    "total_samples": 538
+  },
+  "indexes": []
+}

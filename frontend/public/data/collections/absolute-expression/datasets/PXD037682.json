@@ -1,0 +1,44 @@
+{
+  "accession": "PXD037682",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "ALSPAC human inflammation plasma proteomics",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 60,
+  "runs_total": 60,
+  "proteins_total": 170,
+  "peptides_total": 2113,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682/pipeline_info/PXD037682.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD037682",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682/pipeline_info/PXD037682.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682/diannconvert/PXD037682.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD037682/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

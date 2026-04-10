@@ -1,0 +1,49 @@
+{
+  "accession": "PXD022992",
+  "collection": "differential-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Data-independent Acquisition-based Proteome and Phosphoproteome Profiling across Six Melanoma Cell Lines",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 6,
+  "runs_total": 12,
+  "proteins_total": 9474,
+  "peptides_total": 135706,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/pipeline_info/PXD022992.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD022992",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/pipeline_info/PXD022992.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/diannconvert/PXD022992.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/summarypipeline/multiqc_report.html"
+    },
+    {
+      "id": 5,
+      "title": "differential_analysis",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD022992/msstats/"
+    }
+  ]
+}

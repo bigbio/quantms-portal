@@ -1,0 +1,44 @@
+{
+  "accession": "PXD023650",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Robust micro-flow LC-MS/MS for proteome analysis \u2013 38,000 runs and counting",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 1,
+  "runs_total": 48,
+  "proteins_total": 2797,
+  "peptides_total": 29383,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650/pipeline_info/PXD023650.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD023650",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650/pipeline_info/PXD023650.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650/proteomicslfq/PXD023650.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD023650/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

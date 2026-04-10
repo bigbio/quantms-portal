@@ -1,0 +1,44 @@
+{
+  "accession": "MSV000087095",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "MSV000087095",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 247,
+  "runs_total": 92,
+  "proteins_total": 6108,
+  "peptides_total": 90242,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2/pipeline_info/MSV000087095-DDA.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "MSV000087095.2",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2/pipeline_info/MSV000087095-DDA.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2/proteomicslfq/MSV000087095-DDA.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/MSV000087095.2/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

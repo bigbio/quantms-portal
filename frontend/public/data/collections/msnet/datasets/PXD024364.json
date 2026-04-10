@@ -1,0 +1,32 @@
+{
+  "accession": "PXD024364",
+  "collection": "msnet",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PXD024364",
+  "description": "",
+  "organisms": [
+    "Homo sapiens"
+  ],
+  "species": "Homo sapiens",
+  "superkingdom": "Eukaryote",
+  "instrument": "Orbitrap Fusion",
+  "enzyme": "Trypsin",
+  "fragment_method": "HCD@30.00",
+  "structures": [
+    "psm"
+  ],
+  "samples_preview": [],
+  "samples_total": 0,
+  "runs_total": 281,
+  "psm_count": 7120784,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD024364",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "accession": "PXD028618",
+  "collection": "differential-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Comparative proteomic analysis of HPV(+) oropharyngeal squamous cell carcinoma recurrence",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 18,
+  "runs_total": 18,
+  "proteins_total": 3478,
+  "peptides_total": 26261,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/pipeline_info/PXD028618.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD028618",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/pipeline_info/PXD028618.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/diannconvert/PXD028618.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/summarypipeline/multiqc_report.html"
+    },
+    {
+      "id": 5,
+      "title": "differential_analysis",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD028618/msstats/"
+    }
+  ]
+}

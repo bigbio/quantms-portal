@@ -1,0 +1,49 @@
+{
+  "accession": "PXD027817",
+  "collection": "differential-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Study on prognostic biomarkers of HCC based on mass spectrometry",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 48,
+  "runs_total": 48,
+  "proteins_total": 329,
+  "peptides_total": 2373,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/pipeline_info/PXD027817.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD027817",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/pipeline_info/PXD027817.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/diannconvert/PXD027817.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/summarypipeline/multiqc_report.html"
+    },
+    {
+      "id": 5,
+      "title": "differential_analysis",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD027817/msstats/"
+    }
+  ]
+}

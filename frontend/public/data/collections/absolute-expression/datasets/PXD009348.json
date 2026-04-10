@@ -1,0 +1,44 @@
+{
+  "accession": "PXD009348",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Plasma proteome profiling reveals global and specific changes of inflammatory and lipid homeostasis markers after bariatric surgery",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 7,
+  "runs_total": 168,
+  "proteins_total": 1707,
+  "peptides_total": 19466,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1/pipeline_info/PXD009348-DDA.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD009348.1",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1/pipeline_info/PXD009348-DDA.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1/proteomicslfq/PXD009348-DDA.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD009348.1/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

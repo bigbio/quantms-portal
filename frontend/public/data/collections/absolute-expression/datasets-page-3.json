@@ -1,0 +1,42 @@
+{
+  "page": 3,
+  "total_pages": 3,
+  "datasets": [
+    {
+      "accession": "PXD042233",
+      "title": "PXD042233",
+      "organisms": [],
+      "samples": 4359,
+      "runs": 4359,
+      "proteins": 4452,
+      "peptides": 469814,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD048325",
+      "title": "PXD048325",
+      "organisms": [],
+      "samples": 192,
+      "runs": 192,
+      "proteins": 7717,
+      "peptides": 133306,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD054015",
+      "title": "PXD054015",
+      "organisms": [],
+      "samples": 21,
+      "runs": 63,
+      "proteins": 7864,
+      "peptides": 122297,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    }
+  ]
+}

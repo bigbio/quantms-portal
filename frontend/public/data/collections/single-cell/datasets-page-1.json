@@ -1,0 +1,78 @@
+{
+  "page": 1,
+  "total_pages": 1,
+  "datasets": [
+    {
+      "accession": "PXD034244",
+      "title": "Improved Single Cell Proteome Coverage Using Narrow-Bore Packed NanoLC Columns and Ultrasensitive Mass Spectrometry",
+      "organisms": [],
+      "samples": 7,
+      "runs": 7,
+      "proteins": 1475,
+      "peptides": 11980,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD023366",
+      "title": "Single-cell quantitative proteomic analysis of oocyte maturation revealed high heterogeneities in human in vitro matured oocytes",
+      "organisms": [],
+      "samples": 36,
+      "runs": 36,
+      "proteins": 2545,
+      "peptides": 24177,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD023904",
+      "title": "Deep Visual Proteomics defines single-cell identity and heterogeneity",
+      "organisms": [],
+      "samples": 18,
+      "runs": 18,
+      "proteins": 3273,
+      "peptides": 25876,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD023904",
+      "title": "Deep Visual Proteomics defines single-cell identity and heterogeneity",
+      "organisms": [],
+      "samples": 28,
+      "runs": 28,
+      "proteins": 2013,
+      "peptides": 8639,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD024043",
+      "title": "PXD024043",
+      "organisms": [],
+      "samples": 434,
+      "runs": 434,
+      "proteins": 1781,
+      "peptides": 8734,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    },
+    {
+      "accession": "PXD024043",
+      "title": "PXD024043",
+      "organisms": [],
+      "samples": 15,
+      "runs": 15,
+      "proteins": 3217,
+      "peptides": 20903,
+      "psm_count": 0,
+      "species": "",
+      "instrument": ""
+    }
+  ]
+}

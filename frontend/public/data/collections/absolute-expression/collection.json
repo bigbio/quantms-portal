@@ -1,0 +1,19 @@
+{
+  "name": "absolute-expression",
+  "title": "Absolute Protein Expression",
+  "description": "iBAQ-based absolute protein quantification across tissues and conditions. Reanalyzed from ProteomeXchange repositories.",
+  "type": "quantification",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "dataset_count": 103,
+  "total_pages": 3,
+  "datasets_per_page": 50,
+  "organisms": [
+    "Homo sapiens"
+  ],
+  "stats": {
+    "total_proteins": 470804,
+    "total_peptides": 8216181,
+    "total_samples": 18053
+  },
+  "indexes": []
+}

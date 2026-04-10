@@ -1,0 +1,29 @@
+{
+  "accession": "PXD009875",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PXD009875",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 17,
+  "runs_total": 104,
+  "proteins_total": 4583,
+  "peptides_total": 85643,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD009875/",
+    "sdrf_url": ""
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD009875",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD009875/"
+    }
+  ]
+}

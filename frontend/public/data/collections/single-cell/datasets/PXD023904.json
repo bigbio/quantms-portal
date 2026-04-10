@@ -1,0 +1,44 @@
+{
+  "accession": "PXD023904",
+  "collection": "single-cell",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Deep Visual Proteomics defines single-cell identity and heterogeneity",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 28,
+  "runs_total": 28,
+  "proteins_total": 2013,
+  "peptides_total": 8639,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/pipeline_info/PXD023904-melanoma.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD023904-melanoma",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/pipeline_info/PXD023904-melanoma.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": ""
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "page": 3,
+  "total_pages": 3,
+  "datasets": [
+    {
+      "accession": "PXD024364",
+      "title": "PXD024364",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 281,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 7120784,
+      "species": "Homo sapiens",
+      "instrument": "Orbitrap Fusion"
+    },
+    {
+      "accession": "PXD028735",
+      "title": "PXD028735",
+      "organisms": [
+        "Escherichia coli"
+      ],
+      "samples": 0,
+      "runs": 39,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 99467,
+      "species": "Escherichia coli",
+      "instrument": "Q Exactive HF-X"
+    },
+    {
+      "accession": "PXD028735",
+      "title": "PXD028735",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 45,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 1511325,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive HF-X"
+    },
+    {
+      "accession": "PXD030348",
+      "title": "PXD030348",
+      "organisms": [
+        "Mus musculus"
+      ],
+      "samples": 0,
+      "runs": 284,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 6483317,
+      "species": "Mus musculus",
+      "instrument": "Orbitrap Fusion"
+    },
+    {
+      "accession": "PXD030983",
+      "title": "PXD030983",
+      "organisms": [
+        "Mus musculus"
+      ],
+      "samples": 0,
+      "runs": 2137,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 30714490,
+      "species": "Mus musculus",
+      "instrument": "Q Exactive HF"
+    },
+    {
+      "accession": "PXD040266",
+      "title": "PXD040266",
+      "organisms": [
+        "Mus musculus"
+      ],
+      "samples": 0,
+      "runs": 48,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 896379,
+      "species": "Mus musculus",
+      "instrument": "timsTOF"
+    },
+    {
+      "accession": "PXD010429",
+      "title": "PXD010429",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 696,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 2578074,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive Plus"
+    },
+    {
+      "accession": "PXD005478",
+      "title": "PXD005478",
+      "organisms": [
+        "Mycobacterium tuberculosis"
+      ],
+      "samples": 0,
+      "runs": 582,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 2013520,
+      "species": "Mycobacterium tuberculosis",
+      "instrument": "Q Exactive HF"
+    },
+    {
+      "accession": "PXD002899",
+      "title": "PXD002899",
+      "organisms": [
+        "Xenopus laevis"
+      ],
+      "samples": 0,
+      "runs": 357,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 3498190,
+      "species": "Xenopus laevis",
+      "instrument": "Q Exactive HF"
+    },
+    {
+      "accession": "PXD004352",
+      "title": "PXD004352",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 455,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 1208405,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive Plus"
+    },
+    {
+      "accession": "PXD025555",
+      "title": "PXD025555",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 797,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 9620961,
+      "species": "Homo sapiens",
+      "instrument": "Orbitrap Fusion Lumos"
+    },
+    {
+      "accession": "PXD005526",
+      "title": "PXD005526",
+      "organisms": [
+        "Mus musculus"
+      ],
+      "samples": 0,
+      "runs": 395,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 13527205,
+      "species": "Mus musculus",
+      "instrument": "Q Exactive"
+    },
+    {
+      "accession": "PXD021398",
+      "title": "PXD021398",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 566,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 4305190,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive"
+    },
+    {
+      "accession": "PXD034656",
+      "title": "PXD034656",
+      "organisms": [
+        "Saccharomyces cerevisiae"
+      ],
+      "samples": 0,
+      "runs": 639,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 3264025,
+      "species": "Saccharomyces cerevisiae",
+      "instrument": "Q Exactive HF"
+    }
+  ]
+}

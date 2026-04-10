@@ -1,0 +1,9 @@
+{
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "datasets": 258,
+  "collections": 4,
+  "organisms": 10,
+  "proteins": 633719,
+  "psms": 500511663,
+  "source": "portal.quantms.org"
+}

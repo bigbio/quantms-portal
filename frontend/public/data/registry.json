@@ -1,37 +1,140 @@
 {
-  "generated_at": "2026-04-10T00:00:00Z",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
   "collections": [
-    {
-      "name": "msnet",
-      "title": "MS-Net Peptide Identifications",
-      "description": "Large-scale peptide identification across 114 public proteomics datasets. ID-only — no quantification. Optimized for peptide search.",
-      "dataset_count": 114,
-      "organisms": ["Homo sapiens", "Mus musculus", "Danio rerio"],
-      "stats": {"total_psms": 500511663, "total_runs": 36356, "total_peptides": 4200000}
-    },
     {
       "name": "absolute-expression",
       "title": "Absolute Protein Expression",
-      "description": "iBAQ-based absolute quantification across tissues and conditions. Compare protein abundance across datasets and tissues.",
+      "description": "iBAQ-based absolute protein quantification across tissues and conditions. Reanalyzed from ProteomeXchange repositories.",
+      "type": "quantification",
       "dataset_count": 103,
-      "organisms": ["Homo sapiens"],
-      "stats": {"total_proteins": 15000, "total_tissues": 32}
+      "total_pages": 3,
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "stats": {
+        "total_proteins": 470804,
+        "total_peptides": 8216181,
+        "total_samples": 18053
+      }
     },
     {
       "name": "differential-expression",
       "title": "Differential Expression",
       "description": "Fold changes and statistical significance across disease vs. control conditions. Multi-cohort differential analysis results.",
+      "type": "quantification",
       "dataset_count": 35,
-      "organisms": ["Homo sapiens", "Mus musculus"],
-      "stats": {"total_proteins": 12000, "total_contrasts": 85}
+      "total_pages": 1,
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "stats": {
+        "total_proteins": 162915,
+        "total_peptides": 2037575,
+        "total_samples": 1870
+      }
+    },
+    {
+      "name": "msnet",
+      "title": "MS-Net Peptide Identifications",
+      "description": "Large-scale peptide identification across 114 public proteomics datasets. ID-only, optimized for peptide search across species.",
+      "type": "identification",
+      "dataset_count": 114,
+      "total_pages": 3,
+      "organisms": [
+        "Homo sapiens",
+        "Mus musculus",
+        "Danio rerio",
+        "Rhinolophus sinicus",
+        "Solanum tuberosum",
+        "Drosophila melanogaster",
+        "Equus caballus",
+        "Sus scrofa domesticus",
+        "Rattus norvegicus",
+        "Arabidopsis"
+      ],
+      "stats": {
+        "total_psms": 500511663,
+        "total_runs": 36356,
+        "organisms": {
+          "Rhinolophus sinicus": 1,
+          "Homo sapiens": 53,
+          "Solanum tuberosum": 1,
+          "Drosophila melanogaster": 1,
+          "Mus musculus": 7,
+          "Danio rerio": 2,
+          "Equus caballus": 1,
+          "Sus scrofa domesticus": 1,
+          "Rattus norvegicus": 1,
+          "Arabidopsis": 1,
+          "Bacteroides Fragilis": 1,
+          "Bacteroides Uniformis": 1,
+          "Bifidobacterium Longum Subsp Longum": 1,
+          "Chromera velia": 1,
+          "Clostridium Bolteae": 1,
+          "Clostridium saccharolyticum": 1,
+          "Collinsella Aerofaciens": 1,
+          "Eggerthella Lenta": 1,
+          "Fusarium oxysporum": 1,
+          "Fusobacterium Nucleatum Subsp Nucleatum": 1,
+          "Gallus Gallus": 1,
+          "Gossypium hirsutum": 1,
+          "Halobacterium sp": 1,
+          "Lactobacillus Paracasei": 1,
+          "Mycoplasmen": 1,
+          "Neurospora Crassa": 1,
+          "Odoribacter splanchnicus": 1,
+          "Parabacteroides Distasonis": 1,
+          "Parabacteroides Merdae": 1,
+          "Phaeodactylum tricornutum": 1,
+          "Prevotella Copri": 1,
+          "Roseburia Intestinalis": 1,
+          "Ruminococcus Bromii": 1,
+          "Ruminococcus Gnavus": 1,
+          "Streptococcus Parasanguinis": 1,
+          "Sulfolobus solfataricus": 1,
+          "Symbiodinium microadriaticum": 1,
+          "Triticum aestivum": 1,
+          "Veillonella parvula": 1,
+          "Vitis vinifera": 1,
+          "Akkermansia muciniphilia": 1,
+          "Bacteroides Thetaiotaomicron": 1,
+          "Drosophila": 1,
+          "Ruminococcus Torques": 1,
+          "Riftia pachyptila": 1,
+          "hCOV": 1,
+          "HSV": 1,
+          "LACV": 1,
+          "RVFV": 1,
+          "VSV": 1,
+          "ZIKV": 1,
+          "Escherichia coli": 1,
+          "Mycobacterium tuberculosis": 1,
+          "Xenopus laevis": 1,
+          "Saccharomyces cerevisiae": 1
+        }
+      }
+    },
+    {
+      "name": "single-cell",
+      "title": "Single Cell Proteomics",
+      "description": "Single-cell resolution proteomics datasets reanalyzed with the quantms pipeline.",
+      "type": "quantification",
+      "dataset_count": 6,
+      "total_pages": 1,
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "stats": {
+        "total_proteins": 14304,
+        "total_peptides": 100309,
+        "total_samples": 538
+      }
     }
   ],
   "global_stats": {
-    "total_collections": 3,
-    "total_datasets": 252,
+    "total_collections": 4,
+    "total_datasets": 258,
     "total_psms": 500511663,
-    "total_peptides": 4200000,
-    "total_proteins": 42000,
-    "mcp_tools": 5
+    "total_proteins": 633719
   }
 }

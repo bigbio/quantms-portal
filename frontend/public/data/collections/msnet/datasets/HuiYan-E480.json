@@ -1,0 +1,32 @@
+{
+  "accession": "HuiYan-E480",
+  "collection": "msnet",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "HuiYan-E480",
+  "description": "",
+  "organisms": [
+    "Homo sapiens"
+  ],
+  "species": "Homo sapiens",
+  "superkingdom": "Eukaryote",
+  "instrument": "Orbitrap Exploris 480",
+  "enzyme": "Trypsin",
+  "fragment_method": "HCD@28",
+  "structures": [
+    "psm"
+  ],
+  "samples_preview": [],
+  "samples_total": 0,
+  "runs_total": 763,
+  "psm_count": 58527901,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/HuiYan-E480/"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "HuiYan-E480",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/HuiYan-E480/"
+    }
+  ]
+}

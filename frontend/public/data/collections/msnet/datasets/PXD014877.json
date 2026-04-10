@@ -1,0 +1,32 @@
+{
+  "accession": "PXD014877",
+  "collection": "msnet",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PXD014877",
+  "description": "",
+  "organisms": [
+    "Ruminococcus Torques"
+  ],
+  "species": "Ruminococcus Torques",
+  "superkingdom": "Prokaryote",
+  "instrument": "Q Exactive HF-X",
+  "enzyme": "Trypsin",
+  "fragment_method": "HCD@27.00",
+  "structures": [
+    "psm"
+  ],
+  "samples_preview": [],
+  "samples_total": 0,
+  "runs_total": 1,
+  "psm_count": 20811,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD014877",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+    }
+  ]
+}

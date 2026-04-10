@@ -1,0 +1,32 @@
+{
+  "accession": "PXD030348",
+  "collection": "msnet",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PXD030348",
+  "description": "",
+  "organisms": [
+    "Mus musculus"
+  ],
+  "species": "Mus musculus",
+  "superkingdom": "Eukaryote",
+  "instrument": "Orbitrap Fusion",
+  "enzyme": "Trypsin",
+  "fragment_method": "HCD@30.00",
+  "structures": [
+    "psm"
+  ],
+  "samples_preview": [],
+  "samples_total": 0,
+  "runs_total": 284,
+  "psm_count": 6483317,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030348/"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD030348",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030348/"
+    }
+  ]
+}

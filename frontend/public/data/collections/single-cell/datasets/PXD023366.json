@@ -1,0 +1,44 @@
+{
+  "accession": "PXD023366",
+  "collection": "single-cell",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "Single-cell quantitative proteomic analysis of oocyte maturation revealed high heterogeneities in human in vitro matured oocytes",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 36,
+  "runs_total": 36,
+  "proteins_total": 2545,
+  "peptides_total": 24177,
+  "download": {
+    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/",
+    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/pipeline_info/PXD023366.sdrf.tsv"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD023366",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/"
+    },
+    {
+      "id": 2,
+      "title": "SDRF",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/pipeline_info/PXD023366.sdrf.tsv"
+    },
+    {
+      "id": 3,
+      "title": "Peptide Table",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/proteomicslfq/PXD023366.sdrf_openms_design_msstats_in.csv"
+    },
+    {
+      "id": 4,
+      "title": "PMULTIQC",
+      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/summarypipeline/multiqc_report.html"
+    }
+  ]
+}

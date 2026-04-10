@@ -1,0 +1,29 @@
+{
+  "accession": "PMID22068331.1",
+  "collection": "absolute-expression",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PMID22068331.1",
+  "description": "",
+  "organisms": [],
+  "structures": [
+    "dataset",
+    "sample",
+    "run"
+  ],
+  "samples_preview": [],
+  "samples_total": 10,
+  "runs_total": 70,
+  "proteins_total": 6096,
+  "peptides_total": 113075,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.1/",
+    "sdrf_url": ""
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PMID22068331.1",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PMID22068331.1/"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "accession": "PXD034656",
+  "collection": "msnet",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "title": "PXD034656",
+  "description": "",
+  "organisms": [
+    "Saccharomyces cerevisiae"
+  ],
+  "species": "Saccharomyces cerevisiae",
+  "superkingdom": "Eukaryote",
+  "instrument": "Q Exactive HF",
+  "enzyme": "Trypsin",
+  "fragment_method": "HCD@30.00",
+  "structures": [
+    "psm"
+  ],
+  "samples_preview": [],
+  "samples_total": 0,
+  "runs_total": 639,
+  "psm_count": 3264025,
+  "download": {
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD034656/"
+  },
+  "reanalysis_links": [
+    {
+      "id": 1,
+      "title": "PXD034656",
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD034656/"
+    }
+  ]
+}

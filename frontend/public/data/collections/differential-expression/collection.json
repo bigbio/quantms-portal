@@ -1,0 +1,19 @@
+{
+  "name": "differential-expression",
+  "title": "Differential Expression",
+  "description": "Fold changes and statistical significance across disease vs. control conditions. Multi-cohort differential analysis results.",
+  "type": "quantification",
+  "generated_at": "2026-04-10T17:47:56.993421+00:00",
+  "dataset_count": 35,
+  "total_pages": 1,
+  "datasets_per_page": 50,
+  "organisms": [
+    "Homo sapiens"
+  ],
+  "stats": {
+    "total_proteins": 162915,
+    "total_peptides": 2037575,
+    "total_samples": 1870
+  },
+  "indexes": []
+}
