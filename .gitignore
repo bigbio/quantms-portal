@@ -1,0 +1,6 @@
+__pycache__
+node_modules
+.pytest_cache
+*.egg-info
+.superpowers/brainstorm/
+dist/

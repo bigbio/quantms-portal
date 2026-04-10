@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-04-10T00:00:00Z",
+  "collections": [
+    {
+      "name": "msnet",
+      "title": "MS-Net Peptide Identifications",
+      "description": "Large-scale peptide identification across 114 public proteomics datasets. ID-only — no quantification. Optimized for peptide search.",
+      "dataset_count": 114,
+      "organisms": ["Homo sapiens", "Mus musculus", "Danio rerio"],
+      "stats": {"total_psms": 500511663, "total_runs": 36356, "total_peptides": 4200000}
+    },
+    {
+      "name": "absolute-expression",
+      "title": "Absolute Protein Expression",
+      "description": "iBAQ-based absolute quantification across tissues and conditions. Compare protein abundance across datasets and tissues.",
+      "dataset_count": 103,
+      "organisms": ["Homo sapiens"],
+      "stats": {"total_proteins": 15000, "total_tissues": 32}
+    },
+    {
+      "name": "differential-expression",
+      "title": "Differential Expression",
+      "description": "Fold changes and statistical significance across disease vs. control conditions. Multi-cohort differential analysis results.",
+      "dataset_count": 35,
+      "organisms": ["Homo sapiens", "Mus musculus"],
+      "stats": {"total_proteins": 12000, "total_contrasts": 85}
+    }
+  ],
+  "global_stats": {
+    "total_collections": 3,
+    "total_datasets": 252,
+    "total_psms": 500511663,
+    "total_peptides": 4200000,
+    "total_proteins": 42000,
+    "mcp_tools": 5
+  }
+}
