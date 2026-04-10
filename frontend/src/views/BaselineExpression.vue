@@ -105,38 +105,69 @@
             <thead>
               <tr>
                 <th>{{ sourceType === 'tissue' ? 'Tissue' : 'Cell Line' }}</th>
-                <th v-for="(p, i) in proteins" :key="p.name" style="text-align: center; min-width: 100px;">
+                <th style="text-align: center;">Samples</th>
+                <th v-for="(p, i) in proteins" :key="p.name" style="text-align: center; min-width: 80px;">
                   <span :style="{ color: tagColors[i], fontWeight: 700 }">{{ p.name }}</span>
                   <div v-if="p.gene_name" style="font-size: 10px; font-weight: 400; color: var(--text-muted);">{{ p.gene_name }}</div>
                 </th>
-                <th v-if="proteins.length > 1" style="min-width: 160px;">Comparison</th>
-                <th v-else style="min-width: 140px;">Expression</th>
+                <th style="min-width: 200px;">Distribution</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="tissue in allTissues" :key="tissue">
                 <td class="tissue-name">{{ tissue }}</td>
-                <td v-for="(p, i) in proteins" :key="p.name + tissue" style="text-align: center; font-size: 13px;">
-                  <template v-if="getMedian(p, tissue) !== null">
-                    <span style="font-weight: 600;">{{ getMedian(p, tissue).toFixed(2) }}</span>
-                    <span style="color: var(--text-muted); font-size: 11px; margin-left: 2px;">({{ getSampleCount(p, tissue) }})</span>
-                  </template>
-                  <span v-else style="color: var(--text-muted);">—</span>
+                <td style="text-align: center; font-size: 12px; color: var(--text-muted);">
+                  {{ maxSampleCount(tissue) }}
                 </td>
-                <td style="vertical-align: middle; padding: 4px 14px;">
-                  <div class="bar-group">
-                    <div v-for="(p, i) in proteins" :key="'bar-' + p.name + tissue" class="bar-row">
-                      <template v-if="getMedian(p, tissue) !== null">
-                        <div class="bar-bg">
-                          <div class="bar-iqr" :style="{ left: pct(getIqr(p, tissue).q1) + '%', width: Math.max(2, pct(getIqr(p, tissue).q3) - pct(getIqr(p, tissue).q1)) + '%', background: tagColors[i], opacity: 0.3 }"></div>
-                          <div class="bar-fill" :style="{ width: pct(getMedian(p, tissue)) + '%', background: tagColors[i] }"></div>
-                        </div>
-                      </template>
-                      <template v-else>
-                        <div class="bar-bg"></div>
-                      </template>
-                    </div>
-                  </div>
+                <!-- Heatmap-colored median cells -->
+                <td v-for="(p, i) in proteins" :key="p.name + tissue" class="heatmap-cell"
+                    :style="heatmapStyle(p, tissue, i)">
+                  <template v-if="getMedian(p, tissue) !== null">
+                    {{ getMedian(p, tissue).toFixed(2) }}
+                  </template>
+                  <span v-else style="color: var(--text-muted); font-size: 11px;">—</span>
+                </td>
+                <!-- Inline SVG box plots -->
+                <td style="vertical-align: middle; padding: 4px 10px;">
+                  <svg :width="boxPlotWidth" :height="proteins.length * 16 + 4" class="boxplot-svg">
+                    <template v-for="(p, i) in proteins" :key="'bp-' + p.name + tissue">
+                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * 16 + 2) + ')'">
+                        <!-- Whisker line: min to max -->
+                        <line
+                          :x1="bpx(getIqr(p, tissue).min)" :x2="bpx(getIqr(p, tissue).max)"
+                          y1="6" y2="6"
+                          :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
+                        />
+                        <!-- Min tick -->
+                        <line :x1="bpx(getIqr(p, tissue).min)" :x2="bpx(getIqr(p, tissue).min)"
+                          y1="3" y2="9" :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
+                        />
+                        <!-- Max tick -->
+                        <line :x1="bpx(getIqr(p, tissue).max)" :x2="bpx(getIqr(p, tissue).max)"
+                          y1="3" y2="9" :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
+                        />
+                        <!-- IQR box: Q1 to Q3 -->
+                        <rect
+                          :x="bpx(getIqr(p, tissue).q1)"
+                          y="1"
+                          :width="Math.max(2, bpx(getIqr(p, tissue).q3) - bpx(getIqr(p, tissue).q1))"
+                          height="10"
+                          rx="2"
+                          :fill="tagColors[i]"
+                          opacity="0.25"
+                        />
+                        <!-- Median diamond -->
+                        <polygon
+                          :points="medianDiamond(bpx(getIqr(p, tissue).median), 6)"
+                          :fill="tagColors[i]"
+                        />
+                      </g>
+                      <!-- Empty row when no data -->
+                      <g v-else :transform="'translate(0,' + (i * 16 + 2) + ')'">
+                        <line x1="0" :x2="boxPlotWidth" y1="6" y2="6" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="2 3" />
+                      </g>
+                    </template>
+                  </svg>
                 </td>
               </tr>
             </tbody>
@@ -144,14 +175,24 @@
         </div>
 
         <!-- Legend -->
-        <div style="margin-top: 14px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-          <span v-for="(p, i) in proteins" :key="'legend-' + p.name" style="font-size: 12px; display: flex; align-items: center; gap: 4px;">
-            <span :style="{ width: '10px', height: '10px', borderRadius: '50%', background: tagColors[i], display: 'inline-block' }"></span>
-            {{ p.name }}
-          </span>
-          <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">
-            Solid bars = median. Faded bars = IQR (Q1–Q3). Values are iBAQ log₂. (n) = sample count.
-          </span>
+        <div class="legend-bar">
+          <div class="legend-items">
+            <span v-for="(p, i) in proteins" :key="'legend-' + p.name" class="legend-item">
+              <span class="legend-dot" :style="{ background: tagColors[i] }"></span>
+              {{ p.name }}
+            </span>
+          </div>
+          <div class="legend-guide">
+            <svg width="160" height="20">
+              <line x1="10" x2="60" y1="10" y2="10" stroke="#94a3b8" stroke-width="1" />
+              <line x1="10" x2="10" y1="6" y2="14" stroke="#94a3b8" stroke-width="1" />
+              <line x1="60" x2="60" y1="6" y2="14" stroke="#94a3b8" stroke-width="1" />
+              <rect x="22" y="4" width="26" height="12" rx="2" fill="#6366f1" opacity="0.25" />
+              <polygon points="35,3 38,10 35,17 32,10" fill="#6366f1" />
+              <text x="70" y="8" font-size="9" fill="#94a3b8" font-family="var(--font)">min</text>
+              <text x="70" y="17" font-size="9" fill="#94a3b8" font-family="var(--font)">Q1 ◇median Q3 max</text>
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -371,6 +412,54 @@ const expressionRange = computed(() => {
   if (!proteins.value.length) return '—'
   return `${globalMin.value.toFixed(1)} – ${globalMax.value.toFixed(1)}`
 })
+
+// Max sample count across all proteins for a tissue
+function maxSampleCount(tissue) {
+  return Math.max(...proteins.value.map(p => p.stats[tissue]?.count ?? 0))
+}
+
+// ── Heatmap cell coloring ──
+// Color-codes the median cell: white (low) → saturated protein color (high)
+const tagColorsRGB = [
+  [64, 158, 255],   // blue
+  [99, 102, 241],   // indigo
+  [124, 58, 237],   // violet
+  [245, 158, 11],   // amber
+  [16, 185, 129],   // green
+]
+
+function heatmapStyle(protein, tissue, colorIndex) {
+  const median = getMedian(protein, tissue)
+  if (median === null) return {}
+  const mn = globalMin.value
+  const mx = globalMax.value
+  const intensity = mx === mn ? 0.5 : (median - mn) / (mx - mn)
+  const alpha = 0.08 + intensity * 0.18  // subtle: 0.08 → 0.26
+  const [r, g, b] = tagColorsRGB[colorIndex] || tagColorsRGB[0]
+  return {
+    background: `rgba(${r}, ${g}, ${b}, ${alpha})`,
+    color: intensity > 0.6 ? `rgb(${r}, ${g}, ${b})` : 'var(--text-primary)',
+    fontWeight: '600',
+    textAlign: 'center',
+    fontSize: '13px',
+  }
+}
+
+// ── SVG box plot helpers ──
+const boxPlotWidth = 200
+
+function bpx(val) {
+  const mn = globalMin.value
+  const mx = globalMax.value
+  if (mx === mn) return boxPlotWidth / 2
+  const pad = 8
+  return pad + ((val - mn) / (mx - mn)) * (boxPlotWidth - pad * 2)
+}
+
+function medianDiamond(cx, cy) {
+  const s = 4
+  return `${cx},${cy - s} ${cx + s},${cy} ${cx},${cy + s} ${cx - s},${cy}`
+}
 </script>
 
 <style scoped>
@@ -514,40 +603,53 @@ const expressionRange = computed(() => {
   text-transform: capitalize;
 }
 
-/* Grouped comparison bars — one row per protein, no overlap */
-.bar-group {
+/* Heatmap cells */
+.heatmap-cell {
+  transition: background 0.2s;
+  border-left: 1px solid var(--border);
+}
+
+/* SVG box plots */
+.boxplot-svg {
+  display: block;
+}
+
+/* Legend bar */
+.legend-bar {
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: rgba(99,102,241,0.04);
+  border-radius: 8px;
   display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 140px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.bar-row {
-  height: 6px;
+.legend-items {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
-.bar-bg {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: rgba(99, 102, 241, 0.06);
-  border-radius: 3px;
-  overflow: hidden;
+.legend-item {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
 }
 
-.bar-fill {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.bar-iqr {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  border-radius: 3px;
+.legend-guide {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 </style>
