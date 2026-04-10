@@ -92,23 +92,6 @@
         <div v-if="dataset.download" class="detail-card" style="margin-bottom:28px;">
           <h3 style="font-size:16px; font-weight:700; margin-bottom:16px;">Download</h3>
 
-          <!-- QPX pull command -->
-          <div style="margin-bottom:16px;">
-            <div style="font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:6px;">QPX Pull Command</div>
-            <div class="code-block" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
-              <span>
-                <span class="code-keyword">qpx</span>
-                <span> pull </span>
-                <span class="code-string">{{ dataset.collection }}/{{ dataset.accession }}</span>
-              </span>
-              <button
-                class="copy-btn"
-                @click="copyCommand"
-                :title="copied ? 'Copied!' : 'Copy command'"
-              >{{ copied ? '✓ Copied' : 'Copy' }}</button>
-            </div>
-          </div>
-
           <!-- Download links -->
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <a
@@ -116,8 +99,8 @@
               :href="dataset.download.ftp_url"
               target="_blank"
               rel="noopener"
-              class="btn btn-outline"
-              style="font-size:13px; padding:8px 16px;"
+              class="btn btn-primary"
+              style="font-size:14px; padding:10px 20px;"
             >
               📁 FTP Directory
             </a>
@@ -198,7 +181,6 @@ const route = useRoute()
 const dataset = ref(null)
 const loading = ref(true)
 const notFound = ref(false)
-const copied = ref(false)
 
 const collectionTitles = {
   'absolute-expression': 'Absolute Expression',
@@ -221,16 +203,6 @@ function formatNum(n) {
   return Number(n).toLocaleString()
 }
 
-async function copyCommand() {
-  const cmd = `qpx pull ${dataset.value.collection}/${dataset.value.accession}`
-  try {
-    await navigator.clipboard.writeText(cmd)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  } catch (e) {
-    // fallback
-  }
-}
 
 onMounted(async () => {
   const { name, pxd } = route.params
@@ -254,21 +226,5 @@ onMounted(async () => {
   padding: 24px;
 }
 
-.copy-btn {
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.15);
-  background: rgba(255,255,255,0.08);
-  color: #e2e8f0;
-  cursor: pointer;
-  transition: background 0.15s;
-  white-space: nowrap;
-}
 
-.copy-btn:hover {
-  background: rgba(255,255,255,0.16);
-}
 </style>

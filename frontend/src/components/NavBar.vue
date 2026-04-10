@@ -18,6 +18,7 @@
         <router-link to="/collections">Collections</router-link>
         <router-link to="/search">Search</router-link>
         <router-link to="/statistics">Statistics</router-link>
+        <router-link to="/expression">Expression</router-link>
         <router-link to="/api">API &amp; MCP</router-link>
         <a href="https://quantms.org" class="nav-link-ext" target="_blank" rel="noopener">quantms.org &#8599;</a>
       </div>

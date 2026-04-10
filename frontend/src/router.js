@@ -9,6 +9,7 @@ const routes = [
   { path: '/search', component: () => import('./views/Search.vue') },
   { path: '/statistics', component: () => import('./views/Statistics.vue') },
   { path: '/api', component: () => import('./views/ApiDocs.vue') },
+  { path: '/expression', component: () => import('./views/BaselineExpression.vue') },
 ]
 
 export default createRouter({
