@@ -123,21 +123,19 @@
                   </template>
                   <span v-else style="color: var(--text-muted);">—</span>
                 </td>
-                <td>
-                  <div class="bar-track">
-                    <template v-for="(p, i) in proteins" :key="'bar-' + p.name + tissue">
-                      <div
-                        v-if="getMedian(p, tissue) !== null"
-                        class="bar-dot"
-                        :style="{ left: pct(getMedian(p, tissue)) + '%', background: tagColors[i] }"
-                        :title="p.name + ': ' + getMedian(p, tissue).toFixed(2)"
-                      ></div>
-                      <div
-                        v-if="getIqr(p, tissue)"
-                        class="bar-range"
-                        :style="{ left: pct(getIqr(p, tissue).q1) + '%', width: (pct(getIqr(p, tissue).q3) - pct(getIqr(p, tissue).q1)) + '%', background: tagColors[i] }"
-                      ></div>
-                    </template>
+                <td style="vertical-align: middle; padding: 4px 14px;">
+                  <div class="bar-group">
+                    <div v-for="(p, i) in proteins" :key="'bar-' + p.name + tissue" class="bar-row">
+                      <template v-if="getMedian(p, tissue) !== null">
+                        <div class="bar-bg">
+                          <div class="bar-iqr" :style="{ left: pct(getIqr(p, tissue).q1) + '%', width: Math.max(2, pct(getIqr(p, tissue).q3) - pct(getIqr(p, tissue).q1)) + '%', background: tagColors[i], opacity: 0.3 }"></div>
+                          <div class="bar-fill" :style="{ width: pct(getMedian(p, tissue)) + '%', background: tagColors[i] }"></div>
+                        </div>
+                      </template>
+                      <template v-else>
+                        <div class="bar-bg"></div>
+                      </template>
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -152,7 +150,7 @@
             {{ p.name }}
           </span>
           <span style="font-size: 12px; color: var(--text-muted); margin-left: 8px;">
-            Bars show IQR range. Dots mark median. Values are iBAQ log₂. (n) = sample count.
+            Solid bars = median. Faded bars = IQR (Q1–Q3). Values are iBAQ log₂. (n) = sample count.
           </span>
         </div>
       </div>
@@ -516,32 +514,40 @@ const expressionRange = computed(() => {
   text-transform: capitalize;
 }
 
-/* Comparison bars */
-.bar-track {
-  position: relative;
-  height: 14px;
-  background: rgba(99, 102, 241, 0.06);
-  border-radius: 7px;
+/* Grouped comparison bars — one row per protein, no overlap */
+.bar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 140px;
 }
 
-.bar-range {
-  position: absolute;
-  top: 3px;
-  height: 8px;
-  border-radius: 4px;
-  opacity: 0.25;
+.bar-row {
+  height: 6px;
 }
 
-.bar-dot {
+.bar-bg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: rgba(99, 102, 241, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar-fill {
   position: absolute;
-  top: 2px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  transform: translateX(-5px);
-  border: 2px solid #fff;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-  z-index: 1;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.bar-iqr {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
 }
 </style>
