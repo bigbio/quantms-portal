@@ -1,62 +1,47 @@
 <template>
   <div class="section" style="padding-top: 100px;">
     <div class="container">
-      <div class="section-header">
-        <h2>API &amp; MCP Access</h2>
-        <p>Query quantms Portal data programmatically using the Model Context Protocol or direct HTTP</p>
-      </div>
+      <div style="max-width: 640px; margin: 0 auto; text-align: center; padding: 60px 0;">
+        <div style="font-size: 48px; margin-bottom: 20px;">🚧</div>
+        <h1 style="font-size: 26px; font-weight: 800; color: var(--text-primary); margin-bottom: 12px;">
+          API &amp; MCP — Coming Soon
+        </h1>
+        <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 28px;">
+          The programmatic API and MCP (Model Context Protocol) server for AI agents are under active development.
+          When ready, you'll be able to query all portal data via SQL, search peptides and proteins across collections,
+          and integrate with Claude, ChatGPT, and other AI tools.
+        </p>
 
-      <div class="api-grid">
-        <div class="api-card">
-          <h3>MCP Server Setup</h3>
-          <p>Add the quantms Portal MCP server to your Claude Desktop or AI agent configuration:</p>
-          <pre class="code-block"><span class="code-comment">// claude_desktop_config.json</span>
-{
-  <span class="code-string">"mcpServers"</span>: {
-    <span class="code-string">"quantms-portal"</span>: {
-      <span class="code-string">"command"</span>: <span class="code-string">"uvx"</span>,
-      <span class="code-string">"args"</span>: [<span class="code-string">"quantms-portal"</span>]
-    }
-  }
-}</pre>
-        </div>
-
-        <div class="api-card">
-          <h3>Python Client</h3>
-          <p>Use the quantms-portal Python package to access data directly:</p>
-          <pre class="code-block"><span class="code-keyword">from</span> quantms_portal <span class="code-keyword">import</span> PortalClient
-
-client = PortalClient()
-
-<span class="code-comment"># List collections</span>
-collections = client.list_collections()
-
-<span class="code-comment"># Search peptides across datasets</span>
-hits = client.search_peptide(<span class="code-string">"TYQGSYGFR"</span>)
-</pre>
-        </div>
-
-        <div class="api-card">
-          <h3>Static JSON API</h3>
-          <p>All portal data is available as static JSON files, hosted on GitHub Pages:</p>
-          <pre class="code-block"><span class="code-comment"># Registry of all collections</span>
-curl <span class="code-string">https://portal.quantms.org/data/registry.json</span>
-
-<span class="code-comment"># Collection details</span>
-curl <span class="code-string">https://portal.quantms.org/data/collections/msnet/index.json</span>
-</pre>
-        </div>
-
-        <div class="api-card">
-          <h3>MCP Tools Available</h3>
-          <p>The MCP server exposes these tools for AI agents:</p>
-          <ul style="font-size: 13px; color: var(--text-secondary); line-height: 2; padding-left: 20px;">
-            <li><strong>list_collections</strong> — List all data collections</li>
-            <li><strong>get_collection</strong> — Get collection metadata and datasets</li>
-            <li><strong>search_peptide</strong> — Search for a peptide sequence</li>
-            <li><strong>search_protein</strong> — Search for a protein accession</li>
-            <li><strong>get_dataset</strong> — Get dataset metadata and files</li>
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: left; margin-bottom: 28px;">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Planned Features</h3>
+          <ul style="font-size: 14px; color: var(--text-secondary); line-height: 2; padding-left: 20px;">
+            <li><strong>SQL Query Endpoint</strong> — Write DuckDB SQL against QPX parquet collections</li>
+            <li><strong>MCP Server</strong> — AI agents discover schema, write queries, get results</li>
+            <li><strong>Peptide &amp; Protein Search</strong> — Search across collection indexes</li>
+            <li><strong>Local MCP Package</strong> — <code>pip install quantms-mcp</code> for offline analysis</li>
           </ul>
+        </div>
+
+        <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: left;">
+          <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Available Now</h3>
+          <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+            All portal data is available as static JSON files:
+          </p>
+          <pre style="background: #0f172a; border-radius: 8px; padding: 14px 18px; font-family: var(--mono); font-size: 13px; color: #e2e8f0; overflow-x: auto; line-height: 1.8;"><span style="color:#64748b;"># Registry of all collections</span>
+curl https://portal.quantms.org/data/registry.json
+
+<span style="color:#64748b;"># Collection dataset listing</span>
+curl https://portal.quantms.org/data/collections/msnet/collection.json
+
+<span style="color:#64748b;"># Individual dataset detail</span>
+curl https://portal.quantms.org/data/collections/msnet/datasets/PXD000865.json</pre>
+        </div>
+
+        <div style="margin-top: 28px;">
+          <a href="https://github.com/bigbio/quantms-portal" target="_blank"
+             style="font-size: 14px; color: var(--indigo); font-weight: 600; text-decoration: none;">
+            Follow development on GitHub →
+          </a>
         </div>
       </div>
     </div>
