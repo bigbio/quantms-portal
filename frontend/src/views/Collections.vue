@@ -79,6 +79,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import DatasetTable from '../components/DatasetTable.vue'
 
 const tabs = [
@@ -89,7 +90,8 @@ const tabs = [
   { key: 'single-cell', label: 'Single Cell' },
 ]
 
-const activeTab = ref('all')
+const route = useRoute()
+const activeTab = ref(route.query.tab || 'all')
 const searchQuery = ref('')
 const loading = ref(false)
 const collections = ref([])

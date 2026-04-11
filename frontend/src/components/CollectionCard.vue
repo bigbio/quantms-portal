@@ -1,5 +1,5 @@
 <template>
-  <router-link :to="`/collections/${collection.name}`" class="collection-card">
+  <div class="collection-card" @click="$emit('select', collection.name)" style="cursor: pointer;">
     <div class="collection-card-accent"></div>
     <div class="collection-icon" :class="iconClass">
       <svg v-if="collection.name === 'msnet'" width="26" height="26" viewBox="0 0 24 24" fill="none" :stroke="iconColor" stroke-width="1.6">
@@ -53,12 +53,15 @@
       </div>
     </div>
     <div class="collection-tags">
-      <span v-for="org in collection.organisms" :key="org" class="tag" :class="organismTagClass(org)">
+      <span v-for="org in displayOrganisms" :key="org" class="tag" :class="organismTagClass(org)">
         {{ shortOrganism(org) }}
+      </span>
+      <span v-if="extraOrganismCount > 0" class="tag" style="background: rgba(100,116,139,0.08); color: var(--text-muted);">
+        +{{ extraOrganismCount }} more
       </span>
     </div>
     <span class="collection-cta">Browse collection &rarr;</span>
-  </router-link>
+  </div>
 </template>
 
 <script setup>
@@ -68,6 +71,8 @@ const props = defineProps({
   collection: { type: Object, required: true }
 })
 
+defineEmits(['select'])
+
 const colorMap = {
   'msnet': { icon: 'ci-blue', color: '#409eff' },
   'absolute-expression': { icon: 'ci-indigo', color: '#6366f1' },
@@ -76,6 +81,16 @@ const colorMap = {
 
 const iconClass = computed(() => colorMap[props.collection.name]?.icon || 'ci-blue')
 const iconColor = computed(() => colorMap[props.collection.name]?.color || '#409eff')
+
+const MAX_ORGANISMS = 5
+const displayOrganisms = computed(() => {
+  const orgs = props.collection.organisms || []
+  return orgs.slice(0, MAX_ORGANISMS)
+})
+const extraOrganismCount = computed(() => {
+  const orgs = props.collection.organisms || []
+  return Math.max(0, orgs.length - MAX_ORGANISMS)
+})
 
 function shortOrganism(org) {
   const map = {
