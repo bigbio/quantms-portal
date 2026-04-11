@@ -3,20 +3,6 @@
   "total_pages": 3,
   "datasets": [
     {
-      "accession": "HuiYan-Bat",
-      "title": "HuiYan-Bat",
-      "organisms": [
-        "Rhinolophus sinicus"
-      ],
-      "samples": 0,
-      "runs": 40,
-      "proteins": 0,
-      "peptides": 0,
-      "psm_count": 2334922,
-      "species": "Rhinolophus sinicus",
-      "instrument": "timsTOF"
-    },
-    {
       "accession": "HuiYan-E480",
       "title": "HuiYan-E480",
       "organisms": [
@@ -465,34 +451,6 @@
       "species": "Homo sapiens",
       "instrument": "Q Exactive HF",
       "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009348/"
-    },
-    {
-      "accession": "PXD009449",
-      "title": "PXD009449",
-      "organisms": [
-        "Homo sapiens"
-      ],
-      "samples": 0,
-      "runs": 26,
-      "proteins": 0,
-      "peptides": 0,
-      "psm_count": 201402,
-      "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
-    },
-    {
-      "accession": "PXD009449",
-      "title": "PXD009449",
-      "organisms": [
-        "Homo sapiens"
-      ],
-      "samples": 0,
-      "runs": 39,
-      "proteins": 0,
-      "peptides": 0,
-      "psm_count": 697583,
-      "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos"
     },
     {
       "accession": "PXD009737",

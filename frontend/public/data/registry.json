@@ -38,7 +38,7 @@
       "title": "MS-Net Peptide Identifications",
       "description": "Large-scale peptide identification across 114 public proteomics datasets. ID-only, optimized for peptide search across species.",
       "type": "identification",
-      "dataset_count": 114,
+      "dataset_count": 108,
       "total_pages": 3,
       "organisms": [
         "Homo sapiens",
@@ -133,7 +133,7 @@
   ],
   "global_stats": {
     "total_collections": 4,
-    "total_datasets": 258,
+    "total_datasets": 252,
     "total_psms": 500511663,
     "total_proteins": 633719
   }

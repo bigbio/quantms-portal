@@ -4,7 +4,7 @@
   "description": "Large-scale peptide identification across 114 public proteomics datasets. ID-only, optimized for peptide search across species.",
   "type": "identification",
   "generated_at": "2026-04-10T17:47:56.993421+00:00",
-  "dataset_count": 114,
+  "dataset_count": 108,
   "total_pages": 3,
   "datasets_per_page": 50,
   "organisms": [
