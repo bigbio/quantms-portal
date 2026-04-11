@@ -16,19 +16,19 @@
   "proteins_total": 3217,
   "peptides_total": 20903,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/pipeline_info/PXD024043-diaPASEF-1ng.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/pipeline_info/PXD024043-diaPASEF-1ng.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD024043-diaPASEF-1ng",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/pipeline_info/PXD024043-diaPASEF-1ng.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/pipeline_info/PXD024043-diaPASEF-1ng.sdrf.tsv"
     },
     {
       "id": 3,
@@ -38,7 +38,7 @@
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/summarypipeline/multiqc_report.html"
     }
   ]
 }

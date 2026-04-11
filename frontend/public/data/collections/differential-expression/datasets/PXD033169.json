@@ -16,34 +16,34 @@
   "proteins_total": 548,
   "peptides_total": 5190,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/pipeline_info/PXD033169.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/pipeline_info/PXD033169.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD033169",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/pipeline_info/PXD033169.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/pipeline_info/PXD033169.sdrf.tsv"
     },
     {
       "id": 3,
       "title": "Peptide Table",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/diannconvert/PXD033169.sdrf_openms_design_msstats_in.csv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/diannconvert/PXD033169.sdrf_openms_design_msstats_in.csv"
     },
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/summarypipeline/multiqc_report.html"
     },
     {
       "id": 5,
       "title": "differential_analysis",
-      "path": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/msstats/"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/PXD033169/msstats/"
     }
   ]
 }

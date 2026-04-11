@@ -13,7 +13,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD016921/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD034244/"
     },
     {
       "accession": "PXD023366",
@@ -26,7 +26,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023366/"
     },
     {
       "accession": "PXD023904",
@@ -39,7 +39,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
     },
     {
       "accession": "PXD023904",
@@ -52,7 +52,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD023904-melanoma/"
     },
     {
       "accession": "PXD024043",
@@ -65,7 +65,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
     },
     {
       "accession": "PXD024043",
@@ -78,7 +78,7 @@
       "psm_count": 0,
       "species": "",
       "instrument": "",
-      "ftp_url": "http://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/PXD024043-diaPASEF-1ng/"
     }
   ]
 }

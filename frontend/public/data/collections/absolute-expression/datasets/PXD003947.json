@@ -16,29 +16,29 @@
   "proteins_total": 5087,
   "peptides_total": 84584,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/pipeline_info/PXD003947.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/pipeline_info/PXD003947.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD003947",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/pipeline_info/PXD003947.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/pipeline_info/PXD003947.sdrf.tsv"
     },
     {
       "id": 3,
       "title": "Peptide Table",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/proteomicslfq/PXD003947.sdrf_openms_design_msstats_in.csv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/proteomicslfq/PXD003947.sdrf_openms_design_msstats_in.csv"
     },
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD003947/summarypipeline/multiqc_report.html"
     }
   ]
 }

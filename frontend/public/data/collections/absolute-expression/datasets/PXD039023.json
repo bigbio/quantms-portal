@@ -16,29 +16,29 @@
   "proteins_total": 214,
   "peptides_total": 2620,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/pipeline_info/PXD039023.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/pipeline_info/PXD039023.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD039023",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/pipeline_info/PXD039023.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/pipeline_info/PXD039023.sdrf.tsv"
     },
     {
       "id": 3,
       "title": "Peptide Table",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/diannconvert/PXD039023.sdrf_openms_design_msstats_in.csv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/diannconvert/PXD039023.sdrf_openms_design_msstats_in.csv"
     },
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD039023/summarypipeline/multiqc_report.html"
     }
   ]
 }

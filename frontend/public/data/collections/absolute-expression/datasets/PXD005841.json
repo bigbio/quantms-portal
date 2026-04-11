@@ -16,14 +16,14 @@
   "proteins_total": 2566,
   "peptides_total": 42251,
   "download": {
-    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD005481/",
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD005841/",
     "sdrf_url": ""
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD005841",
-      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD005481/"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression-2025/cell-lines/PXD005841/"
     }
   ]
 }

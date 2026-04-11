@@ -16,29 +16,29 @@
   "proteins_total": 10466,
   "peptides_total": 143556,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/pipeline_info/PXD024364-Asp-N.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/pipeline_info/PXD024364-Asp-N.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD024364.2",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/pipeline_info/PXD024364-Asp-N.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/pipeline_info/PXD024364-Asp-N.sdrf.tsv"
     },
     {
       "id": 3,
       "title": "Peptide Table",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/proteomicslfq/PXD024364-Asp-N.sdrf_openms_design_msstats_in.csv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/proteomicslfq/PXD024364-Asp-N.sdrf_openms_design_msstats_in.csv"
     },
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD024364.2/summarypipeline/multiqc_report.html"
     }
   ]
 }

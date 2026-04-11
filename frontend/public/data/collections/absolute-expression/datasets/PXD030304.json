@@ -16,19 +16,19 @@
   "proteins_total": 8941,
   "peptides_total": 118322,
   "download": {
-    "ftp_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304",
-    "sdrf_url": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/pipeline_info/PXD030304.sdrf.tsv"
+    "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD030304",
+    "sdrf_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/pipeline_info/PXD030304.sdrf.tsv"
   },
   "reanalysis_links": [
     {
       "id": 1,
       "title": "PXD030304",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD030304"
     },
     {
       "id": 2,
       "title": "SDRF",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/pipeline_info/PXD030304.sdrf.tsv"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/pipeline_info/PXD030304.sdrf.tsv"
     },
     {
       "id": 3,
@@ -38,7 +38,7 @@
     {
       "id": 4,
       "title": "PMULTIQC",
-      "path": "http://ftp.pride.ebi.ac.uk//pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/summarypipeline/multiqc_report.html"
+      "path": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/PXD030304/summarypipeline/multiqc_report.html"
     }
   ]
 }
