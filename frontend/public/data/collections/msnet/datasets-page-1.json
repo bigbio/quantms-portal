@@ -14,8 +14,7 @@
       "peptides": 0,
       "psm_count": 2334922,
       "species": "Rhinolophus sinicus",
-      "instrument": "timsTOF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/HuiYan-Bat/"
+      "instrument": "timsTOF"
     },
     {
       "accession": "HuiYan-E480",
@@ -479,8 +478,7 @@
       "peptides": 0,
       "psm_count": 201402,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009449-HCD/"
+      "instrument": "Orbitrap Fusion Lumos"
     },
     {
       "accession": "PXD009449",
@@ -494,8 +492,7 @@
       "peptides": 0,
       "psm_count": 697583,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD009449-HCD/"
+      "instrument": "Orbitrap Fusion Lumos"
     },
     {
       "accession": "PXD009737",

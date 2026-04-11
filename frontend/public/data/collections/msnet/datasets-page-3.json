@@ -119,8 +119,7 @@
       "peptides": 0,
       "psm_count": 2013520,
       "species": "Mycobacterium tuberculosis",
-      "instrument": "Q Exactive HF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD005478/"
+      "instrument": "Q Exactive HF"
     },
     {
       "accession": "PXD002899",
@@ -149,8 +148,7 @@
       "peptides": 0,
       "psm_count": 1208405,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive Plus",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD004352/"
+      "instrument": "Q Exactive Plus"
     },
     {
       "accession": "PXD025555",
@@ -164,8 +162,7 @@
       "peptides": 0,
       "psm_count": 9620961,
       "species": "Homo sapiens",
-      "instrument": "Orbitrap Fusion Lumos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD025555/"
+      "instrument": "Orbitrap Fusion Lumos"
     },
     {
       "accession": "PXD005526",
@@ -194,8 +191,7 @@
       "peptides": 0,
       "psm_count": 4305190,
       "species": "Homo sapiens",
-      "instrument": "Q Exactive",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD021398/"
+      "instrument": "Q Exactive"
     },
     {
       "accession": "PXD034656",
