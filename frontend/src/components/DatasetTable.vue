@@ -55,6 +55,25 @@
               </th>
             </template>
           </tr>
+          <!-- Filter row for MSNet collections -->
+          <tr v-if="isMsnet" class="filter-row">
+            <th></th>
+            <th></th>
+            <th>
+              <select v-model="filterSpecies" class="col-filter">
+                <option value="">All</option>
+                <option v-for="s in uniqueSpecies" :key="s" :value="s">{{ s }}</option>
+              </select>
+            </th>
+            <th>
+              <select v-model="filterInstrument" class="col-filter">
+                <option value="">All</option>
+                <option v-for="i in uniqueInstruments" :key="i" :value="i">{{ i }}</option>
+              </select>
+            </th>
+            <th></th>
+            <th></th>
+          </tr>
         </thead>
         <tbody>
           <tr v-if="filteredDatasets.length === 0">
@@ -111,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -126,26 +145,95 @@ const searchQuery = ref('')
 const sortKey = ref('accession')
 const sortDir = ref(1)
 
+// Column filters (MSNet only)
+const filterSpecies = ref('')
+const filterInstrument = ref('')
+
 const isMsnet = computed(() => props.collectionName === 'msnet')
 
+// Numeric columns that must be sorted numerically
+const NUMERIC_COLS = new Set(['psm_count', 'runs', 'samples', 'proteins', 'peptides'])
+
+// Reset column filters when collection changes
+watch(() => props.collectionName, () => {
+  filterSpecies.value = ''
+  filterInstrument.value = ''
+  searchQuery.value = ''
+})
+
+// Unique sorted values for dropdowns — derived from raw dataset (before any filter)
+const uniqueSpecies = computed(() => {
+  const vals = new Set()
+  for (const ds of props.datasets) {
+    const s = ds.species || (ds.organisms && ds.organisms[0]) || ''
+    if (s) vals.add(s)
+  }
+  return [...vals].sort((a, b) => a.localeCompare(b))
+})
+
+const uniqueInstruments = computed(() => {
+  const vals = new Set()
+  for (const ds of props.datasets) {
+    if (ds.instrument) vals.add(ds.instrument)
+  }
+  return [...vals].sort((a, b) => a.localeCompare(b))
+})
+
 const filteredDatasets = computed(() => {
+  let result = props.datasets
+
+  // 1. Apply column filters first (MSNet only)
+  if (isMsnet.value) {
+    if (filterSpecies.value) {
+      result = result.filter(ds => {
+        const s = ds.species || (ds.organisms && ds.organisms[0]) || ''
+        return s === filterSpecies.value
+      })
+    }
+    if (filterInstrument.value) {
+      result = result.filter(ds => ds.instrument === filterInstrument.value)
+    }
+  }
+
+  // 2. Apply text search
   const q = searchQuery.value.toLowerCase().trim()
-  if (!q) return props.datasets
-  return props.datasets.filter(ds =>
-    (ds.accession || '').toLowerCase().includes(q) ||
-    (ds.title || '').toLowerCase().includes(q) ||
-    (ds.species || '').toLowerCase().includes(q) ||
-    (ds.instrument || '').toLowerCase().includes(q)
-  )
+  if (q) {
+    result = result.filter(ds =>
+      (ds.accession || '').toLowerCase().includes(q) ||
+      (ds.title || '').toLowerCase().includes(q) ||
+      (ds.species || '').toLowerCase().includes(q) ||
+      (ds.instrument || '').toLowerCase().includes(q)
+    )
+  }
+
+  return result
 })
 
 const sortedDatasets = computed(() => {
   const arr = [...filteredDatasets.value]
+  const key = sortKey.value
+  const dir = sortDir.value
+
   arr.sort((a, b) => {
-    let av = a[sortKey.value] ?? ''
-    let bv = b[sortKey.value] ?? ''
-    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * sortDir.value
-    return String(av).localeCompare(String(bv)) * sortDir.value
+    let av = a[key] ?? ''
+    let bv = b[key] ?? ''
+
+    // Force numeric comparison for known numeric columns or when values parse as numbers
+    if (NUMERIC_COLS.has(key)) {
+      const na = Number(av)
+      const nb = Number(bv)
+      const aIsNum = !isNaN(na)
+      const bIsNum = !isNaN(nb)
+      if (aIsNum && bIsNum) return (na - nb) * dir
+      if (aIsNum) return -1 * dir   // numbers before empties
+      if (bIsNum) return 1 * dir
+      return 0
+    }
+
+    // Also handle the case where both values happen to be numbers (non-numeric-column edge case)
+    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir
+
+    return String(av).localeCompare(String(bv)) * dir
   })
   return arr
 })
@@ -179,5 +267,26 @@ function navigateTo(ds) {
   font-size: 11px;
   opacity: 0.5;
   margin-left: 2px;
+}
+
+.filter-row th {
+  padding: 4px 8px;
+  background: var(--bg-secondary, #f5f5f5);
+}
+
+.col-filter {
+  width: 100%;
+  font-size: 12px;
+  padding: 2px 4px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 4px;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #333);
+  cursor: pointer;
+  outline: none;
+}
+
+.col-filter:focus {
+  border-color: var(--accent-color, #4a90e2);
 }
 </style>
