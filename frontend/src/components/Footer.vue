@@ -16,7 +16,7 @@
           <router-link to="/collections">Collections</router-link>
           <router-link to="/search">Search</router-link>
           <router-link to="/statistics">Statistics</router-link>
-          <router-link to="/expression">Expression</router-link>
+          <router-link to="/baseline">Baseline</router-link>
           <router-link to="/api">API &amp; MCP</router-link>
         </div>
         <div class="footer-col">

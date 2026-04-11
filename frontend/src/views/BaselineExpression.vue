@@ -208,7 +208,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
 
 const tagColors = ['#409eff', '#6366f1', '#7c3aed', '#f59e0b', '#10b981']
 
@@ -221,6 +225,33 @@ const proteins = ref([])   // Array of { name, gene_name, tags, data, stats }
 
 const tissueDb = ref(null)
 const cellDb = ref(null)
+
+// Sync proteins to URL: /baseline?proteins=P50851,Q96HS1
+function updateUrl() {
+  const names = proteins.value.map(p => p.name)
+  const q = {}
+  if (names.length) q.proteins = names.join(',')
+  if (sourceType.value !== 'tissue') q.source = sourceType.value
+  router.replace({ path: '/baseline', query: q })
+}
+
+watch(proteins, updateUrl, { deep: true })
+watch(sourceType, updateUrl)
+
+// Load proteins from URL on mount
+onMounted(async () => {
+  const urlProteins = route.query.proteins
+  const urlSource = route.query.source
+  if (urlSource === 'cell') sourceType.value = 'cell'
+  if (urlProteins) {
+    const names = urlProteins.split(',').map(s => s.trim()).filter(Boolean)
+    for (const name of names.slice(0, 5)) {
+      query.value = name
+      await addProtein()
+    }
+    query.value = ''
+  }
+})
 
 const examples = ['P50851', 'Q96HS1', 'Q14114', 'P04637']
 
