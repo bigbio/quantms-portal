@@ -225,22 +225,16 @@ const rows = computed(() => {
 
 function clickSort(key) {
   if (sKey.value === key) {
-    if (sAsc.value) {
-      sAsc.value = false   // was asc → now desc
-    } else {
-      sKey.value = ''       // was desc → clear
-      sAsc.value = true
-    }
+    sAsc.value = !sAsc.value
   } else {
     sKey.value = key
-    // Numbers start descending (biggest first), text starts ascending
-    sAsc.value = !NUM.has(key)
+    sAsc.value = !NUM.has(key)  // numbers: desc first; text: asc first
   }
 }
 
 function icon(key) {
-  if (sKey.value !== key) return '↕'
-  return sAsc.value ? '↑' : '↓'
+  if (sKey.value !== key) return ''
+  return sAsc.value ? ' ▲' : ' ▼'
 }
 
 function fmtNum(n) {
