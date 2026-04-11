@@ -142,8 +142,8 @@ const props = defineProps({
 
 const router = useRouter()
 const searchQuery = ref('')
-const sortKey = ref('accession')
-const sortDir = ref(1)
+const sortKey = ref('')
+const sortDir = ref(-1)  // -1 = descending (biggest first, natural for counts)
 
 // Column filters (MSNet only)
 const filterSpecies = ref('')
@@ -211,42 +211,55 @@ const filteredDatasets = computed(() => {
 
 const sortedDatasets = computed(() => {
   const arr = [...filteredDatasets.value]
+  if (!sortKey.value) return arr  // no sort active → original order
+
   const key = sortKey.value
   const dir = sortDir.value
+  const isNum = NUMERIC_COLS.has(key)
 
   arr.sort((a, b) => {
-    const av = a[key]
-    const bv = b[key]
+    let av = a[key]
+    let bv = b[key]
 
-    if (NUMERIC_COLS.has(key)) {
-      // Treat null/undefined/empty/0 as "no value" → push to end
-      const aHas = av != null && av !== '' && av !== 0
-      const bHas = bv != null && bv !== '' && bv !== 0
-      if (aHas && bHas) return (Number(av) - Number(bv)) * dir
-      if (aHas) return -1  // a has value, b doesn't → a first
-      if (bHas) return 1
-      return 0
+    if (isNum) {
+      // Convert to number; treat null/undefined/empty as -Infinity so they go last
+      const na = (av != null && av !== '') ? Number(av) : null
+      const nb = (bv != null && bv !== '') ? Number(bv) : null
+      // Push nulls to bottom regardless of direction
+      if (na == null && nb == null) return 0
+      if (na == null) return 1
+      if (nb == null) return -1
+      return (na - nb) * dir
     }
 
-    if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir
-
-    return String(av ?? '').localeCompare(String(bv ?? '')) * dir
+    // String sort
+    const sa = String(av ?? '')
+    const sb = String(bv ?? '')
+    return sa.localeCompare(sb) * dir
   })
   return arr
 })
 
 function sortBy(key) {
   if (sortKey.value === key) {
-    sortDir.value *= -1
+    // Toggle: desc → asc → off
+    if (sortDir.value === -1) {
+      sortDir.value = 1
+    } else {
+      // Reset sort
+      sortKey.value = ''
+      sortDir.value = -1
+    }
   } else {
+    // New column: start descending (biggest first for numbers)
     sortKey.value = key
-    sortDir.value = 1
+    sortDir.value = NUMERIC_COLS.has(key) ? -1 : 1
   }
 }
 
 function sortIcon(key) {
   if (sortKey.value !== key) return '↕'
-  return sortDir.value === 1 ? '↑' : '↓'
+  return sortDir.value === -1 ? '↓' : '↑'
 }
 
 function formatNum(n) {
