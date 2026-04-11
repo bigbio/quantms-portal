@@ -29,7 +29,7 @@
           <h4>Resources</h4>
           <a href="https://www.proteomexchange.org" target="_blank" rel="noopener">ProteomeXchange</a>
           <a href="https://www.ebi.ac.uk/pride" target="_blank" rel="noopener">PRIDE Archive</a>
-          <a href="https://nf-co.re/quantms" target="_blank" rel="noopener">nf-core/quantms</a>
+          <a href="https://github.com/bigbio/quantms" target="_blank" rel="noopener">quantms pipeline</a>
         </div>
       </div>
       <div class="footer-bottom">
