@@ -110,7 +110,7 @@
                   <span :style="{ color: tagColors[i], fontWeight: 700 }">{{ p.name }}</span>
                   <div v-if="p.gene_name" style="font-size: 10px; font-weight: 400; color: var(--text-muted);">{{ p.gene_name }}</div>
                 </th>
-                <th style="min-width: 200px;">Distribution</th>
+                <th style="min-width: 180px;">Comparison</th>
               </tr>
             </thead>
             <tbody>
@@ -127,44 +127,39 @@
                   </template>
                   <span v-else style="color: var(--text-muted); font-size: 11px;">—</span>
                 </td>
-                <!-- Inline SVG box plots -->
-                <td style="vertical-align: middle; padding: 4px 10px;">
-                  <svg :width="boxPlotWidth" :height="proteins.length * 16 + 4" class="boxplot-svg">
-                    <template v-for="(p, i) in proteins" :key="'bp-' + p.name + tissue">
-                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * 16 + 2) + ')'">
-                        <!-- Whisker line: min to max -->
+                <!-- Dot strip chart: shared X axis, one Y lane per protein -->
+                <td style="vertical-align: middle; padding: 4px 8px;">
+                  <svg :width="stripWidth" :height="proteins.length * stripRowH + 4" style="display:block;">
+                    <!-- Subtle axis baseline -->
+                    <line :x1="stripPad" :y1="proteins.length * stripRowH + 2"
+                          :x2="stripWidth - stripPad" :y2="proteins.length * stripRowH + 2"
+                          stroke="#e2e8f0" stroke-width="0.6" />
+                    <template v-for="(p, i) in proteins" :key="'strip-' + p.name + tissue">
+                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
+                        <!-- IQR whisker: Q1 → Q3 -->
                         <line
-                          :x1="bpx(getIqr(p, tissue).min)" :x2="bpx(getIqr(p, tissue).max)"
-                          y1="6" y2="6"
-                          :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
+                          :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q3)"
+                          y1="0" y2="0"
+                          :stroke="tagColors[i]" stroke-width="2.5" stroke-linecap="round" opacity="0.4"
                         />
-                        <!-- Min tick -->
-                        <line :x1="bpx(getIqr(p, tissue).min)" :x2="bpx(getIqr(p, tissue).min)"
-                          y1="3" y2="9" :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
-                        />
-                        <!-- Max tick -->
-                        <line :x1="bpx(getIqr(p, tissue).max)" :x2="bpx(getIqr(p, tissue).max)"
-                          y1="3" y2="9" :stroke="tagColors[i]" stroke-width="1" opacity="0.4"
-                        />
-                        <!-- IQR box: Q1 to Q3 -->
-                        <rect
-                          :x="bpx(getIqr(p, tissue).q1)"
-                          y="1"
-                          :width="Math.max(2, bpx(getIqr(p, tissue).q3) - bpx(getIqr(p, tissue).q1))"
-                          height="10"
-                          rx="2"
-                          :fill="tagColors[i]"
-                          opacity="0.25"
-                        />
-                        <!-- Median diamond -->
-                        <polygon
-                          :points="medianDiamond(bpx(getIqr(p, tissue).median), 6)"
-                          :fill="tagColors[i]"
-                        />
+                        <!-- Q1 end cap -->
+                        <line :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q1)"
+                          y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
+                        <!-- Q3 end cap -->
+                        <line :x1="stripX(getIqr(p, tissue).q3)" :x2="stripX(getIqr(p, tissue).q3)"
+                          y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
+                        <!-- Median dot -->
+                        <circle
+                          :cx="stripX(getIqr(p, tissue).median)" cy="0" r="4"
+                          :fill="tagColors[i]" stroke="#fff" stroke-width="1.5"
+                        >
+                          <title>{{ p.name }}: {{ getIqr(p, tissue).median.toFixed(2) }} (n={{ getIqr(p, tissue).count }})</title>
+                        </circle>
                       </g>
-                      <!-- Empty row when no data -->
-                      <g v-else :transform="'translate(0,' + (i * 16 + 2) + ')'">
-                        <line x1="0" :x2="boxPlotWidth" y1="6" y2="6" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="2 3" />
+                      <!-- Not detected: dashed line -->
+                      <g v-else :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
+                        <line :x1="stripPad + 4" :x2="stripWidth - stripPad - 4"
+                          y1="0" y2="0" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4" />
                       </g>
                     </template>
                   </svg>
@@ -183,14 +178,16 @@
             </span>
           </div>
           <div class="legend-guide">
-            <svg width="160" height="20">
-              <line x1="10" x2="60" y1="10" y2="10" stroke="#94a3b8" stroke-width="1" />
-              <line x1="10" x2="10" y1="6" y2="14" stroke="#94a3b8" stroke-width="1" />
-              <line x1="60" x2="60" y1="6" y2="14" stroke="#94a3b8" stroke-width="1" />
-              <rect x="22" y="4" width="26" height="12" rx="2" fill="#6366f1" opacity="0.25" />
-              <polygon points="35,3 38,10 35,17 32,10" fill="#6366f1" />
-              <text x="70" y="8" font-size="9" fill="#94a3b8" font-family="var(--font)">min</text>
-              <text x="70" y="17" font-size="9" fill="#94a3b8" font-family="var(--font)">Q1 ◇median Q3 max</text>
+            <svg width="180" height="16" style="vertical-align: middle;">
+              <!-- Whisker -->
+              <line x1="8" x2="52" y1="8" y2="8" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" opacity="0.4" />
+              <!-- Q1 cap -->
+              <line x1="8" x2="8" y1="5" y2="11" stroke="#6366f1" stroke-width="1" opacity="0.5" />
+              <!-- Q3 cap -->
+              <line x1="52" x2="52" y1="5" y2="11" stroke="#6366f1" stroke-width="1" opacity="0.5" />
+              <!-- Median dot -->
+              <circle cx="30" cy="8" r="4" fill="#6366f1" stroke="#fff" stroke-width="1.5" />
+              <text x="62" y="11" font-size="10" fill="#94a3b8" font-family="var(--font)">Q1 ● median Q3 — hover for values</text>
             </svg>
           </div>
         </div>
@@ -476,20 +473,16 @@ function heatmapStyle(protein, tissue, colorIndex) {
   }
 }
 
-// ── SVG box plot helpers ──
-const boxPlotWidth = 200
+// ── Dot strip chart helpers ──
+const stripWidth = 180
+const stripPad = 8
+const stripRowH = 12
 
-function bpx(val) {
+function stripX(val) {
   const mn = globalMin.value
   const mx = globalMax.value
-  if (mx === mn) return boxPlotWidth / 2
-  const pad = 8
-  return pad + ((val - mn) / (mx - mn)) * (boxPlotWidth - pad * 2)
-}
-
-function medianDiamond(cx, cy) {
-  const s = 4
-  return `${cx},${cy - s} ${cx + s},${cy} ${cx},${cy + s} ${cx - s},${cy}`
+  if (mx === mn) return stripWidth / 2
+  return stripPad + ((val - mn) / (mx - mn)) * (stripWidth - stripPad * 2)
 }
 </script>
 
@@ -640,10 +633,7 @@ function medianDiamond(cx, cy) {
   border-left: 1px solid var(--border);
 }
 
-/* SVG box plots */
-.boxplot-svg {
-  display: block;
-}
+/* Dot strip chart */
 
 /* Legend bar */
 .legend-bar {
