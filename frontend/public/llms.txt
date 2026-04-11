@@ -1,0 +1,40 @@
+# quantms Portal
+
+> Quantitative proteomics data portal. 251 standardized mass spectrometry datasets reanalyzed with the quantms pipeline and distributed in QPX format.
+
+## Collections
+
+- Absolute Protein Expression: 103 human proteomics datasets, iBAQ quantification, 470,804 proteins, 18,053 samples. URL: https://portal.quantms.org/collections/absolute-expression
+- Differential Expression: 35 datasets, disease vs. control comparisons, 162,915 proteins. URL: https://portal.quantms.org/collections/differential-expression
+- MS-Net: 107 datasets, 53 species, 500M+ PSMs. URL: https://portal.quantms.org/collections/msnet
+- Single Cell Proteomics: 6 datasets, 538 single-cell samples. URL: https://portal.quantms.org/collections/single-cell
+
+## Data Access
+
+- Registry API: https://portal.quantms.org/data/registry.json
+- Collection index: https://portal.quantms.org/data/collections/{collection}/collection.json
+- Dataset detail: https://portal.quantms.org/data/collections/{collection}/datasets/{accession}.json
+- FTP root: https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/
+
+## Baseline Expression
+
+- Protein expression browser: https://portal.quantms.org/baseline
+- Tissue expression data: 15,782 proteins across 30+ human tissues (iBAQ log2)
+- Cell line expression data available
+- Shareable URLs: https://portal.quantms.org/baseline?proteins=P50851,Q96HS1
+
+## Dataset Identifiers
+
+Datasets use ProteomeXchange accessions (PXD prefix), iProX identifiers (IPX prefix), or MassIVE accessions (MSV prefix). Each dataset links to raw data, SDRF metadata, and processed files on the PRIDE FTP.
+
+## Tools
+
+- quantms pipeline: https://github.com/bigbio/quantms (DDA proteomics)
+- quantmsdiann: https://github.com/bigbio/quantmsdiann (DIA proteomics)
+- mokume: https://github.com/bigbio/mokume (protein quantification)
+- qpx: https://github.com/bigbio/quantms.io (data format conversion)
+- pmultiqc: https://github.com/bigbio/pmultiqc (QC reports)
+
+## Citation
+
+If you use this data, cite: Dai C, et al. quantms: a cloud-based pipeline for quantitative proteomics. Nature Methods. 2024;21:1603-1607. DOI: 10.1038/s41592-024-02343-1

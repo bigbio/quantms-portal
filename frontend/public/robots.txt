@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://portal.quantms.org/sitemap.xml
