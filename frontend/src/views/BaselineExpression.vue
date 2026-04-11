@@ -129,41 +129,52 @@
                 </td>
                 <!-- Dot strip chart: shared X axis, one Y lane per protein -->
                 <td style="vertical-align: middle; padding: 4px 8px; text-align: center;">
-                  <svg :width="stripWidth" :height="proteins.length * stripRowH + 4" style="display:inline-block;">
-                    <!-- Subtle axis baseline -->
-                    <line :x1="stripPad" :y1="proteins.length * stripRowH + 2"
-                          :x2="stripWidth - stripPad" :y2="proteins.length * stripRowH + 2"
-                          stroke="#e2e8f0" stroke-width="0.6" />
-                    <template v-for="(p, i) in proteins" :key="'strip-' + p.name + tissue">
-                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'" style="cursor:pointer;">
-                        <title>{{ p.name }}: median={{ getIqr(p, tissue).median.toFixed(2) }}, IQR={{ getIqr(p, tissue).q1.toFixed(2) }}–{{ getIqr(p, tissue).q3.toFixed(2) }}, n={{ getIqr(p, tissue).count }}</title>
-                        <!-- Invisible hit area for the whole lane -->
-                        <rect :x="stripPad" :y="-stripRowH/2" :width="stripWidth - stripPad*2" :height="stripRowH" fill="transparent" />
-                        <!-- IQR whisker: Q1 → Q3 -->
-                        <line
-                          :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q3)"
-                          y1="0" y2="0"
-                          :stroke="tagColors[i]" stroke-width="2.5" stroke-linecap="round" opacity="0.4"
-                        />
-                        <!-- Q1 end cap -->
-                        <line :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q1)"
-                          y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
-                        <!-- Q3 end cap -->
-                        <line :x1="stripX(getIqr(p, tissue).q3)" :x2="stripX(getIqr(p, tissue).q3)"
-                          y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
-                        <!-- Median dot -->
-                        <circle
-                          :cx="stripX(getIqr(p, tissue).median)" cy="0" r="4"
-                          :fill="tagColors[i]" stroke="#fff" stroke-width="1.5"
-                        />
-                      </g>
-                      <!-- Not detected: dashed line -->
-                      <g v-else :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
-                        <line :x1="stripPad + 4" :x2="stripWidth - stripPad - 4"
-                          y1="0" y2="0" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4" />
-                      </g>
-                    </template>
-                  </svg>
+                  <div class="strip-cell">
+                    <svg :width="stripWidth" :height="proteins.length * stripRowH + 4" style="display:inline-block;">
+                      <!-- Subtle axis baseline -->
+                      <line :x1="stripPad" :y1="proteins.length * stripRowH + 2"
+                            :x2="stripWidth - stripPad" :y2="proteins.length * stripRowH + 2"
+                            stroke="#e2e8f0" stroke-width="0.6" />
+                      <template v-for="(p, i) in proteins" :key="'strip-' + p.name + tissue">
+                        <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
+                          <!-- IQR whisker: Q1 → Q3 -->
+                          <line
+                            :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q3)"
+                            y1="0" y2="0"
+                            :stroke="tagColors[i]" stroke-width="2.5" stroke-linecap="round" opacity="0.4"
+                          />
+                          <!-- Q1 end cap -->
+                          <line :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q1)"
+                            y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
+                          <!-- Q3 end cap -->
+                          <line :x1="stripX(getIqr(p, tissue).q3)" :x2="stripX(getIqr(p, tissue).q3)"
+                            y1="-2" y2="2" :stroke="tagColors[i]" stroke-width="1" opacity="0.5" />
+                          <!-- Median dot -->
+                          <circle
+                            :cx="stripX(getIqr(p, tissue).median)" cy="0" r="4"
+                            :fill="tagColors[i]" stroke="#fff" stroke-width="1.5"
+                          />
+                        </g>
+                        <!-- Not detected: dashed line -->
+                        <g v-else :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
+                          <line :x1="stripPad + 4" :x2="stripWidth - stripPad - 4"
+                            y1="0" y2="0" stroke="#cbd5e1" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4" />
+                        </g>
+                      </template>
+                    </svg>
+                    <!-- HTML tooltip overlays (one per protein lane) -->
+                    <div v-for="(p, i) in proteins" :key="'tip-' + p.name + tissue"
+                      class="strip-hover-lane"
+                      :style="{ top: (i * stripRowH + 2) + 'px', height: stripRowH + 'px' }"
+                    >
+                      <div v-if="getIqr(p, tissue)" class="strip-tooltip">
+                        <span :style="{ color: tagColors[i], fontWeight: 700 }">{{ p.name }}</span>
+                        median <strong>{{ getIqr(p, tissue).median.toFixed(2) }}</strong>
+                        &nbsp;IQR {{ getIqr(p, tissue).q1.toFixed(2) }}–{{ getIqr(p, tissue).q3.toFixed(2) }}
+                        &nbsp;(n={{ getIqr(p, tissue).count }})
+                      </div>
+                    </div>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -635,6 +646,49 @@ function stripX(val) {
 }
 
 /* Dot strip chart */
+.strip-cell {
+  position: relative;
+  display: inline-block;
+}
+
+.strip-hover-lane {
+  position: absolute;
+  left: 0;
+  right: 0;
+  cursor: pointer;
+}
+
+.strip-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-family: var(--mono);
+  padding: 5px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.strip-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #0f172a;
+}
+
+.strip-hover-lane:hover .strip-tooltip {
+  display: block;
+}
 
 /* Legend bar */
 .legend-bar {
