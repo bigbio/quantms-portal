@@ -135,7 +135,10 @@
                           :x2="stripWidth - stripPad" :y2="proteins.length * stripRowH + 2"
                           stroke="#e2e8f0" stroke-width="0.6" />
                     <template v-for="(p, i) in proteins" :key="'strip-' + p.name + tissue">
-                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
+                      <g v-if="getIqr(p, tissue)" :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'" style="cursor:pointer;">
+                        <title>{{ p.name }}: median={{ getIqr(p, tissue).median.toFixed(2) }}, IQR={{ getIqr(p, tissue).q1.toFixed(2) }}–{{ getIqr(p, tissue).q3.toFixed(2) }}, n={{ getIqr(p, tissue).count }}</title>
+                        <!-- Invisible hit area for the whole lane -->
+                        <rect :x="stripPad" :y="-stripRowH/2" :width="stripWidth - stripPad*2" :height="stripRowH" fill="transparent" />
                         <!-- IQR whisker: Q1 → Q3 -->
                         <line
                           :x1="stripX(getIqr(p, tissue).q1)" :x2="stripX(getIqr(p, tissue).q3)"
@@ -152,9 +155,7 @@
                         <circle
                           :cx="stripX(getIqr(p, tissue).median)" cy="0" r="4"
                           :fill="tagColors[i]" stroke="#fff" stroke-width="1.5"
-                        >
-                          <title>{{ p.name }}: {{ getIqr(p, tissue).median.toFixed(2) }} (n={{ getIqr(p, tissue).count }})</title>
-                        </circle>
+                        />
                       </g>
                       <!-- Not detected: dashed line -->
                       <g v-else :transform="'translate(0,' + (i * stripRowH + stripRowH / 2 + 2) + ')'">
