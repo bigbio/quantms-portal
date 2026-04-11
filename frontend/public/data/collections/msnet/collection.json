@@ -80,5 +80,6 @@
       "Saccharomyces cerevisiae": 1
     }
   },
-  "indexes": []
+  "indexes": [],
+  "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/"
 }

@@ -15,5 +15,6 @@
     "total_peptides": 100309,
     "total_samples": 538
   },
-  "indexes": []
+  "indexes": [],
+  "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/single-cell-expression/"
 }
