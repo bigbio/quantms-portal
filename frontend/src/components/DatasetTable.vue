@@ -233,7 +233,7 @@ function clickSort(key) {
 }
 
 function icon(key) {
-  if (sKey.value !== key) return ''
+  if (sKey.value !== key) return ' ▲▼'
   return sAsc.value ? ' ▲' : ' ▼'
 }
 
