@@ -14,7 +14,8 @@
       "stats": {
         "total_proteins": 470804,
         "total_peptides": 8216181,
-        "total_samples": 18053
+        "total_samples": 18053,
+        "total_species": 1
       }
     },
     {
@@ -30,7 +31,8 @@
       "stats": {
         "total_proteins": 162915,
         "total_peptides": 2037575,
-        "total_samples": 1870
+        "total_samples": 1870,
+        "total_species": 1
       }
     },
     {
@@ -54,7 +56,8 @@
       ],
       "stats": {
         "total_psms": 500511663,
-        "total_runs": 36356
+        "total_runs": 36356,
+        "total_species": 9
       }
     },
     {
@@ -70,7 +73,8 @@
       "stats": {
         "total_proteins": 14304,
         "total_peptides": 100309,
-        "total_samples": 538
+        "total_samples": 538,
+        "total_species": 1
       }
     }
   ],

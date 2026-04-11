@@ -21,7 +21,8 @@
   ],
   "stats": {
     "total_psms": 500511663,
-    "total_runs": 36356
+    "total_runs": 36356,
+    "total_species": 9
   },
   "indexes": [],
   "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/"

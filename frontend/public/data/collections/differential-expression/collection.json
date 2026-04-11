@@ -13,7 +13,8 @@
   "stats": {
     "total_proteins": 162915,
     "total_peptides": 2037575,
-    "total_samples": 1870
+    "total_samples": 1870,
+    "total_species": 1
   },
   "indexes": [],
   "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/differential-expression/"

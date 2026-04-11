@@ -13,7 +13,8 @@
   "stats": {
     "total_proteins": 470804,
     "total_peptides": 8216181,
-    "total_samples": 18053
+    "total_samples": 18053,
+    "total_species": 1
   },
   "indexes": [],
   "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/absolute-expression/"

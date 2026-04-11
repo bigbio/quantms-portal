@@ -27,6 +27,10 @@
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_proteins) }}</div>
         <div class="collection-stat-label">Proteins</div>
       </div>
+      <div v-if="collection.stats?.total_species" class="collection-stat">
+        <div class="collection-stat-val">{{ collection.stats.total_species }}</div>
+        <div class="collection-stat-label">Species</div>
+      </div>
       <div v-if="collection.stats?.total_samples" class="collection-stat">
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_samples) }}</div>
         <div class="collection-stat-label">Samples</div>
