@@ -215,25 +215,22 @@ const sortedDatasets = computed(() => {
   const dir = sortDir.value
 
   arr.sort((a, b) => {
-    let av = a[key] ?? ''
-    let bv = b[key] ?? ''
+    const av = a[key]
+    const bv = b[key]
 
-    // Force numeric comparison for known numeric columns or when values parse as numbers
     if (NUMERIC_COLS.has(key)) {
-      const na = Number(av)
-      const nb = Number(bv)
-      const aIsNum = !isNaN(na)
-      const bIsNum = !isNaN(nb)
-      if (aIsNum && bIsNum) return (na - nb) * dir
-      if (aIsNum) return -1 * dir   // numbers before empties
-      if (bIsNum) return 1 * dir
+      // Treat null/undefined/empty/0 as "no value" → push to end
+      const aHas = av != null && av !== '' && av !== 0
+      const bHas = bv != null && bv !== '' && bv !== 0
+      if (aHas && bHas) return (Number(av) - Number(bv)) * dir
+      if (aHas) return -1  // a has value, b doesn't → a first
+      if (bHas) return 1
       return 0
     }
 
-    // Also handle the case where both values happen to be numbers (non-numeric-column edge case)
     if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * dir
 
-    return String(av).localeCompare(String(bv)) * dir
+    return String(av ?? '').localeCompare(String(bv ?? '')) * dir
   })
   return arr
 })
