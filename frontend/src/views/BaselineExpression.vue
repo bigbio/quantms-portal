@@ -110,7 +110,7 @@
                   <span :style="{ color: tagColors[i], fontWeight: 700 }">{{ p.name }}</span>
                   <div v-if="p.gene_name" style="font-size: 10px; font-weight: 400; color: var(--text-muted);">{{ p.gene_name }}</div>
                 </th>
-                <th style="min-width: 180px;">Comparison</th>
+                <th style="min-width: 180px; text-align: center;">Expression</th>
               </tr>
             </thead>
             <tbody>
@@ -128,8 +128,8 @@
                   <span v-else style="color: var(--text-muted); font-size: 11px;">—</span>
                 </td>
                 <!-- Dot strip chart: shared X axis, one Y lane per protein -->
-                <td style="vertical-align: middle; padding: 4px 8px;">
-                  <svg :width="stripWidth" :height="proteins.length * stripRowH + 4" style="display:block;">
+                <td style="vertical-align: middle; padding: 4px 8px; text-align: center;">
+                  <svg :width="stripWidth" :height="proteins.length * stripRowH + 4" style="display:inline-block;">
                     <!-- Subtle axis baseline -->
                     <line :x1="stripPad" :y1="proteins.length * stripRowH + 2"
                           :x2="stripWidth - stripPad" :y2="proteins.length * stripRowH + 2"
