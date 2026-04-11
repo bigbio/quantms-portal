@@ -9,7 +9,7 @@
           placeholder="Search accession or title..."
         />
       </div>
-      <span class="result-count">{{ filteredDatasets.length }} dataset{{ filteredDatasets.length !== 1 ? 's' : '' }}</span>
+      <span class="result-count">{{ rows.length }} dataset{{ rows.length !== 1 ? 's' : '' }}</span>
     </div>
 
     <div v-if="loading" style="text-align:center; padding: 48px 0; color: var(--text-muted);">
@@ -20,54 +20,53 @@
       <table class="dataset-table">
         <thead>
           <tr>
-            <th @click="sortBy('accession')" style="cursor:pointer; user-select:none;">
-              Accession <span class="sort-icon">{{ sortIcon('accession') }}</span>
+            <th class="sortable" @click="clickSort('accession')">
+              Accession {{ icon('accession') }}
             </th>
-            <th @click="sortBy('title')" style="cursor:pointer; user-select:none;">
-              Title <span class="sort-icon">{{ sortIcon('title') }}</span>
+            <th class="sortable" @click="clickSort('title')">
+              Title {{ icon('title') }}
             </th>
             <template v-if="isMsnet">
-              <th @click="sortBy('species')" style="cursor:pointer; user-select:none; text-align:left;">
-                Species <span class="sort-icon">{{ sortIcon('species') }}</span>
+              <th class="sortable" @click="clickSort('species')">
+                Species {{ icon('species') }}
               </th>
-              <th @click="sortBy('instrument')" style="cursor:pointer; user-select:none; text-align:left;">
-                Instrument <span class="sort-icon">{{ sortIcon('instrument') }}</span>
+              <th class="sortable" @click="clickSort('instrument')">
+                Instrument {{ icon('instrument') }}
               </th>
-              <th @click="sortBy('psm_count')" style="cursor:pointer; user-select:none; text-align:right;">
-                PSMs <span class="sort-icon">{{ sortIcon('psm_count') }}</span>
+              <th class="sortable num" @click="clickSort('psm_count')">
+                PSMs {{ icon('psm_count') }}
               </th>
-              <th @click="sortBy('runs')" style="cursor:pointer; user-select:none; text-align:right;">
-                Runs <span class="sort-icon">{{ sortIcon('runs') }}</span>
+              <th class="sortable num" @click="clickSort('runs')">
+                Runs {{ icon('runs') }}
               </th>
             </template>
             <template v-else>
-              <th @click="sortBy('samples')" style="cursor:pointer; user-select:none; text-align:right;">
-                Samples <span class="sort-icon">{{ sortIcon('samples') }}</span>
+              <th class="sortable num" @click="clickSort('samples')">
+                Samples {{ icon('samples') }}
               </th>
-              <th @click="sortBy('runs')" style="cursor:pointer; user-select:none; text-align:right;">
-                Runs <span class="sort-icon">{{ sortIcon('runs') }}</span>
+              <th class="sortable num" @click="clickSort('runs')">
+                Runs {{ icon('runs') }}
               </th>
-              <th @click="sortBy('proteins')" style="cursor:pointer; user-select:none; text-align:right;">
-                Proteins <span class="sort-icon">{{ sortIcon('proteins') }}</span>
+              <th class="sortable num" @click="clickSort('proteins')">
+                Proteins {{ icon('proteins') }}
               </th>
-              <th @click="sortBy('peptides')" style="cursor:pointer; user-select:none; text-align:right;">
-                Peptides <span class="sort-icon">{{ sortIcon('peptides') }}</span>
+              <th class="sortable num" @click="clickSort('peptides')">
+                Peptides {{ icon('peptides') }}
               </th>
             </template>
           </tr>
-          <!-- Filter row for MSNet collections -->
           <tr v-if="isMsnet" class="filter-row">
             <th></th>
             <th></th>
             <th>
               <select v-model="filterSpecies" class="col-filter">
-                <option value="">All</option>
+                <option value="">All species</option>
                 <option v-for="s in uniqueSpecies" :key="s" :value="s">{{ s }}</option>
               </select>
             </th>
             <th>
               <select v-model="filterInstrument" class="col-filter">
-                <option value="">All</option>
+                <option value="">All instruments</option>
                 <option v-for="i in uniqueInstruments" :key="i" :value="i">{{ i }}</option>
               </select>
             </th>
@@ -76,14 +75,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-if="filteredDatasets.length === 0">
+          <tr v-if="rows.length === 0">
             <td :colspan="isMsnet ? 6 : 6" style="text-align:center; padding: 32px; color: var(--text-muted);">
               No datasets found.
             </td>
           </tr>
           <tr
-            v-for="ds in sortedDatasets"
-            :key="ds.accession + (ds._idx || '')"
+            v-for="(ds, idx) in rows"
+            :key="ds.accession + '-' + idx"
             style="cursor:pointer;"
             @click="navigateTo(ds)"
           >
@@ -113,14 +112,14 @@
                 <span v-else style="color:var(--text-muted);">—</span>
               </td>
               <td style="font-size:13px; color: var(--text-secondary);">{{ ds.instrument || '—' }}</td>
-              <td class="td-num">{{ formatNum(ds.psm_count) }}</td>
-              <td class="td-num">{{ formatNum(ds.runs) }}</td>
+              <td class="td-num">{{ fmtNum(ds.psm_count) }}</td>
+              <td class="td-num">{{ fmtNum(ds.runs) }}</td>
             </template>
             <template v-else>
-              <td class="td-num">{{ formatNum(ds.samples) }}</td>
-              <td class="td-num">{{ formatNum(ds.runs) }}</td>
-              <td class="td-num">{{ formatNum(ds.proteins) }}</td>
-              <td class="td-num">{{ formatNum(ds.peptides) }}</td>
+              <td class="td-num">{{ fmtNum(ds.samples) }}</td>
+              <td class="td-num">{{ fmtNum(ds.runs) }}</td>
+              <td class="td-num">{{ fmtNum(ds.proteins) }}</td>
+              <td class="td-num">{{ fmtNum(ds.peptides) }}</td>
             </template>
           </tr>
         </tbody>
@@ -142,128 +141,110 @@ const props = defineProps({
 
 const router = useRouter()
 const searchQuery = ref('')
-const sortKey = ref('')
-const sortDir = ref(-1)  // -1 = descending (biggest first, natural for counts)
-
-// Column filters (MSNet only)
 const filterSpecies = ref('')
 const filterInstrument = ref('')
 
+// Sort state: key='' means unsorted
+const sKey = ref('')
+const sAsc = ref(true)
+
 const isMsnet = computed(() => props.collectionName === 'msnet')
+const NUM = new Set(['psm_count', 'runs', 'samples', 'proteins', 'peptides'])
 
-// Numeric columns that must be sorted numerically
-const NUMERIC_COLS = new Set(['psm_count', 'runs', 'samples', 'proteins', 'peptides'])
-
-// Reset column filters when collection changes
 watch(() => props.collectionName, () => {
   filterSpecies.value = ''
   filterInstrument.value = ''
   searchQuery.value = ''
+  sKey.value = ''
 })
 
-// Unique sorted values for dropdowns — derived from raw dataset (before any filter)
 const uniqueSpecies = computed(() => {
-  const vals = new Set()
-  for (const ds of props.datasets) {
-    const s = ds.species || (ds.organisms && ds.organisms[0]) || ''
-    if (s) vals.add(s)
-  }
-  return [...vals].sort((a, b) => a.localeCompare(b))
+  const s = new Set()
+  props.datasets.forEach(d => {
+    const v = d.species || (d.organisms && d.organisms[0]) || ''
+    if (v) s.add(v)
+  })
+  return [...s].sort()
 })
 
 const uniqueInstruments = computed(() => {
-  const vals = new Set()
-  for (const ds of props.datasets) {
-    if (ds.instrument) vals.add(ds.instrument)
-  }
-  return [...vals].sort((a, b) => a.localeCompare(b))
+  const s = new Set()
+  props.datasets.forEach(d => { if (d.instrument) s.add(d.instrument) })
+  return [...s].sort()
 })
 
-const filteredDatasets = computed(() => {
-  let result = props.datasets
+// Final rows: filter → search → sort
+const rows = computed(() => {
+  let arr = props.datasets.slice()
 
-  // 1. Apply column filters first (MSNet only)
-  if (isMsnet.value) {
-    if (filterSpecies.value) {
-      result = result.filter(ds => {
-        const s = ds.species || (ds.organisms && ds.organisms[0]) || ''
-        return s === filterSpecies.value
-      })
-    }
-    if (filterInstrument.value) {
-      result = result.filter(ds => ds.instrument === filterInstrument.value)
-    }
+  // Column filters
+  if (isMsnet.value && filterSpecies.value) {
+    arr = arr.filter(d => (d.species || (d.organisms && d.organisms[0]) || '') === filterSpecies.value)
+  }
+  if (isMsnet.value && filterInstrument.value) {
+    arr = arr.filter(d => d.instrument === filterInstrument.value)
   }
 
-  // 2. Apply text search
+  // Text search
   const q = searchQuery.value.toLowerCase().trim()
   if (q) {
-    result = result.filter(ds =>
-      (ds.accession || '').toLowerCase().includes(q) ||
-      (ds.title || '').toLowerCase().includes(q) ||
-      (ds.species || '').toLowerCase().includes(q) ||
-      (ds.instrument || '').toLowerCase().includes(q)
+    arr = arr.filter(d =>
+      (d.accession || '').toLowerCase().includes(q) ||
+      (d.title || '').toLowerCase().includes(q) ||
+      (d.species || '').toLowerCase().includes(q)
     )
   }
 
-  return result
-})
+  // Sort
+  const k = sKey.value
+  if (!k) return arr
 
-const sortedDatasets = computed(() => {
-  const arr = [...filteredDatasets.value]
-  if (!sortKey.value) return arr  // no sort active → original order
+  const asc = sAsc.value
+  const numeric = NUM.has(k)
 
-  const key = sortKey.value
-  const dir = sortDir.value
-  const isNum = NUMERIC_COLS.has(key)
+  return arr.slice().sort((a, b) => {
+    const va = a[k]
+    const vb = b[k]
 
-  arr.sort((a, b) => {
-    let av = a[key]
-    let bv = b[key]
-
-    if (isNum) {
-      // Convert to number; treat null/undefined/empty as -Infinity so they go last
-      const na = (av != null && av !== '') ? Number(av) : null
-      const nb = (bv != null && bv !== '') ? Number(bv) : null
-      // Push nulls to bottom regardless of direction
-      if (na == null && nb == null) return 0
-      if (na == null) return 1
-      if (nb == null) return -1
-      return (na - nb) * dir
+    if (numeric) {
+      const na = typeof va === 'number' ? va : (va ? parseFloat(va) : NaN)
+      const nb = typeof vb === 'number' ? vb : (vb ? parseFloat(vb) : NaN)
+      const aOk = !isNaN(na) && na > 0
+      const bOk = !isNaN(nb) && nb > 0
+      if (!aOk && !bOk) return 0
+      if (!aOk) return 1    // empty always last
+      if (!bOk) return -1
+      return asc ? na - nb : nb - na
     }
 
-    // String sort
-    const sa = String(av ?? '')
-    const sb = String(bv ?? '')
-    return sa.localeCompare(sb) * dir
+    const sa = String(va || '')
+    const sb = String(vb || '')
+    return asc ? sa.localeCompare(sb) : sb.localeCompare(sa)
   })
-  return arr
 })
 
-function sortBy(key) {
-  if (sortKey.value === key) {
-    // Toggle: desc → asc → off
-    if (sortDir.value === -1) {
-      sortDir.value = 1
+function clickSort(key) {
+  if (sKey.value === key) {
+    if (sAsc.value) {
+      sAsc.value = false   // was asc → now desc
     } else {
-      // Reset sort
-      sortKey.value = ''
-      sortDir.value = -1
+      sKey.value = ''       // was desc → clear
+      sAsc.value = true
     }
   } else {
-    // New column: start descending (biggest first for numbers)
-    sortKey.value = key
-    sortDir.value = NUMERIC_COLS.has(key) ? -1 : 1
+    sKey.value = key
+    // Numbers start descending (biggest first), text starts ascending
+    sAsc.value = !NUM.has(key)
   }
 }
 
-function sortIcon(key) {
-  if (sortKey.value !== key) return '↕'
-  return sortDir.value === -1 ? '↓' : '↑'
+function icon(key) {
+  if (sKey.value !== key) return '↕'
+  return sAsc.value ? '↑' : '↓'
 }
 
-function formatNum(n) {
-  if (n === null || n === undefined || n === 0) return '—'
+function fmtNum(n) {
+  if (n == null || n === 0 || n === '') return '—'
   return Number(n).toLocaleString()
 }
 
@@ -273,30 +254,33 @@ function navigateTo(ds) {
 </script>
 
 <style scoped>
-.sort-icon {
-  font-size: 11px;
-  opacity: 0.5;
-  margin-left: 2px;
+.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
 }
-
+.sortable:hover {
+  color: var(--indigo, #6366f1);
+}
+.num {
+  text-align: right;
+}
 .filter-row th {
   padding: 4px 8px;
-  background: var(--bg-secondary, #f5f5f5);
+  background: rgba(0,0,0,0.02);
 }
-
 .col-filter {
   width: 100%;
-  font-size: 12px;
-  padding: 2px 4px;
-  border: 1px solid var(--border-color, #ddd);
+  font-size: 11px;
+  padding: 3px 4px;
+  border: 1px solid var(--border, #e2e8f0);
   border-radius: 4px;
-  background: var(--bg-primary, #fff);
+  background: #fff;
   color: var(--text-primary, #333);
   cursor: pointer;
   outline: none;
 }
-
 .col-filter:focus {
-  border-color: var(--accent-color, #4a90e2);
+  border-color: var(--indigo, #6366f1);
 }
 </style>
