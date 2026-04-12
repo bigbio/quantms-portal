@@ -1,29 +1,68 @@
 [
   {
-    "name": "ms2pip-quantms-2024",
-    "description": "MS2PIP spectrum prediction model trained on quantms reanalysis data",
+    "name": "AlphaPeptDeep MS2 Model (MSNet 40M)",
+    "description": "AlphaPeptDeep MS2 spectrum prediction model trained on 40M PSMs from the MSNet collection. Predicts fragment ion intensities for peptide-spectrum matching.",
     "collection": "msnet",
-    "tool": "MS2PIP",
-    "format": "ONNX",
-    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/ms2pip/",
-    "date": "2024-06"
+    "tool": "AlphaPeptDeep",
+    "format": "PyTorch (.pt)",
+    "size": "12 MB",
+    "file": "AlphaPeptDeep_ms2_model_msnet_40M.pt",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/alphapepdeep/AlphaPeptDeep_ms2_model_msnet_40M.pt",
+    "date": "2026-04-11"
   },
   {
-    "name": "deeplc-quantms-2024",
-    "description": "DeepLC retention time prediction model trained on quantms reanalysis data",
+    "name": "AutoRT Retention Time Model",
+    "description": "AutoRT deep learning model for peptide retention time prediction, trained on MSNet collection data across multiple LC-MS platforms.",
     "collection": "msnet",
-    "tool": "DeepLC",
-    "format": "HDF5",
-    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/deeplc/",
-    "date": "2024-06"
+    "tool": "AutoRT",
+    "format": "Archive (.tar.gz)",
+    "size": "176 MB",
+    "file": "AutoRT.tar.gz",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/autort/AutoRT.tar.gz",
+    "date": "2026-04-11"
   },
   {
-    "name": "rescoring-quantms-2026",
-    "description": "quantms-rescoring PSM rescoring model trained on large-scale reanalysis datasets",
+    "name": "GPTime Retention Time Model",
+    "description": "GPTime Gaussian Process-based retention time prediction model. Large-scale model trained on the MSNet collection.",
     "collection": "msnet",
-    "tool": "quantms-rescoring",
-    "format": "ONNX",
-    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/rescoring/",
-    "date": "2026-01"
+    "tool": "GPTime",
+    "format": "Checkpoint (.ckpt)",
+    "size": "14 GB",
+    "file": "GPTime.ckpt",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/gptime/GPTime.ckpt",
+    "date": "2026-04-11"
+  },
+  {
+    "name": "HelixNovo HLA De Novo Sequencing",
+    "description": "HelixNovo de novo peptide sequencing model specialized for HLA/immunopeptidomics, trained on MSNet data.",
+    "collection": "msnet",
+    "tool": "HelixNovo",
+    "format": "Checkpoint (.ckpt)",
+    "size": "181 MB",
+    "file": "HelixNovo_HLA_denovo_msnet.ckpt",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/helixnovo/HelixNovo_HLA_denovo_msnet.ckpt",
+    "date": "2026-04-11"
+  },
+  {
+    "name": "HelixNovo Metaproteomics De Novo Sequencing",
+    "description": "HelixNovo de novo sequencing model for metaproteomics samples, trained on MSNet multi-species data.",
+    "collection": "msnet",
+    "tool": "HelixNovo",
+    "format": "Checkpoint (.ckpt)",
+    "size": "181 MB",
+    "file": "HelixNovo_Metaproteomics_denovo_msnet.ckpt",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/helixnovo/HelixNovo_Metaproteomics_denovo_msnet.ckpt",
+    "date": "2026-04-11"
+  },
+  {
+    "name": "HelixNovo Phosphoproteomics De Novo Sequencing",
+    "description": "HelixNovo de novo sequencing model specialized for phosphopeptide identification.",
+    "collection": "msnet",
+    "tool": "HelixNovo",
+    "format": "Checkpoint (.ckpt)",
+    "size": "181 MB",
+    "file": "HelixNovo_phospho_denovo.ckpt",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/msnet/helixnovo/HelixNovo_phospho_denovo.ckpt",
+    "date": "2026-04-11"
   }
 ]
