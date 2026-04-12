@@ -10,6 +10,7 @@ const routes = [
   { path: '/statistics', component: () => import('./views/Statistics.vue') },
   { path: '/api', component: () => import('./views/ApiDocs.vue') },
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue') },
+  { path: '/models', component: () => import('./views/Models.vue') },
 ]
 
 export default createRouter({

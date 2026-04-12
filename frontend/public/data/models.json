@@ -1,0 +1,29 @@
+[
+  {
+    "name": "ms2pip-quantms-2024",
+    "description": "MS2PIP spectrum prediction model trained on quantms reanalysis data",
+    "collection": "msnet",
+    "tool": "MS2PIP",
+    "format": "ONNX",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/ms2pip/",
+    "date": "2024-06"
+  },
+  {
+    "name": "deeplc-quantms-2024",
+    "description": "DeepLC retention time prediction model trained on quantms reanalysis data",
+    "collection": "msnet",
+    "tool": "DeepLC",
+    "format": "HDF5",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/deeplc/",
+    "date": "2024-06"
+  },
+  {
+    "name": "rescoring-quantms-2026",
+    "description": "quantms-rescoring PSM rescoring model trained on large-scale reanalysis datasets",
+    "collection": "msnet",
+    "tool": "quantms-rescoring",
+    "format": "ONNX",
+    "url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/rescoring/",
+    "date": "2026-01"
+  }
+]
