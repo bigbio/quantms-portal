@@ -1,0 +1,94 @@
+# quantms Portal — Full Reference
+
+> Data portal hosting 251 standardized proteomics datasets across 4 collections in QPX Parquet format.
+
+## Overview
+
+The quantms Portal provides access to reanalyzed quantitative proteomics datasets. All datasets were processed with the quantms or quantmsdiann pipelines and converted to the standardized QPX format.
+
+## Collections
+
+### Absolute Expression (103 datasets)
+- Human proteomics datasets quantified with iBAQ
+- 470,804 proteins across 18,053 samples
+- Use case: protein expression reference, tissue/cell line atlases
+- Browse: https://portal.quantms.org/collections/absolute-expression
+
+### Differential Expression (35 datasets)
+- Disease vs. control comparisons
+- 162,915 quantified proteins
+- Use case: biomarker discovery, disease proteomics
+- Browse: https://portal.quantms.org/collections/differential-expression
+
+### MS-Net (107 datasets)
+- 53 species, 500M+ PSMs
+- Use case: ML training data, spectral library building, cross-species proteomics
+- Browse: https://portal.quantms.org/collections/msnet
+
+### Single Cell Proteomics (6 datasets)
+- 538 single-cell samples
+- Use case: single-cell proteomics analysis
+- Browse: https://portal.quantms.org/collections/single-cell
+
+## Data Access
+
+### Static JSON API
+All data is available as static JSON files — no backend required.
+
+# Registry (list all collections)
+GET https://portal.quantms.org/data/registry.json
+
+# Collection summary
+GET https://portal.quantms.org/data/collections/{collection}/collection.json
+
+# Dataset listing (paginated, 50 per page)
+GET https://portal.quantms.org/data/collections/{collection}/datasets-page-1.json
+
+# Dataset detail
+GET https://portal.quantms.org/data/collections/{collection}/datasets/{accession}.json
+
+# Portal statistics
+GET https://portal.quantms.org/data/portal-stats.json
+
+### Raw Data
+Original raw files and processed QPX Parquet files are available via PRIDE FTP:
+https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/
+
+## Baseline Expression Browser
+
+Compare protein expression across human tissues and cell lines:
+- URL: https://portal.quantms.org/baseline
+- 15,782 proteins across 30+ human tissues
+- Shareable URLs: https://portal.quantms.org/baseline?proteins=P50851,Q96HS1
+- Data: iBAQ log2 intensities
+
+## AI Models
+
+6 ML models trained on MS-Net collection data, cataloged at:
+https://portal.quantms.org/models
+
+## Dataset Identifiers
+
+Datasets use ProteomeXchange accessions:
+- PXD prefix: PRIDE/ProteomeXchange
+- IPX prefix: iProX
+- MSV prefix: MassIVE
+
+## QPX Format
+
+All datasets are in QPX (Quantitative Proteomics Exchange) Parquet format.
+Use the qpx Python package to read: pip install qpx
+
+import qpx
+df = qpx.read_parquet("dataset.parquet")
+
+## Related Tools
+
+- quantms: DDA pipeline that produced these datasets (https://docs.quantms.org)
+- quantmsdiann: DIA pipeline (https://quantmsdiann.quantms.org)
+- qpx: QPX format toolkit (https://qpx.quantms.org)
+- mokume: protein quantification (https://mokume.quantms.org)
+
+## Citation
+
+Dai C et al. Nature Methods. 2024;21:1603-1607. DOI: 10.1038/s41592-024-02343-1
