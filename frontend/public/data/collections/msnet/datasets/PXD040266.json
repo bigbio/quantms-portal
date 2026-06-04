@@ -12,6 +12,8 @@
   "instrument": "timsTOF",
   "enzyme": "Trypsin",
   "fragment_method": "CID@43",
+  "label": "label free",
+  "acquisition_method": "DDA",
   "structures": [
     "psm"
   ],

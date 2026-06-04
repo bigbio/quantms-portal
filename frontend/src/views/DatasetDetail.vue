@@ -35,6 +35,7 @@
               <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;">
                 <h1 style="font-size:22px; font-weight:800; font-family:var(--mono); color:var(--indigo);">{{ dataset.accession }}</h1>
                 <span class="tag tag-indigo">{{ collectionTitle }}</span>
+                <span v-if="isNewDataset(dataset)" class="tag tag-warning">NEW</span>
               </div>
               <p v-if="dataset.title && dataset.title !== dataset.accession" style="font-size:16px; font-weight:600; margin-bottom:10px; color:var(--text-primary);">
                 {{ dataset.title }}
@@ -47,10 +48,12 @@
                 <span v-for="org in dataset.organisms" :key="org" class="tag tag-blue">{{ org }}</span>
               </div>
               <!-- MSNet extras -->
-              <div v-if="dataset.instrument || dataset.enzyme" style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--text-secondary);">
+              <div v-if="dataset.instrument || dataset.enzyme || dataset.label || dataset.acquisition_method" style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--text-secondary);">
                 <span v-if="dataset.instrument">🔬 {{ dataset.instrument }}</span>
                 <span v-if="dataset.enzyme">⚗️ {{ dataset.enzyme }}</span>
                 <span v-if="dataset.fragment_method">📡 {{ dataset.fragment_method }}</span>
+                <span v-if="dataset.label">🏷️ {{ dataset.label }}</span>
+                <span v-if="dataset.acquisition_method">🎯 {{ dataset.acquisition_method }}</span>
               </div>
             </div>
 
@@ -203,6 +206,11 @@ function formatNum(n) {
   return Number(n).toLocaleString()
 }
 
+function isNewDataset(dataset) {
+  return Boolean(
+    dataset?.new || dataset?.news || dataset?.is_new || dataset?.is_updated || dataset?.updated || dataset?.highlight
+  )
+}
 
 onMounted(async () => {
   const { name, pxd } = route.params

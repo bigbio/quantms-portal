@@ -33,6 +33,12 @@
               <th class="sortable" @click="clickSort('instrument')">
                 Instrument {{ icon('instrument') }}
               </th>
+              <th class="sortable" @click="clickSort('label')">
+                Label {{ icon('label') }}
+              </th>
+              <th class="sortable" @click="clickSort('acquisition_method')">
+                Acquisition Method {{ icon('acquisition_method') }}
+              </th>
               <th class="sortable num" @click="clickSort('psm_count')">
                 PSMs {{ icon('psm_count') }}
               </th>
@@ -70,6 +76,18 @@
                 <option v-for="i in uniqueInstruments" :key="i" :value="i">{{ i }}</option>
               </select>
             </th>
+            <th>
+              <select v-model="filterLabel" class="col-filter">
+                <option value="">All labels</option>
+                <option v-for="l in uniqueLabels" :key="l" :value="l">{{ l }}</option>
+              </select>
+            </th>
+            <th>
+              <select v-model="filterAcquisitionMethod" class="col-filter">
+                <option value="">All acquisition methods</option>
+                <option v-for="a in uniqueAcquisitionMethods" :key="a" :value="a">{{ a }}</option>
+              </select>
+            </th>
             <th></th>
             <th></th>
           </tr>
@@ -83,6 +101,7 @@
           <tr
             v-for="(ds, idx) in rows"
             :key="ds.accession + '-' + idx"
+            :class="{ 'new-row': isNewDataset(ds) }"
             style="cursor:pointer;"
             @click="navigateTo(ds)"
           >
@@ -96,6 +115,7 @@
               >
                 {{ ds.accession }} <span style="font-size:10px;opacity:0.5;">&#8599;</span>
               </a>
+              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEWS</span>
               <router-link v-else
                 :to="`/collections/${collectionName}/${ds.accession}`"
                 class="accession-link"
@@ -103,6 +123,7 @@
               >
                 {{ ds.accession }}
               </router-link>
+              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEWS</span>
             </td>
             <td class="td-title">{{ ds.title || ds.accession }}</td>
             <template v-if="isMsnet">
@@ -112,6 +133,8 @@
                 <span v-else style="color:var(--text-muted);">—</span>
               </td>
               <td style="font-size:13px; color: var(--text-secondary);">{{ ds.instrument || '—' }}</td>
+              <td style="font-size:13px; color: var(--text-secondary);">{{ ds.label || '—' }}</td>
+              <td style="font-size:13px; color: var(--text-secondary);">{{ ds.acquisition_method || '—' }}</td>
               <td class="td-num">{{ fmtNum(ds.psm_count) }}</td>
               <td class="td-num">{{ fmtNum(ds.runs) }}</td>
             </template>
@@ -143,6 +166,8 @@ const router = useRouter()
 const searchQuery = ref('')
 const filterSpecies = ref('')
 const filterInstrument = ref('')
+const filterLabel = ref('')
+const filterAcquisitionMethod = ref('')
 
 // Sort state: key='' means unsorted
 const sKey = ref('')
@@ -154,6 +179,8 @@ const NUM = new Set(['psm_count', 'runs', 'samples', 'proteins', 'peptides'])
 watch(() => props.collectionName, () => {
   filterSpecies.value = ''
   filterInstrument.value = ''
+  filterLabel.value = ''
+  filterAcquisitionMethod.value = ''
   searchQuery.value = ''
   sKey.value = ''
 })
@@ -173,6 +200,18 @@ const uniqueInstruments = computed(() => {
   return [...s].sort()
 })
 
+const uniqueLabels = computed(() => {
+  const s = new Set()
+  props.datasets.forEach(d => { if (d.label) s.add(d.label) })
+  return [...s].sort()
+})
+
+const uniqueAcquisitionMethods = computed(() => {
+  const s = new Set()
+  props.datasets.forEach(d => { if (d.acquisition_method) s.add(d.acquisition_method) })
+  return [...s].sort()
+})
+
 // Final rows: filter → search → sort
 const rows = computed(() => {
   let arr = props.datasets.slice()
@@ -184,6 +223,12 @@ const rows = computed(() => {
   if (isMsnet.value && filterInstrument.value) {
     arr = arr.filter(d => d.instrument === filterInstrument.value)
   }
+  if (isMsnet.value && filterLabel.value) {
+    arr = arr.filter(d => d.label === filterLabel.value)
+  }
+  if (isMsnet.value && filterAcquisitionMethod.value) {
+    arr = arr.filter(d => d.acquisition_method === filterAcquisitionMethod.value)
+  }
 
   // Text search
   const q = searchQuery.value.toLowerCase().trim()
@@ -191,7 +236,9 @@ const rows = computed(() => {
     arr = arr.filter(d =>
       (d.accession || '').toLowerCase().includes(q) ||
       (d.title || '').toLowerCase().includes(q) ||
-      (d.species || '').toLowerCase().includes(q)
+      (d.species || '').toLowerCase().includes(q) ||
+      (d.label || '').toLowerCase().includes(q) ||
+      (d.acquisition_method || '').toLowerCase().includes(q)
     )
   }
 
@@ -240,6 +287,12 @@ function icon(key) {
 function fmtNum(n) {
   if (n == null || n === 0 || n === '') return '—'
   return Number(n).toLocaleString()
+}
+
+function isNewDataset(ds) {
+  return Boolean(
+    ds?.new || ds?.news || ds?.is_new || ds?.is_updated || ds?.updated || ds?.highlight
+  )
 }
 
 function navigateTo(ds) {

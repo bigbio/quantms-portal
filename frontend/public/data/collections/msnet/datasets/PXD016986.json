@@ -12,6 +12,8 @@
   "instrument": "LTQ Orbitrap Velos",
   "enzyme": "Trypsin",
   "fragment_method": "CID@35.00",
+  "label": "label free",
+  "acquisition_method": "DDA",
   "structures": [
     "psm"
   ],
