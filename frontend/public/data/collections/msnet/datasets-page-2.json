@@ -15,7 +15,9 @@
       "psm_count": 51628,
       "species": "Bacteroides Fragilis",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -30,7 +32,9 @@
       "psm_count": 54455,
       "species": "Bacteroides Uniformis",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -45,7 +49,9 @@
       "psm_count": 21831,
       "species": "Bifidobacterium Longum Subsp Longum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -60,7 +66,9 @@
       "psm_count": 68644,
       "species": "Chromera velia",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -75,7 +83,9 @@
       "psm_count": 30124,
       "species": "Clostridium Bolteae",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -90,7 +100,9 @@
       "psm_count": 32736,
       "species": "Clostridium saccharolyticum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -105,7 +117,9 @@
       "psm_count": 28061,
       "species": "Collinsella Aerofaciens",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -120,7 +134,9 @@
       "psm_count": 340169,
       "species": "Danio rerio",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -135,7 +151,9 @@
       "psm_count": 11032,
       "species": "Eggerthella Lenta",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -150,7 +168,9 @@
       "psm_count": 185361,
       "species": "Fusarium oxysporum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -165,7 +185,9 @@
       "psm_count": 26424,
       "species": "Fusobacterium Nucleatum Subsp Nucleatum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -180,7 +202,9 @@
       "psm_count": 294035,
       "species": "Gallus Gallus",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -195,7 +219,9 @@
       "psm_count": 248653,
       "species": "Gossypium hirsutum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -210,7 +236,9 @@
       "psm_count": 31395,
       "species": "Halobacterium sp",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -225,7 +253,9 @@
       "psm_count": 340169,
       "species": "Lactobacillus Paracasei",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -240,7 +270,9 @@
       "psm_count": 267991,
       "species": "Mus musculus",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -255,7 +287,9 @@
       "psm_count": 3608,
       "species": "Mycoplasmen",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -270,7 +304,9 @@
       "psm_count": 78622,
       "species": "Neurospora Crassa",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -285,7 +321,9 @@
       "psm_count": 40367,
       "species": "Odoribacter splanchnicus",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -300,7 +338,9 @@
       "psm_count": 34529,
       "species": "Parabacteroides Distasonis",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -315,7 +355,9 @@
       "psm_count": 39236,
       "species": "Parabacteroides Merdae",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -330,7 +372,9 @@
       "psm_count": 126526,
       "species": "Phaeodactylum tricornutum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -345,7 +389,9 @@
       "psm_count": 31720,
       "species": "Prevotella Copri",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -360,7 +406,9 @@
       "psm_count": 17139,
       "species": "Roseburia Intestinalis",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -375,7 +423,9 @@
       "psm_count": 20232,
       "species": "Ruminococcus Bromii",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -390,7 +440,9 @@
       "psm_count": 27689,
       "species": "Ruminococcus Gnavus",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -405,7 +457,9 @@
       "psm_count": 26601,
       "species": "Streptococcus Parasanguinis",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -420,7 +474,9 @@
       "psm_count": 1926,
       "species": "Sulfolobus solfataricus",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -435,7 +491,9 @@
       "psm_count": 4310,
       "species": "Symbiodinium microadriaticum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -450,7 +508,9 @@
       "psm_count": 265766,
       "species": "Triticum aestivum",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -465,7 +525,9 @@
       "psm_count": 30734,
       "species": "Veillonella parvula",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -480,7 +542,9 @@
       "psm_count": 203696,
       "species": "Vitis vinifera",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -495,7 +559,9 @@
       "psm_count": 22013,
       "species": "Akkermansia muciniphilia",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -510,7 +576,9 @@
       "psm_count": 50460,
       "species": "Bacteroides Thetaiotaomicron",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -525,7 +593,9 @@
       "psm_count": 217125,
       "species": "Drosophila",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD014877",
@@ -540,7 +610,9 @@
       "psm_count": 20811,
       "species": "Ruminococcus Torques",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD014877-Ruminococcus_torques/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD016986",
@@ -555,7 +627,9 @@
       "psm_count": 1973461,
       "species": "Riftia pachyptila",
       "instrument": "LTQ Orbitrap Velos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD016986/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD016986/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD018830",
@@ -570,7 +644,9 @@
       "psm_count": 2527193,
       "species": "Homo sapiens",
       "instrument": "Q Exactive Plus",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD018830/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD018830/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -585,7 +661,9 @@
       "psm_count": 151,
       "species": "hCOV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -600,7 +678,9 @@
       "psm_count": 3288,
       "species": "HSV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -615,7 +695,9 @@
       "psm_count": 2339,
       "species": "LACV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -630,7 +712,9 @@
       "psm_count": 1429,
       "species": "RVFV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -645,7 +729,9 @@
       "psm_count": 819,
       "species": "VSV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -660,7 +746,9 @@
       "psm_count": 835,
       "species": "ZIKV",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019483",
@@ -675,7 +763,9 @@
       "psm_count": 4001686,
       "species": "Homo sapiens",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019483/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD019643",
@@ -690,7 +780,9 @@
       "psm_count": 4290071,
       "species": "Homo sapiens",
       "instrument": "Orbitrap Fusion Lumos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019643/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD019643/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD020192",
@@ -705,7 +797,9 @@
       "psm_count": 7649835,
       "species": "Homo sapiens",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD020192/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD020192/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD021013",
@@ -720,7 +814,9 @@
       "psm_count": 16314438,
       "species": "Homo sapiens",
       "instrument": "Orbitrap Fusion Lumos",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD021013/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD021013/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD022469",
@@ -735,7 +831,9 @@
       "psm_count": 696434,
       "species": "Homo sapiens",
       "instrument": "Q Exactive Plus",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD022469/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD022469/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD024364",
@@ -750,7 +848,9 @@
       "psm_count": 509465,
       "species": "Homo sapiens",
       "instrument": "Orbitrap Fusion",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     }
   ]
 }

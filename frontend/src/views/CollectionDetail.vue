@@ -70,7 +70,7 @@
 
         <DatasetTable
           v-else
-          :datasets="filteredDatasets"
+          :datasets="currentPageDatasets"
           :loading="false"
           :searchable="false"
           :collection-name="collection.name"
@@ -123,23 +123,34 @@ const notFound = ref(false)
 const loading = ref(false)
 const searchQuery = ref('')
 
-// Paged data: { 1: [...], 2: [...] }
-const pages = ref({})
+// All loaded data (accumulated from all pages)
+const allDatasets = ref([])
 const currentPage = ref(1)
-const totalPages = ref(1)
-
-const currentPageDatasets = computed(() => pages.value[currentPage.value] || [])
-
-const allDatasets = computed(() => currentPageDatasets.value)
+const datasetsPerPage = 50
 
 const filteredDatasets = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
-  if (!q) return allDatasets.value
-  return allDatasets.value.filter(ds =>
-    (ds.accession || '').toLowerCase().includes(q) ||
-    (ds.title || '').toLowerCase().includes(q) ||
-    (ds.species || '').toLowerCase().includes(q)
-  )
+  let result = allDatasets.value
+  
+  if (q) {
+    result = result.filter(ds =>
+      (ds.accession || '').toLowerCase().includes(q) ||
+      (ds.title || '').toLowerCase().includes(q) ||
+      (ds.species || '').toLowerCase().includes(q)
+    )
+  }
+  
+  return result
+})
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(filteredDatasets.value.length / datasetsPerPage))
+})
+
+const currentPageDatasets = computed(() => {
+  const start = (currentPage.value - 1) * datasetsPerPage
+  const end = start + datasetsPerPage
+  return filteredDatasets.value.slice(start, end)
 })
 
 function formatBig(n) {
@@ -153,24 +164,24 @@ function formatLabel(key) {
   return key.replace(/^total_/, '').replace(/_/g, ' ')
 }
 
-async function loadPage(name, page) {
-  if (pages.value[page]) return
+async function loadAllPages(name, totalPagesFromRegistry) {
   try {
-    const res = await fetch(`./data/collections/${name}/datasets-page-${page}.json`)
-    const data = await res.json()
-    pages.value[page] = data.datasets || []
-    totalPages.value = data.total_pages || 1
+    const allData = []
+    for (let page = 1; page <= totalPagesFromRegistry; page++) {
+      const res = await fetch(`./data/collections/${name}/datasets-page-${page}.json`)
+      const data = await res.json()
+      allData.push(...(data.datasets || []))
+    }
+    allDatasets.value = allData
+    currentPage.value = 1
   } catch (e) {
-    console.warn(`Could not load page ${page}:`, e)
+    console.warn('Could not load all pages:', e)
   }
 }
 
 async function goPage(p) {
   if (p < 1 || p > totalPages.value) return
   currentPage.value = p
-  loading.value = true
-  await loadPage(route.params.name, p)
-  loading.value = false
 }
 
 onMounted(async () => {
@@ -184,7 +195,7 @@ onMounted(async () => {
       notFound.value = true
       return
     }
-    await loadPage(name, 1)
+    await loadAllPages(name, collection.value.total_pages || 1)
   } catch (e) {
     console.warn('Could not load collection:', e)
     notFound.value = true

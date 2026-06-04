@@ -104,6 +104,27 @@ def test_static_generator_creates_paginated_dataset_listing(tmp_path):
     assert page2["page"] == 2
 
 
+def test_static_generator_dataset_summary_includes_listing_fields(tmp_path):
+    from quantms_portal.web.generator import StaticDataGenerator
+    coll_dir = tmp_path / "collections" / "mytest"
+    _make_minimal_dataset(coll_dir / "PXD000001", "PXD000001")
+
+    output = tmp_path / "output"
+    gen = StaticDataGenerator()
+    gen.build(tmp_path / "collections", output)
+
+    page1 = json.loads((output / "collections" / "mytest" / "datasets-page-1.json").read_text())
+    ds = page1["datasets"][0]
+    assert ds["accession"] == "PXD000001"
+    assert "label" in ds
+    assert "acquisition_method" in ds
+    assert "instrument" in ds
+    assert "psm_count" in ds
+    assert "samples" in ds
+    assert "runs" in ds
+    assert "is_new" in ds
+
+
 def test_static_generator_creates_global_stats(tmp_path):
     from quantms_portal.web.generator import StaticDataGenerator
     coll_dir = tmp_path / "collections" / "mytest"

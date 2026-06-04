@@ -115,7 +115,6 @@
               >
                 {{ ds.accession }} <span style="font-size:10px;opacity:0.5;">&#8599;</span>
               </a>
-              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEW</span>
               <router-link v-else
                 :to="`/collections/${collectionName}/${ds.accession}`"
                 class="accession-link"
@@ -123,6 +122,7 @@
               >
                 {{ ds.accession }}
               </router-link>
+              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEW</span>
             </td>
             <td class="td-title">{{ ds.title || ds.accession }}</td>
             <template v-if="isMsnet">
@@ -243,12 +243,15 @@ const rows = computed(() => {
 
   // Sort
   const k = sKey.value
-  if (!k) return arr
-
   const asc = sAsc.value
   const numeric = NUM.has(k)
 
   return arr.slice().sort((a, b) => {
+    const na = isNewDataset(a)
+    const nb = isNewDataset(b)
+    if (na !== nb) return na ? -1 : 1
+    if (!k) return 0
+
     const va = a[k]
     const vb = b[k]
 

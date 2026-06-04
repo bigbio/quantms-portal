@@ -38,9 +38,9 @@
     {
       "name": "msnet",
       "title": "MS-Net Peptide Identifications",
-      "description": "Large-scale peptide identification across 107 public proteomics datasets. ID-only, optimized for peptide search across species.",
+      "description": "Large-scale peptide identification across 108 public proteomics datasets. ID-only, optimized for peptide search across species.",
       "type": "identification",
-      "dataset_count": 107,
+      "dataset_count": 108,
       "total_pages": 3,
       "organisms": [
         "Akkermansia muciniphilia",
@@ -98,8 +98,8 @@
         "hCOV"
       ],
       "stats": {
-        "total_psms": 500511663,
-        "total_runs": 36356,
+        "total_psms": 508027163,
+        "total_runs": 36931,
         "total_species": 53
       }
     },

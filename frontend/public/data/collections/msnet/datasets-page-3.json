@@ -15,7 +15,9 @@
       "psm_count": 7120784,
       "species": "Homo sapiens",
       "instrument": "Orbitrap Fusion",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD024364-Trypsin/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD028735",
@@ -30,7 +32,9 @@
       "psm_count": 99467,
       "species": "Escherichia coli",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD028735-Homo/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD028735-Homo/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD028735",
@@ -45,7 +49,9 @@
       "psm_count": 1511325,
       "species": "Homo sapiens",
       "instrument": "Q Exactive HF-X",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD028735-Homo/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD028735-Homo/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD030348",
@@ -60,7 +66,9 @@
       "psm_count": 6483317,
       "species": "Mus musculus",
       "instrument": "Orbitrap Fusion",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030348/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030348/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD030983",
@@ -75,7 +83,9 @@
       "psm_count": 30714490,
       "species": "Mus musculus",
       "instrument": "Q Exactive HF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030983/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD030983/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD040266",
@@ -90,7 +100,9 @@
       "psm_count": 896379,
       "species": "Mus musculus",
       "instrument": "timsTOF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD040266/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD040266/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD010429",
@@ -105,7 +117,9 @@
       "psm_count": 2578074,
       "species": "Homo sapiens",
       "instrument": "Q Exactive Plus",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010429/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD010429/",
+      "label": "TMT6plex",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD002899",
@@ -120,7 +134,9 @@
       "psm_count": 3498190,
       "species": "Xenopus laevis",
       "instrument": "Q Exactive HF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002899/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD002899/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD005526",
@@ -135,7 +151,9 @@
       "psm_count": 13527205,
       "species": "Mus musculus",
       "instrument": "Q Exactive",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD005526/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD005526/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     },
     {
       "accession": "PXD034656",
@@ -150,7 +168,9 @@
       "psm_count": 3264025,
       "species": "Saccharomyces cerevisiae",
       "instrument": "Q Exactive HF",
-      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD034656/"
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD034656/",
+      "label": "label free",
+      "acquisition_method": "DDA"
     }
   ]
 }
