@@ -149,43 +149,67 @@ class StaticDataGenerator:
         ds_out = coll_out / "datasets"
         ds_out.mkdir(parents=True, exist_ok=True)
 
-        # List dataset subdirectories
-        ds_names = storage.list_subdirs(coll_path)
-
+        # If the collection already contains static dataset JSON files, use them
+        # as the source of truth and generate paginated listings from them.
         dataset_summaries: list[dict[str, Any]] = []
         organisms_set: set[str] = set()
         organism_counts: dict[str, int] = {}
 
-        for ds_name in ds_names:
-            ds_path = storage.join_path(coll_path, ds_name)
-
-            # Check if this is actually a dataset (has *.dataset.parquet)
-            if not storage.has_dataset_parquet(ds_path):
-                continue
-
-            accession = ds_name
-            ds_json_path = ds_out / f"{accession}.json"
-
-            # Compute hash for incremental builds
-            dataset_pq = storage.find_parquet(ds_path, "*.dataset.parquet")
-            ds_hash = storage.get_file_hash(dataset_pq) if dataset_pq else ""
-
-            if incremental and build_state.get(accession) == ds_hash and ds_json_path.exists():
-                # Load existing JSON (dataset unchanged)
+        dataset_json_dir = Path(storage.join_path(coll_path, "datasets"))
+        if not storage.is_s3_path(coll_path) and dataset_json_dir.exists():
+            for ds_json_path in sorted(dataset_json_dir.glob("*.json")):
                 ds_data = json.loads(ds_json_path.read_text())
-            else:
-                # Read from source (S3 or local) and generate JSON
-                ds_data = self._process_dataset(ds_path, accession, coll_name, now)
-                _write_json(ds_json_path, ds_data)
-                build_state[accession] = ds_hash
+                accession = ds_data.get("accession") or ds_json_path.stem
+                out_ds_path = ds_out / f"{accession}.json"
+                ds_hash = storage.get_file_hash(ds_json_path)
 
-            dataset_summaries.append(_dataset_summary(ds_data))
-            for org in ds_data.get("organisms", []):
-                organisms_set.add(org)
-                organism_counts[org] = organism_counts.get(org, 0) + 1
+                if incremental and build_state.get(accession) == ds_hash and out_ds_path.exists():
+                    ds_data = json.loads(out_ds_path.read_text())
+                else:
+                    _write_json(out_ds_path, ds_data)
+                    build_state[accession] = ds_hash
+
+                dataset_summaries.append(ds_data)
+                for org in ds_data.get("organisms", []):
+                    organisms_set.add(org)
+                    organism_counts[org] = organism_counts.get(org, 0) + 1
+        else:
+            # List dataset subdirectories
+            ds_names = storage.list_subdirs(coll_path)
+
+            for ds_name in ds_names:
+                ds_path = storage.join_path(coll_path, ds_name)
+
+                # Check if this is actually a dataset (has *.dataset.parquet)
+                if not storage.has_dataset_parquet(ds_path):
+                    continue
+
+                accession = ds_name
+                ds_json_path = ds_out / f"{accession}.json"
+
+                # Compute hash for incremental builds
+                dataset_pq = storage.find_parquet(ds_path, "*.dataset.parquet")
+                ds_hash = storage.get_file_hash(dataset_pq) if dataset_pq else ""
+
+                if incremental and build_state.get(accession) == ds_hash and ds_json_path.exists():
+                    # Load existing JSON (dataset unchanged)
+                    ds_data = json.loads(ds_json_path.read_text())
+                else:
+                    # Read from source (S3 or local) and generate JSON
+                    ds_data = self._process_dataset(ds_path, accession, coll_name, now)
+                    _write_json(ds_json_path, ds_data)
+                    build_state[accession] = ds_hash
+
+                dataset_summaries.append(_dataset_summary(ds_data))
+                for org in ds_data.get("organisms", []):
+                    organisms_set.add(org)
+                    organism_counts[org] = organism_counts.get(org, 0) + 1
 
         if not dataset_summaries:
             return None, {}
+
+        # Keep newly uploaded datasets at the front of the overall listing.
+        dataset_summaries.sort(key=lambda ds: (not bool(ds.get("is_new")), ds.get("accession", "")))
 
         # Paginated listings (always regenerated)
         total = len(dataset_summaries)
@@ -308,9 +332,25 @@ def _dataset_summary(ds_data: dict[str, Any]) -> dict[str, Any]:
         "accession": ds_data.get("accession", ""),
         "title": ds_data.get("title", ""),
         "organisms": ds_data.get("organisms", []),
-        "samples": ds_data.get("samples_total", 0),
-        "runs": ds_data.get("runs_total", 0),
+        "samples": ds_data.get("samples_total", ds_data.get("samples", 0)),
+        "runs": ds_data.get("runs_total", ds_data.get("runs", 0)),
+        "proteins": ds_data.get("proteins_total", ds_data.get("proteins", 0)),
+        "peptides": ds_data.get("peptides_total", ds_data.get("peptides", 0)),
+        "psm_count": ds_data.get("psm_count", 0),
+        "species": ds_data.get("species", ""),
+        "instrument": ds_data.get("instrument", ""),
+        "label": ds_data.get("label", ""),
+        "acquisition_method": ds_data.get("acquisition_method", ""),
+        "ftp_url": ds_data.get("ftp_url", ds_data.get("download", {}).get("ftp_url", "")),
         "collection": ds_data.get("collection", ""),
+        "is_new": bool(
+            ds_data.get("is_new")
+            or ds_data.get("new")
+            or ds_data.get("news")
+            or ds_data.get("is_updated")
+            or ds_data.get("updated")
+            or ds_data.get("highlight")
+        ),
     }
 
 

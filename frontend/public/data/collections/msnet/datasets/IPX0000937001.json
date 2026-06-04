@@ -12,6 +12,8 @@
   "instrument": "Orbitrap Fusion",
   "enzyme": "Trypsin",
   "fragment_method": "HCD@32",
+  "label": "label free",
+  "acquisition_method": "DDA",
   "structures": [
     "psm"
   ],
