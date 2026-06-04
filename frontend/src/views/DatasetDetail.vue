@@ -48,7 +48,7 @@
                 <span v-for="org in dataset.organisms" :key="org" class="tag tag-blue">{{ org }}</span>
               </div>
               <!-- MSNet extras -->
-              <div v-if="dataset.instrument || dataset.enzyme || dataset.label || dataset.acquisition_method" style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--text-secondary);">
+              <div v-if="dataset.instrument || dataset.enzyme || dataset.fragment_method || dataset.label || dataset.acquisition_method" style="display:flex; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--text-secondary);">
                 <span v-if="dataset.instrument">🔬 {{ dataset.instrument }}</span>
                 <span v-if="dataset.enzyme">⚗️ {{ dataset.enzyme }}</span>
                 <span v-if="dataset.fragment_method">📡 {{ dataset.fragment_method }}</span>

@@ -115,7 +115,7 @@
               >
                 {{ ds.accession }} <span style="font-size:10px;opacity:0.5;">&#8599;</span>
               </a>
-              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEWS</span>
+              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEW</span>
               <router-link v-else
                 :to="`/collections/${collectionName}/${ds.accession}`"
                 class="accession-link"
@@ -123,7 +123,6 @@
               >
                 {{ ds.accession }}
               </router-link>
-              <span v-if="isNewDataset(ds)" class="dataset-new-pill">NEWS</span>
             </td>
             <td class="td-title">{{ ds.title || ds.accession }}</td>
             <template v-if="isMsnet">
