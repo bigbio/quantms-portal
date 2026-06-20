@@ -38,13 +38,14 @@
     {
       "name": "msnet",
       "title": "MS-Net Peptide Identifications",
-      "description": "Large-scale peptide identification across 108 public proteomics datasets. ID-only, optimized for peptide search across species.",
+      "description": "Large-scale peptide identification across 112 public proteomics datasets. ID-only, optimized for peptide search across species.",
       "type": "identification",
-      "dataset_count": 108,
+      "dataset_count": 112,
       "total_pages": 3,
       "organisms": [
         "Akkermansia muciniphilia",
         "Arabidopsis",
+        "Balneola vulgaris",
         "Bacteroides Fragilis",
         "Bacteroides Thetaiotaomicron",
         "Bacteroides Uniformis",
@@ -54,6 +55,7 @@
         "Clostridium saccharolyticum",
         "Collinsella Aerofaciens",
         "Danio rerio",
+        "Deinococcus proteolyticus mrp",
         "Drosophila",
         "Drosophila melanogaster",
         "Eggerthella Lenta",
@@ -98,9 +100,9 @@
         "hCOV"
       ],
       "stats": {
-        "total_psms": 508027163,
-        "total_runs": 36931,
-        "total_species": 53
+        "total_psms": 569260822,
+        "total_runs": 42570,
+        "total_species": 55
       }
     },
     {
@@ -123,8 +125,8 @@
   ],
   "global_stats": {
     "total_collections": 4,
-    "total_datasets": 251,
-    "total_psms": 500511663,
+    "total_datasets": 255,
+    "total_psms": 561745322,
     "total_proteins": 648023
   }
 }
