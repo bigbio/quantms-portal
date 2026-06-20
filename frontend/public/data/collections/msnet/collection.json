@@ -4,12 +4,13 @@
   "description": "Large-scale peptide identification across 108 public proteomics datasets. ID-only, optimized for peptide search across species.",
   "type": "identification",
   "generated_at": "2026-04-10T17:47:56.993421+00:00",
-  "dataset_count": 108,
+  "dataset_count": 112,
   "total_pages": 3,
   "datasets_per_page": 50,
   "organisms": [
     "Akkermansia muciniphilia",
     "Arabidopsis",
+    "Balneola vulgaris",
     "Bacteroides Fragilis",
     "Bacteroides Thetaiotaomicron",
     "Bacteroides Uniformis",
@@ -19,6 +20,7 @@
     "Clostridium saccharolyticum",
     "Collinsella Aerofaciens",
     "Danio rerio",
+    "Deinococcus proteolyticus mrp",
     "Drosophila",
     "Drosophila melanogaster",
     "Eggerthella Lenta",
@@ -63,9 +65,9 @@
     "hCOV"
   ],
   "stats": {
-    "total_psms": 508027163,
-    "total_runs": 36931,
-    "total_species": 53
+    "total_psms": 569260822,
+    "total_runs": 42570,
+    "total_species": 55
   },
   "indexes": [],
   "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/"

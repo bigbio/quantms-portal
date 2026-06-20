@@ -201,10 +201,13 @@ import { useRouter } from "vue-router";
 
 const props = defineProps({
   datasets: { type: Array, required: true },
+  // Optional: full dataset list (used to populate filter selects and full-table filtering)
+  allDatasets: { type: Array, required: false },
   loading: { type: Boolean, default: false },
   searchable: { type: Boolean, default: true },
   collectionName: { type: String, default: "" },
 });
+const emit = defineEmits(["filtersChanged"]);
 
 const router = useRouter();
 const searchQuery = ref("");
@@ -233,8 +236,9 @@ watch(
 );
 
 const uniqueSpecies = computed(() => {
+  const src = props.allDatasets || props.datasets;
   const s = new Set();
-  props.datasets.forEach((d) => {
+  src.forEach((d) => {
     const v = d.species || (d.organisms && d.organisms[0]) || "";
     if (v) s.add(v);
   });
@@ -250,59 +254,26 @@ const uniqueInstruments = computed(() => {
 });
 
 const uniqueLabels = computed(() => {
+  const src = props.allDatasets || props.datasets;
   const s = new Set();
-  props.datasets.forEach((d) => {
+  src.forEach((d) => {
     if (d.label) s.add(d.label);
   });
   return [...s].sort();
 });
 
 const uniqueAcquisitionMethods = computed(() => {
+  const src = props.allDatasets || props.datasets;
   const s = new Set();
-  props.datasets.forEach((d) => {
+  src.forEach((d) => {
     if (d.acquisition_method) s.add(d.acquisition_method);
   });
   return [...s].sort();
 });
 
-// Final rows: filter → search → sort
+// Final rows: only sort and prioritize NEW entries. Filtering is handled by parent.
 const rows = computed(() => {
-  let arr = props.datasets.slice();
-
-  // Column filters
-  if (isMsnet.value && filterSpecies.value) {
-    arr = arr.filter(
-      (d) =>
-        (d.species || (d.organisms && d.organisms[0]) || "") ===
-        filterSpecies.value,
-    );
-  }
-  if (isMsnet.value && filterInstrument.value) {
-    arr = arr.filter((d) => d.instrument === filterInstrument.value);
-  }
-  if (isMsnet.value && filterLabel.value) {
-    arr = arr.filter((d) => d.label === filterLabel.value);
-  }
-  if (isMsnet.value && filterAcquisitionMethod.value) {
-    arr = arr.filter(
-      (d) => d.acquisition_method === filterAcquisitionMethod.value,
-    );
-  }
-
-  // Text search
-  const q = searchQuery.value.toLowerCase().trim();
-  if (q) {
-    arr = arr.filter(
-      (d) =>
-        (d.accession || "").toLowerCase().includes(q) ||
-        (d.title || "").toLowerCase().includes(q) ||
-        (d.species || "").toLowerCase().includes(q) ||
-        (d.label || "").toLowerCase().includes(q) ||
-        (d.acquisition_method || "").toLowerCase().includes(q),
-    );
-  }
-
-  // Sort
+  const arr = props.datasets.slice();
   const k = sKey.value;
   const asc = sAsc.value;
   const numeric = NUM.has(k);
@@ -331,6 +302,28 @@ const rows = computed(() => {
     const sb = String(vb || "");
     return asc ? sa.localeCompare(sb) : sb.localeCompare(sa);
   });
+});
+
+// Emit filter changes to parent so parent can filter the full dataset
+function emitFilters() {
+  emit("filtersChanged", {
+    search: searchQuery.value,
+    species: filterSpecies.value,
+    instrument: filterInstrument.value,
+    label: filterLabel.value,
+    acquisition_method: filterAcquisitionMethod.value,
+  });
+}
+
+// Watch filters and searchQuery to emit changes
+watch([
+  searchQuery,
+  filterSpecies,
+  filterInstrument,
+  filterLabel,
+  filterAcquisitionMethod,
+], () => {
+  emitFilters();
 });
 
 function clickSort(key) {

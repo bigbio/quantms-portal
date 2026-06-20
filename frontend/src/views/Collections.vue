@@ -78,9 +78,11 @@
 
         <DatasetTable
           :datasets="currentPageDatasets"
+          :all-datasets="allDatasetsForTab"
           :loading="false"
           :searchable="false"
           :collection-name="activeTab === 'all' ? '' : activeTab"
+          @filtersChanged="onTableFiltersChanged"
         />
 
         <!-- Pagination -->
@@ -126,6 +128,13 @@ const tabs = [
 const route = useRoute();
 const activeTab = ref(route.query.tab || "all");
 const searchQuery = ref("");
+const tableFilters = ref({
+  search: "",
+  species: "",
+  instrument: "",
+  label: "",
+  acquisition_method: "",
+});
 const loading = ref(false);
 const collections = ref([]);
 // Map: collectionName -> allDatasets (loaded from all pages)
@@ -154,7 +163,10 @@ const allDatasetsForTab = computed(() => {
 
 const filteredDatasets = computed(() => {
   const q = searchQuery.value.toLowerCase().trim();
-  let result = allDatasetsForTab.value;
+  const tf = tableFilters.value;
+  let result = allDatasetsForTab.value.slice();
+
+  // Parent-level search box
   if (q) {
     result = result.filter(
       (ds) =>
@@ -163,6 +175,34 @@ const filteredDatasets = computed(() => {
         (ds.species || "").toLowerCase().includes(q),
     );
   }
+
+  // Table-level filters emitted from DatasetTable
+  if (tf.search) {
+    const sq = tf.search.toLowerCase().trim();
+    result = result.filter(
+      (ds) =>
+        (ds.accession || "").toLowerCase().includes(sq) ||
+        (ds.title || "").toLowerCase().includes(sq) ||
+        (ds.species || "").toLowerCase().includes(sq) ||
+        (ds.label || "").toLowerCase().includes(sq) ||
+        (ds.acquisition_method || "").toLowerCase().includes(sq),
+    );
+  }
+  if (tf.species) {
+    result = result.filter(
+      (d) => (d.species || (d.organisms && d.organisms[0]) || "") === tf.species,
+    );
+  }
+  if (tf.instrument) {
+    result = result.filter((d) => d.instrument === tf.instrument);
+  }
+  if (tf.label) {
+    result = result.filter((d) => d.label === tf.label);
+  }
+  if (tf.acquisition_method) {
+    result = result.filter((d) => d.acquisition_method === tf.acquisition_method);
+  }
+
   return result;
 });
 
@@ -185,6 +225,12 @@ function tabCount(key) {
   }
   const col = collections.value.find((c) => c.name === key);
   return col ? col.dataset_count : 0;
+}
+
+function onTableFiltersChanged(filters) {
+  tableFilters.value = Object.assign({}, tableFilters.value, filters || {});
+  // reset to first page whenever filters change
+  currentPage.value = 1;
 }
 
 function formatBig(n) {
