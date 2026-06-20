@@ -11,6 +11,7 @@ const routes = [
   { path: '/api', component: () => import('./views/ApiDocs.vue') },
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue') },
   { path: '/models', component: () => import('./views/Models.vue') },
+  { path: '/contact', component: () => import('./views/Contact.vue') },
 ]
 
 export default createRouter({

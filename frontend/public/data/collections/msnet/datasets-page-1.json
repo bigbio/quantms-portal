@@ -21,6 +21,80 @@
       "is_new": true
     },
     {
+      "accession": "PDC000219",
+      "title": "PDC000219",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 1288,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 25716227,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PDC000219/",
+      "label": "TMT10plex",
+      "acquisition_method": "DDA",
+      "is_new": true
+    },
+    {
+      "accession": "PDC000220",
+      "title": "PDC000220",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 504,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 3904567,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PDC000220/",
+      "label": "TMT10plex",
+      "acquisition_method": "DDA",
+      "is_new": true
+    },
+    {
+      "accession": "PXD046290",
+      "title": "PXD046290",
+      "organisms": [
+        "Homo sapiens",
+        "Deinococcus proteolyticus mrp",
+        "Balneola vulgaris"
+      ],
+      "samples": 0,
+      "runs": 24,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 1364149,
+      "species": "Balneola vulgaris, Deinococcus proteolyticus mrp, Homo sapiens",
+      "instrument": "Orbitrap Astral",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD046290/",
+      "label": "label free",
+      "acquisition_method": "DIA",
+      "is_new": true
+    },
+    {
+      "accession": "PXD062529",
+      "title": "PXD062529",
+      "organisms": [
+        "Homo sapiens"
+      ],
+      "samples": 0,
+      "runs": 3823,
+      "proteins": 0,
+      "peptides": 0,
+      "psm_count": 30248716,
+      "species": "Homo sapiens",
+      "instrument": "Q Exactive HF",
+      "ftp_url": "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-collections/msnet/PXD062529/",
+      "label": "TMT16plex, TMT18plex",
+      "acquisition_method": "DDA",
+      "is_new": true
+    },
+    {
       "accession": "HuiYan-E480",
       "title": "HuiYan-E480",
       "organisms": [
