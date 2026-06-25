@@ -61,6 +61,7 @@
               gap: 24px;
               margin-bottom: 20px;
               flex-wrap: wrap;
+              align-items: center;
             "
           >
             <div
@@ -72,6 +73,11 @@
                 {{ formatBig(val) }}
               </div>
               <div class="stat-label">{{ formatLabel(key) }}</div>
+            </div>
+            <!-- Continuous update legend for MSNet -->
+            <div v-if="activeTab === 'msnet'" class="update-legend">
+              <span class="update-dot"></span>
+              <span class="update-text">Continuously Updated</span>
             </div>
           </div>
         </div>
@@ -305,3 +311,34 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.update-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 20px;
+  margin-left: 8px;
+}
+.update-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.update-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #059669;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+</style>
