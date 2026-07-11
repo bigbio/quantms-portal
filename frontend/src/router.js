@@ -7,6 +7,7 @@ const routes = [
   { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue') },
   { path: '/collections/:name/:pxd', component: () => import('./views/DatasetDetail.vue') },
   { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue') },
+  { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue') },
   { path: '/search', component: () => import('./views/Search.vue') },
   { path: '/statistics', component: () => import('./views/Statistics.vue') },
   { path: '/api', component: () => import('./views/ApiDocs.vue') },

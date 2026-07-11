@@ -23,6 +23,7 @@ def _make_minimal_dataset(dataset_dir: Path, accession: str = "PXD000001"):
         "sample_id": ["S1", "S2"],
         "instrument": ["Orbitrap", "Orbitrap"],
     }), dataset_dir / f"{accession}.run.parquet")
+    (dataset_dir / f"{accession}.sdrf.tsv").write_text("source name\tcomment[data file]\nS1\tfile.raw\n")
 
 
 def test_static_generator_creates_registry_json(tmp_path):
@@ -77,6 +78,41 @@ def test_static_generator_creates_dataset_json_with_sample_preview(tmp_path):
     assert ds_json["samples_total"] == 3
     assert "generated_at" in ds_json
     assert "download" in ds_json
+
+
+def test_static_generator_emits_ftp_and_sdrf_links(tmp_path):
+    from quantms_portal.web.generator import StaticDataGenerator
+
+    coll_dir = tmp_path / "collections" / "msnet"
+    _make_minimal_dataset(coll_dir / "PXD000001", "PXD000001")
+
+    output = tmp_path / "output"
+    gen = StaticDataGenerator(
+        ftp_base_url="https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes"
+    )
+    gen.build(tmp_path / "collections", output)
+
+    registry = json.loads((output / "registry.json").read_text())
+    assert registry["collections"][0]["title"] == "MS-Net"
+    assert registry["collections"][0]["ftp_url"] == (
+        "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/msnet/"
+    )
+
+    page1 = json.loads((output / "collections" / "msnet" / "datasets-page-1.json").read_text())
+    assert page1["datasets"][0]["ftp_url"] == (
+        "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/msnet/PXD000001"
+    )
+
+    ds_json = json.loads(
+        (output / "collections" / "msnet" / "datasets" / "PXD000001.json").read_text()
+    )
+    assert ds_json["download"]["ftp_url"] == (
+        "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/msnet/PXD000001"
+    )
+    assert ds_json["download"]["sdrf_url"] == (
+        "https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/msnet/PXD000001/PXD000001.sdrf.tsv"
+    )
+    assert ds_json["reanalysis_links"][0]["path"] == ds_json["download"]["ftp_url"]
 
 
 def test_static_generator_creates_paginated_dataset_listing(tmp_path):
