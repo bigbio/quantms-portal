@@ -16,6 +16,7 @@
       </router-link>
       <div class="nav-links">
         <router-link to="/collections">Collections</router-link>
+        <router-link to="/apps/dataset-search">Dataset Search</router-link>
         <router-link to="/search">Search</router-link>
         <router-link to="/statistics">Statistics</router-link>
         <router-link to="/baseline">Baseline</router-link>

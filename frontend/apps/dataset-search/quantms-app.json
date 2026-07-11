@@ -1,0 +1,18 @@
+{
+  "id": "dataset-search",
+  "title": "Dataset Search",
+  "version": "1.0.0",
+  "category": "core",
+  "tier": 1,
+  "route": "/apps/dataset-search",
+  "reads": [
+    "registry.json",
+    "collections/*/collection.json",
+    "collections/*/datasets-page-*.json"
+  ],
+  "backend": null,
+  "data_prefix": null,
+  "owner": "ypriverol",
+  "enabled": true,
+  "description": "Cross-collection, searchable and sortable table of every quantms dataset, with peptide/protein counts and per-dataset download links."
+}
