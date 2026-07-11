@@ -43,9 +43,11 @@ class StaticDataGenerator:
     def __init__(
         self,
         s3_base_url: str = "s3://quantms/collections",
+        ftp_base_url: str | None = None,
         datasets_per_page: int = 50,
     ) -> None:
         self.s3_base_url = s3_base_url.rstrip("/")
+        self.ftp_base_url = ftp_base_url.rstrip("/") if ftp_base_url else None
         self.datasets_per_page = datasets_per_page
 
     def build(
@@ -229,7 +231,7 @@ class StaticDataGenerator:
         # collection.json — summary only, NO datasets array
         coll_meta: dict[str, Any] = {
             "name": coll_name,
-            "title": coll_name,
+            "title": _collection_title(coll_name),
             "description": "",
             "generated_at": now,
             "dataset_count": total,
@@ -239,16 +241,11 @@ class StaticDataGenerator:
             "stats": {},
             "indexes": [],
         }
+        if self.ftp_base_url:
+            coll_meta["ftp_url"] = _join_url(self.ftp_base_url, coll_name) + "/"
         _write_json(coll_out / "collection.json", coll_meta)
 
-        return (
-            {
-                "name": coll_name,
-                "dataset_count": total,
-                "total_pages": total_pages,
-            },
-            organism_counts,
-        )
+        return coll_meta, organism_counts
 
     def _process_dataset(
         self,
@@ -295,6 +292,8 @@ class StaticDataGenerator:
             tbl = storage.read_parquet(run_pq)
             runs_total = len(tbl)
 
+        sdrf_path = storage.find_parquet(ds_path, "*.sdrf.tsv")
+
         # Check for other structures (psm/, feature/, pg parquets)
         for suffix in ("psm", "feature", "pg", "provenance", "ontology"):
             if storage.find_parquet(ds_path, f"*.{suffix}.parquet"):
@@ -304,7 +303,30 @@ class StaticDataGenerator:
         title = dataset_info.get("project_title", accession)
         description = dataset_info.get("project_description", "")
 
-        return {
+        download = {
+            "s3_url": f"{self.s3_base_url}/{collection_name}/{accession}",
+            "qpx_command": f"qpx pull {collection_name}/{accession}",
+        }
+        reanalysis_links: list[dict[str, Any]] = []
+        if self.ftp_base_url:
+            ftp_url = _join_url(self.ftp_base_url, collection_name, accession)
+            download["ftp_url"] = ftp_url
+            reanalysis_links.append({
+                "id": len(reanalysis_links) + 1,
+                "title": accession,
+                "path": ftp_url,
+            })
+            if sdrf_path:
+                sdrf_name = Path(str(sdrf_path)).name
+                sdrf_url = _join_url(self.ftp_base_url, collection_name, accession, sdrf_name)
+                download["sdrf_url"] = sdrf_url
+                reanalysis_links.append({
+                    "id": len(reanalysis_links) + 1,
+                    "title": "SDRF",
+                    "path": sdrf_url,
+                })
+
+        dataset = {
             "accession": accession,
             "collection": collection_name,
             "generated_at": now,
@@ -315,11 +337,11 @@ class StaticDataGenerator:
             "samples_preview": samples_preview,
             "samples_total": samples_total,
             "runs_total": runs_total,
-            "download": {
-                "s3_url": f"{self.s3_base_url}/{collection_name}/{accession}",
-                "qpx_command": f"qpx pull {collection_name}/{accession}",
-            },
+            "download": download,
         }
+        if reanalysis_links:
+            dataset["reanalysis_links"] = reanalysis_links
+        return dataset
 
 
 def _utcnow() -> str:
@@ -328,7 +350,7 @@ def _utcnow() -> str:
 
 def _dataset_summary(ds_data: dict[str, Any]) -> dict[str, Any]:
     """Return a compact summary dict for paginated listings."""
-    return {
+    summary = {
         "accession": ds_data.get("accession", ""),
         "title": ds_data.get("title", ""),
         "organisms": ds_data.get("organisms", []),
@@ -352,6 +374,22 @@ def _dataset_summary(ds_data: dict[str, Any]) -> dict[str, Any]:
             or ds_data.get("highlight")
         ),
     }
+    ftp_url = ds_data.get("download", {}).get("ftp_url")
+    if ftp_url:
+        summary["ftp_url"] = ftp_url
+    return summary
+
+
+def _collection_title(name: str) -> str:
+    """Convert a collection key into a readable title."""
+    if name.lower() == "msnet":
+        return "MS-Net"
+    return name.replace("-", " ").replace("_", " ").title()
+
+
+def _join_url(base: str, *parts: str) -> str:
+    """Join URL components without duplicating slashes."""
+    return "/".join([base.rstrip("/"), *[part.strip("/") for part in parts if part]])
 
 
 def _write_json(path: Path, data: Any) -> None:
