@@ -86,7 +86,7 @@
           <!-- Proteome coverage -->
           <section class="chart-card">
             <h3>Proteome coverage</h3>
-            <p class="chart-sub">Observed distinct proteins vs the reference proteome (hover for counts).</p>
+            <p class="chart-sub">Observed distinct <strong>genes</strong> vs the reference proteome (identifiers are collapsed to genes, so the same protein under an accession and a mnemonic counts once; hover for counts).</p>
             <div v-if="coverageChart.labels.length" class="chart-scroll">
               <StatsChart type="bar" :data="coverageChart" :options="coverageOptions" :height="Math.max(220, coverageChart.labels.length * 30)" />
             </div>
