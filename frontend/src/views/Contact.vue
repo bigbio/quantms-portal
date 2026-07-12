@@ -48,6 +48,25 @@
             >
           </div>
         </div>
+
+        <div class="contact-card">
+          <div class="contact-avatar timo"></div>
+          <div class="contact-info">
+            <h3>Timo Sachsenberg, Ph.D.</h3>
+            <p class="contact-title">OpenMS Lead Developer</p>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <div class="contact-avatar mingze"></div>
+          <div class="contact-info">
+            <h3>Mingze Bai</h3>
+            <p class="contact-title">Professor</p>
+            <p class="contact-org">
+              Chongqing Key Laboratory of Big Data for Bio Intelligence
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -111,6 +130,12 @@
 }
 .contact-avatar.chengxin {
   background: linear-gradient(135deg, #3b82f6, #06b6d4);
+}
+.contact-avatar.timo {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+}
+.contact-avatar.mingze {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
 }
 .contact-info h3 {
   margin: 0 0 4px;
