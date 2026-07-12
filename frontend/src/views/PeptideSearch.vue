@@ -96,7 +96,7 @@
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
-        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" />
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" @pick="pickProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
@@ -394,6 +394,16 @@ function demoPeptidoform(peptidoform) {
 function demoProtein(q) {
   mode.value = 'protein'
   proteinQuery.value = q
+  run()
+}
+// A "did you mean" candidate was chosen in ProteinProfile: re-run the protein
+// search/profile for that exact accession. Reuses the normal protein-search
+// path (run), which sets profileProtein and refreshes the shareable URL.
+function pickProtein(accession) {
+  const acc = (accession || '').trim()
+  if (!acc) return
+  mode.value = 'protein'
+  proteinQuery.value = acc
   run()
 }
 function clearFilters() {

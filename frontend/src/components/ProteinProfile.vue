@@ -11,6 +11,42 @@
     <span class="pp-spinner" /> Building biological profile…
   </div>
 
+  <!-- Ambiguous query: the backend could not resolve a single protein, but
+       offers ranked candidates. Show a picker; clicking one re-runs the search
+       for that exact accession. -->
+  <div v-else-if="hasCandidates" class="pp-panel">
+    <div class="pp-cand-head">
+      Multiple proteins match <code class="pp-seq">{{ queryLabel }}</code> — select one:
+    </div>
+    <ul class="pp-cand-list">
+      <li
+        v-for="c in candidates"
+        :key="c.accession"
+        class="pp-cand"
+        role="button"
+        tabindex="0"
+        :title="`Show profile for ${c.accession}`"
+        @click="pick(c.accession)"
+        @keyup.enter="pick(c.accession)"
+        @keyup.space="pick(c.accession)"
+      >
+        <span class="pp-cand-ids">
+          <span v-if="c.gene" class="pp-gene">{{ c.gene }}</span>
+          <span class="pp-prot-name">{{ c.name || c.accession }}</span>
+          <span class="pp-acc">{{ c.accession }}</span>
+        </span>
+        <span class="pp-cand-counts">
+          <span class="pp-cand-count" :title="`${formatNum(c.n_datasets)} datasets`">
+            {{ formatNum(c.n_datasets) }} <span class="pp-cand-unit">datasets</span>
+          </span>
+          <span class="pp-cand-count" :title="`${formatNum(c.n_observations)} observations`">
+            {{ formatNum(c.n_observations) }} <span class="pp-cand-unit">obs.</span>
+          </span>
+        </span>
+      </li>
+    </ul>
+  </div>
+
   <div v-else-if="notInCorpus" class="pp-panel pp-quiet">
     <div class="pp-empty-title">No biological profile</div>
     <div class="pp-empty-sub">
@@ -147,16 +183,39 @@ const props = defineProps({
   accession: { type: String, default: '' },
 })
 
+// Emitted when the user picks a candidate from the "did you mean" list: the
+// parent re-runs the protein search/profile for that exact accession.
+const emit = defineEmits(['pick'])
+
 const profile = ref(null)
 const loading = ref(false)
 
-// found === false => protein absent from the corpus (a valid 200 response).
-const notInCorpus = computed(() => profile.value && profile.value.found === false)
-
-const displayQuery = computed(() => (props.accession || '').trim())
-
 function arr(v) {
   return Array.isArray(v) ? v : []
+}
+
+// Ranked "did you mean" candidates returned when the query is ambiguous or has
+// no exact match (found === false with a candidate list).
+const candidates = computed(() => arr(profile.value?.candidates))
+// Ambiguous/no-exact-match query the backend could not resolve, but offers
+// candidates for.
+const hasCandidates = computed(
+  () => !!(profile.value && profile.value.found === false && candidates.value.length)
+)
+// found === false with no candidates => protein absent from the corpus (a valid
+// 200 response).
+const notInCorpus = computed(
+  () => !!(profile.value && profile.value.found === false && !candidates.value.length)
+)
+
+const displayQuery = computed(() => (props.accession || '').trim())
+// Label for the "multiple proteins match" prompt: prefer the query the backend
+// echoes back, fall back to the raw input.
+const queryLabel = computed(() => profile.value?.query || displayQuery.value)
+
+function pick(accession) {
+  const acc = (accession || '').trim()
+  if (acc) emit('pick', acc)
 }
 
 // The accession to display/link. Prefer the first resolved accession, then the
@@ -448,5 +507,64 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   margin-top: 4px;
   padding-top: 14px;
   border-top: 1px solid var(--border-subtle);
+}
+
+/* --- "Did you mean" candidate picker ------------------------------------- */
+.pp-cand-head {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.pp-cand-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pp-cand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.pp-cand:hover,
+.pp-cand:focus {
+  border-color: var(--indigo);
+  background: rgba(99, 102, 241, 0.06);
+  outline: none;
+}
+.pp-cand-ids {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pp-cand-counts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 16px;
+  white-space: nowrap;
+}
+.pp-cand-count {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+.pp-cand-unit {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
 }
 </style>
