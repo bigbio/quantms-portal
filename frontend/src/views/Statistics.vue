@@ -97,7 +97,7 @@
         <!-- Per-collection breakdown -->
         <section class="chart-card wide">
           <h3>Per-collection breakdown</h3>
-          <p class="chart-sub">Datasets, peptides, peptidoforms, proteins and samples in each collection.</p>
+          <p class="chart-sub">Datasets, peptides, peptidoforms and proteins in each collection<span v-if="hasSamples"> and samples</span>.</p>
           <div class="table-wrap">
             <table class="stats-table">
               <thead>
@@ -107,7 +107,7 @@
                   <th class="num">Peptides</th>
                   <th class="num">Peptidoforms</th>
                   <th class="num">Proteins</th>
-                  <th class="num">Samples</th>
+                  <th v-if="hasSamples" class="num">Samples</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,7 +117,7 @@
                   <td class="td-num">{{ formatNum(c.peptides) }}</td>
                   <td class="td-num">{{ formatNum(c.peptidoforms) }}</td>
                   <td class="td-num">{{ formatNum(c.proteins) }}</td>
-                  <td class="td-num">{{ formatNum(c.samples) }}</td>
+                  <td v-if="hasSamples" class="td-num">{{ formatNum(c.samples) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -143,6 +143,10 @@ import StatsChart from '../components/StatsChart.vue'
 const TOP = 25
 
 const stats = ref(null)
+// The 'samples' column is only shown when a real (non-zero) per-collection sample
+// count exists; no current source exposes it, so the backend omits the field and
+// the column is hidden rather than rendered empty.
+const hasSamples = computed(() => (stats.value?.collections || []).some((c) => c.samples > 0))
 const loading = ref(true)
 const error = ref(false)
 
