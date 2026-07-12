@@ -3,342 +3,95 @@
     <div class="container">
       <div class="section-header">
         <h2>All Collections</h2>
-        <p>
-          Curated groups of datasets, each with specialized indexes and services
-        </p>
+        <p>Curated groups of quantms datasets, each with specialized indexes and services.</p>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs-bar" style="margin-bottom: 28px">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="tab-btn"
-          :class="{ active: activeTab === tab.key }"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.label }}
-          <span
-            v-if="tabCount(tab.key)"
-            style="margin-left: 5px; font-size: 11px; opacity: 0.65"
-            >({{ tabCount(tab.key) }})</span
-          >
-        </button>
+      <!-- Loading skeletons -->
+      <div v-if="loading" class="collection-grid">
+        <div v-for="n in 4" :key="n" class="skeleton-card"></div>
       </div>
 
-      <!-- Filter bar -->
-      <div class="filter-bar">
-        <div class="filter-group">
-          <input
-            v-model="searchQuery"
-            type="text"
-            class="filter-search"
-            placeholder="Search accession or title…"
-          />
-        </div>
-        <span class="result-count"
-          >{{ filteredDatasets.length }} dataset{{
-            filteredDatasets.length !== 1 ? "s" : ""
-          }}</span
-        >
+      <!-- Error / retry -->
+      <div v-else-if="error" class="notice">
+        Collections are temporarily unavailable.
+        <button class="page-btn" style="margin-left: 12px" @click="load">Retry</button>
       </div>
 
-      <!-- Loading -->
-      <div
-        v-if="loading"
-        style="text-align: center; padding: 64px 0; color: var(--text-muted)"
-      >
-        Loading datasets…
-      </div>
+      <!-- Empty -->
+      <div v-else-if="collections.length === 0" class="notice">No collections found.</div>
 
-      <!-- Table per active collection -->
-      <template v-else>
-        <div v-if="activeTab !== 'all'" style="margin-bottom: 12px">
-          <div
-            v-if="activeCollection"
-            style="
-              display: flex;
-              gap: 24px;
-              margin-bottom: 20px;
-              flex-wrap: wrap;
-              align-items: center;
-            "
-          >
-            <div
-              v-for="(val, key) in activeCollection.stats"
-              :key="key"
-              style="text-align: center"
-            >
-              <div class="stat-value" style="font-size: 20px">
-                {{ formatBig(val) }}
-              </div>
-              <div class="stat-label">{{ formatLabel(key) }}</div>
-            </div>
-            <!-- Continuous update legend for MSNet -->
-            <div v-if="activeTab === 'msnet'" class="update-legend">
-              <span class="update-dot"></span>
-              <span class="update-text">Continuously Updated</span>
-            </div>
-          </div>
-        </div>
-
-        <DatasetTable
-          :datasets="currentPageDatasets"
-          :all-datasets="allDatasetsForTab"
-          :loading="false"
-          :searchable="false"
-          :collection-name="activeTab === 'all' ? '' : activeTab"
-          @filtersChanged="onTableFiltersChanged"
+      <!-- Cards -->
+      <div v-else class="collection-grid">
+        <CollectionCard
+          v-for="col in collections"
+          :key="col.name"
+          :collection="col"
+          @select="goToCollection"
         />
-
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="pagination">
-          <button
-            class="page-btn"
-            :class="{ disabled: currentPage === 1 }"
-            :disabled="currentPage === 1"
-            @click="goPage(currentPage - 1)"
-          >
-            ← Prev
-          </button>
-          <span class="page-info"
-            >Page {{ currentPage }} of {{ totalPages }}</span
-          >
-          <button
-            class="page-btn"
-            :class="{ disabled: currentPage === totalPages }"
-            :disabled="currentPage === totalPages"
-            @click="goPage(currentPage + 1)"
-          >
-            Next →
-          </button>
-        </div>
-      </template>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import { useRoute } from "vue-router";
-import DatasetTable from "../components/DatasetTable.vue";
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import CollectionCard from '../components/CollectionCard.vue'
+import { apiGet } from '../api.js'
+import { DATASET_SEARCH_BASE } from '../config.js'
 
-const tabs = [
-  { key: "all", label: "All Datasets" },
-  { key: "absolute-expression", label: "Absolute Expression" },
-  { key: "differential-expression", label: "Differential Expression" },
-  { key: "msnet", label: "MS-Net" },
-  { key: "single-cell", label: "Single Cell" },
-];
+const router = useRouter()
+const collections = ref([])
+const loading = ref(true)
+const error = ref(false)
 
-const route = useRoute();
-const activeTab = ref(route.query.tab || "all");
-const searchQuery = ref("");
-const tableFilters = ref({
-  search: "",
-  species: "",
-  instrument: "",
-  label: "",
-  acquisition_method: "",
-});
-const loading = ref(false);
-const collections = ref([]);
-// Map: collectionName -> allDatasets (loaded from all pages)
-const collectionData = ref({});
-const currentPage = ref(1);
-const datasetsPerPage = 50;
-
-const activeCollection = computed(() =>
-  activeTab.value === "all"
-    ? null
-    : collections.value.find((c) => c.name === activeTab.value) || null,
-);
-
-const allDatasetsForTab = computed(() => {
-  if (activeTab.value === "all") {
-    // Aggregate all datasets from all collections
-    const all = [];
-    for (const col of collections.value) {
-      const datasets = collectionData.value[col.name] || [];
-      datasets.forEach((ds) => all.push({ ...ds, _collection: col.name }));
-    }
-    return all;
-  }
-  return collectionData.value[activeTab.value] || [];
-});
-
-const filteredDatasets = computed(() => {
-  const q = searchQuery.value.toLowerCase().trim();
-  const tf = tableFilters.value;
-  let result = allDatasetsForTab.value.slice();
-
-  // Parent-level search box
-  if (q) {
-    result = result.filter(
-      (ds) =>
-        (ds.accession || "").toLowerCase().includes(q) ||
-        (ds.title || "").toLowerCase().includes(q) ||
-        (ds.species || "").toLowerCase().includes(q),
-    );
-  }
-
-  // Table-level filters emitted from DatasetTable
-  if (tf.search) {
-    const sq = tf.search.toLowerCase().trim();
-    result = result.filter(
-      (ds) =>
-        (ds.accession || "").toLowerCase().includes(sq) ||
-        (ds.title || "").toLowerCase().includes(sq) ||
-        (ds.species || "").toLowerCase().includes(sq) ||
-        (ds.label || "").toLowerCase().includes(sq) ||
-        (ds.acquisition_method || "").toLowerCase().includes(sq),
-    );
-  }
-  if (tf.species) {
-    result = result.filter(
-      (d) => (d.species || (d.organisms && d.organisms[0]) || "") === tf.species,
-    );
-  }
-  if (tf.instrument) {
-    result = result.filter((d) => d.instrument === tf.instrument);
-  }
-  if (tf.label) {
-    result = result.filter((d) => d.label === tf.label);
-  }
-  if (tf.acquisition_method) {
-    result = result.filter((d) => d.acquisition_method === tf.acquisition_method);
-  }
-
-  return result;
-});
-
-const totalPages = computed(() => {
-  return Math.max(
-    1,
-    Math.ceil(filteredDatasets.value.length / datasetsPerPage),
-  );
-});
-
-const currentPageDatasets = computed(() => {
-  const start = (currentPage.value - 1) * datasetsPerPage;
-  const end = start + datasetsPerPage;
-  return filteredDatasets.value.slice(start, end);
-});
-
-function tabCount(key) {
-  if (key === "all") {
-    return collections.value.reduce((s, c) => s + (c.dataset_count || 0), 0);
-  }
-  const col = collections.value.find((c) => c.name === key);
-  return col ? col.dataset_count : 0;
+function goToCollection(name) {
+  router.push(`/collections/${name}`)
 }
 
-function onTableFiltersChanged(filters) {
-  tableFilters.value = Object.assign({}, tableFilters.value, filters || {});
-  // reset to first page whenever filters change
-  currentPage.value = 1;
-}
-
-function formatBig(n) {
-  if (!n && n !== 0) return "—";
-  if (n >= 1_000_000)
-    return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
-  return String(n);
-}
-
-function formatLabel(key) {
-  return key.replace(/^total_/, "").replace(/_/g, " ");
-}
-
-async function loadAllCollectionPages(name, totalPages) {
-  // Only load if not already loaded
-  if (collectionData.value[name]) return;
-
+async function load() {
+  loading.value = true
+  error.value = false
   try {
-    const all = [];
-    for (let page = 1; page <= totalPages; page++) {
-      const res = await fetch(
-        `./data/collections/${name}/datasets-page-${page}.json`,
-      );
-      const data = await res.json();
-      all.push(...(data.datasets || []));
-    }
-    collectionData.value[name] = all;
+    const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
+    collections.value = (data.collections || []).map((c) => ({
+      name: c.name,
+      title: c.title || c.name,
+      description: c.description || '',
+      dataset_count: c.dataset_count || 0,
+      organisms: c.organisms || [],
+      stats: {
+        total_peptides: c.total_peptides || 0,
+        total_proteins: c.total_proteins || 0,
+      },
+    }))
   } catch (e) {
-    console.warn(`Could not load all pages for ${name}:`, e);
-    collectionData.value[name] = [];
-  }
-}
-
-async function goPage(p) {
-  if (p < 1 || p > totalPages.value) return;
-  currentPage.value = p;
-}
-
-watch(activeTab, async (tab) => {
-  currentPage.value = 1;
-  searchQuery.value = "";
-  loading.value = true;
-  if (tab === "all") {
-    // Load all pages for all collections
-    for (const col of collections.value) {
-      await loadAllCollectionPages(col.name, col.total_pages || 1);
-    }
-  } else {
-    const col = collections.value.find((c) => c.name === tab);
-    if (col) {
-      await loadAllCollectionPages(tab, col.total_pages || 1);
-    }
-  }
-  loading.value = false;
-});
-
-onMounted(async () => {
-  loading.value = true;
-  try {
-    const res = await fetch("./data/registry.json");
-    const data = await res.json();
-    collections.value = data.collections || [];
-    // Load all pages for all collections
-    for (const col of collections.value) {
-      await loadAllCollectionPages(col.name, col.total_pages || 1);
-    }
-  } catch (e) {
-    console.warn("Could not load registry.json:", e);
+    error.value = true
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-});
+}
+
+onMounted(load)
 </script>
 
 <style scoped>
-.update-legend {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  background: #ecfdf5;
-  border: 1px solid #6ee7b7;
-  border-radius: 20px;
-  margin-left: 8px;
+.skeleton-card {
+  height: 220px;
+  border-radius: 12px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  animation: pulse 1.4s ease-in-out infinite;
 }
-.update-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  animation: pulse-dot 2s ease-in-out infinite;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
-.update-text {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #059669;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.85); }
+.notice {
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-secondary);
 }
 </style>

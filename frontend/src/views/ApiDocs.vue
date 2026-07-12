@@ -25,16 +25,16 @@
         <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: left;">
           <h3 style="font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Available Now</h3>
           <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
-            All portal data is available as static JSON files:
+            All portal data is served by live, public REST backends (CORS enabled):
           </p>
           <pre style="background: #0f172a; border-radius: 8px; padding: 14px 18px; font-family: var(--mono); font-size: 13px; color: #e2e8f0; overflow-x: auto; line-height: 1.8;"><span style="color:#64748b;"># Registry of all collections</span>
-curl https://portal.quantms.org/data/registry.json
+curl https://publish.quantms.org/collections
 
-<span style="color:#64748b;"># Collection dataset listing</span>
-curl https://portal.quantms.org/data/collections/msnet/collection.json
+<span style="color:#64748b;"># Cross-collection dataset search</span>
+curl "https://api.quantms.org/dataset-search/datasets?collection=msnet"
 
-<span style="color:#64748b;"># Individual dataset detail</span>
-curl https://portal.quantms.org/data/collections/msnet/datasets/PXD000865.json</pre>
+<span style="color:#64748b;"># Peptide / protein search</span>
+curl "https://api.quantms.org/peptide-search/search/peptide?sequence=ADSRDPASDQMQHWK"</pre>
         </div>
 
         <div style="margin-top: 28px;">
