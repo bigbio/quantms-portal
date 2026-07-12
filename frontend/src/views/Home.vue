@@ -16,8 +16,29 @@
 
   <StatsRibbon v-if="globalStats" :stats="globalStats" />
 
-  <!-- Apps catalog -->
-  <section class="section" id="apps">
+  <!-- Collections (listed first) -->
+  <section class="section" id="collections">
+    <div class="container">
+      <div class="section-header">
+        <h2>Collections</h2>
+        <p>Curated groups of datasets, each with specialized indexes and services built on top.</p>
+      </div>
+
+      <div v-if="collectionsError" class="notice">
+        Collections are temporarily unavailable.
+        <button class="page-btn" style="margin-left: 12px" @click="loadCollections">Retry</button>
+      </div>
+      <div v-else-if="loadingCollections" class="collection-grid">
+        <div v-for="n in 4" :key="n" class="skeleton-card"></div>
+      </div>
+      <div v-else class="collection-grid">
+        <CollectionCard v-for="col in collections" :key="col.name" :collection="col" @select="goToCollection" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Applications (the app catalog, gateway API excluded) -->
+  <section class="section section-alt" id="apps">
     <div class="container">
       <div class="section-header">
         <h2>Applications</h2>
@@ -53,29 +74,8 @@
       </div>
 
       <div class="api-hub">
-        Explore every backend at the
-        <a :href="apiDocsUrl" target="_blank" rel="noopener">quantms API hub ↗</a>.
-      </div>
-    </div>
-  </section>
-
-  <!-- Collections -->
-  <section class="section section-alt" id="collections">
-    <div class="container">
-      <div class="section-header">
-        <h2>Collections</h2>
-        <p>Curated groups of datasets, each with specialized indexes and services built on top.</p>
-      </div>
-
-      <div v-if="collectionsError" class="notice">
-        Collections are temporarily unavailable.
-        <button class="page-btn" style="margin-left: 12px" @click="loadCollections">Retry</button>
-      </div>
-      <div v-else-if="loadingCollections" class="collection-grid">
-        <div v-for="n in 4" :key="n" class="skeleton-card"></div>
-      </div>
-      <div v-else class="collection-grid">
-        <CollectionCard v-for="col in collections" :key="col.name" :collection="col" @select="goToCollection" />
+        Building an agent or client? Explore every backend — including the
+        <a :href="apiDocsUrl" target="_blank" rel="noopener">Collections &amp; Publish API ↗</a>.
       </div>
     </div>
   </section>
@@ -100,20 +100,29 @@ const collectionsError = ref(false)
 const apps = ref([])
 const appsError = ref(false)
 
-// Map gateway app id -> in-portal route.
+// Map app id -> in-portal route.
 const APP_ROUTES = {
   collections: '/collections',
   'dataset-search': '/apps/dataset-search',
   'peptide-search': '/apps/peptide-search',
+  statistics: '/statistics',
+}
+
+// Descriptions for apps whose manifest ships an empty description.
+const APP_FALLBACK_DESC = {
+  collections: 'Browse and filter datasets grouped into curated collections.',
+  statistics: 'Portal-wide statistics — peptides, proteins, datasets, species, PTMs and proteome coverage.',
 }
 
 const appCards = computed(() =>
   apps.value
-    .filter((a) => a.enabled !== false && (APP_ROUTES[a.id] || a.docs_url))
+    // The gateway self-entry (Collections & Publish API) is the API hub, not a
+    // user-facing app — it is surfaced via the API-hub link below, not as a card.
+    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && (APP_ROUTES[a.id] || a.docs_url))
     .map((a) => ({
       id: a.id,
       title: a.title || a.id,
-      description: a.description || 'quantms service.',
+      description: a.description || APP_FALLBACK_DESC[a.id] || 'quantms service.',
       tier: a.tier ?? 1,
       to: APP_ROUTES[a.id] || '',
       href: APP_ROUTES[a.id] ? '' : a.base_url || a.docs_url || '',
