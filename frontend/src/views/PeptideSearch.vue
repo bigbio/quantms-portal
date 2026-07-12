@@ -52,11 +52,12 @@
             <option value="peptidoform">Peptidoform</option>
           </select>
 
-          <select v-model="modification" class="facet-select" title="Modification">
-            <option value="">Any modification</option>
+          <select v-model="modification" class="facet-select" title="Modification — leave on “Any” to match every form">
+            <option value="">Any modification (all forms)</option>
+            <option value="__unmodified__">Unmodified only</option>
             <option v-for="m in MODS" :key="m" :value="m">{{ m }}</option>
           </select>
-          <select v-model="residue" class="facet-select" title="Modified residue">
+          <select v-model="residue" class="facet-select" title="Modified residue" :disabled="unmodifiedOnly">
             <option value="">Any residue</option>
             <option v-for="r in RESIDUES" :key="r" :value="r">{{ r }}</option>
           </select>
@@ -79,7 +80,10 @@
           <button v-if="hasFilters" class="page-btn" style="padding: 8px 14px" @click="clearFilters">Clear</button>
         </div>
       </div>
-      <p v-if="mode === 'peptide'" class="req-note">A peptide sequence is required to search.</p>
+      <p v-if="mode === 'peptide'" class="req-note">
+        A peptide sequence is required. Leave <em>modification</em> on “Any” to match every form (modified and unmodified),
+        or pick “Unmodified only” for the bare peptide.
+      </p>
       <p v-else class="req-note">A protein accession or gene is required to search.</p>
 
       <!-- Backend unavailable -->
@@ -140,6 +144,8 @@
 
         <div v-else class="hint">
           Try <code @click="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')">ADSRDPASDQMQHWK</code> with Oxidation on M,
+          search a specific peptidoform
+          <code @click="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')">.(Acetyl)ADSRDPASDQM(Oxidation)QHWK</code>,
           or switch to Protein and search <code @click="demoProtein('ALBU_HUMAN')">ALBU_HUMAN</code> (Serum albumin).
         </div>
       </template>
@@ -178,6 +184,11 @@ const query = ref('')
 const loading = ref(false)
 const backendDown = ref(false)
 
+// "Unmodified only" is a sentinel value of the modification dropdown: it maps to
+// the backend's `unmodified=true` flag (bare peptides with no mods) rather than a
+// modification name, so it is mutually exclusive with a chosen residue.
+const unmodifiedOnly = computed(() => modification.value === '__unmodified__')
+
 const hasFilters = computed(() =>
   !!(modification.value || residue.value || organism.value || tissue.value || instrument.value || collection.value)
 )
@@ -187,8 +198,9 @@ const canSearch = computed(() =>
 
 function buildParams() {
   return {
-    modification: modification.value || undefined,
-    residue: residue.value || undefined,
+    modification: unmodifiedOnly.value ? undefined : (modification.value || undefined),
+    unmodified: unmodifiedOnly.value ? true : undefined,
+    residue: unmodifiedOnly.value ? undefined : (residue.value || undefined),
     organism: organism.value || undefined,
     tissue: tissue.value || undefined,
     instrument: instrument.value || undefined,
@@ -212,8 +224,9 @@ function currentQuery() {
     if (sequence.value.trim()) q.sequence = sequence.value.trim().toUpperCase()
     if (matchMode.value && matchMode.value !== 'exact') q.match = matchMode.value
   }
-  if (modification.value) q.modification = modification.value
-  if (residue.value) q.residue = residue.value
+  if (unmodifiedOnly.value) q.unmodified = '1'
+  else if (modification.value) q.modification = modification.value
+  if (residue.value && !unmodifiedOnly.value) q.residue = residue.value
   if (organism.value) q.organism = organism.value
   if (tissue.value) q.tissue = tissue.value
   if (instrument.value) q.instrument = instrument.value
@@ -227,7 +240,7 @@ function applyQuery(q) {
   sequence.value = q.sequence || ''
   proteinQuery.value = q.query || ''
   matchMode.value = q.match || 'exact'
-  modification.value = q.modification || ''
+  modification.value = q.unmodified ? '__unmodified__' : (q.modification || '')
   residue.value = q.residue || ''
   organism.value = q.organism || ''
   tissue.value = q.tissue || ''
@@ -289,9 +302,20 @@ async function run() {
 
 function demo(seq, mod, res) {
   mode.value = 'peptide'
+  matchMode.value = 'exact'
   sequence.value = seq
   modification.value = mod
   residue.value = res
+  run()
+}
+// Demo a specific peptidoform search (match mode = peptidoform): the sequence is
+// the full OpenMS peptidoform, so the modification/residue filters are cleared.
+function demoPeptidoform(peptidoform) {
+  mode.value = 'peptide'
+  matchMode.value = 'peptidoform'
+  modification.value = ''
+  residue.value = ''
+  sequence.value = peptidoform
   run()
 }
 function demoProtein(q) {
