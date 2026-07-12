@@ -95,6 +95,8 @@
       <template v-else>
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
+        <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
@@ -163,6 +165,7 @@ import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
+import ProteinProfile from '../components/ProteinProfile.vue'
 
 // Fallbacks used only until the data-driven /modifications vocabulary loads (or
 // if it is unavailable): the current free behavior is preserved.
@@ -193,6 +196,11 @@ const backendDown = ref(false)
 // Bare peptide whose biological profile is currently shown (set when a peptide
 // search runs; independent of the live input box).
 const profileSequence = ref('')
+
+// Protein query whose biological profile is currently shown (set when a protein
+// search runs; independent of the live input box). The protein-level mirror of
+// profileSequence.
+const profileProtein = ref('')
 
 // Data-driven modification vocabulary: [{ name, residues[], n_datasets }].
 // Empty until /modifications loads; drives the modification→residue cascade so
@@ -346,11 +354,14 @@ async function run() {
       // Drive the biological profile from the searched bare peptide. A specific
       // peptidoform query still profiles its bare backbone (mods stripped).
       profileSequence.value = bareOf(params.sequence)
+      profileProtein.value = ''
       path = '/search/peptide'
     } else {
       params.query = proteinQuery.value.trim()
       query.value = params.query
       profileSequence.value = ''
+      // Drive the protein biological profile from the searched accession/gene.
+      profileProtein.value = params.query
       path = '/search/protein'
     }
     result.value = await apiGet(PEPTIDE_SEARCH_BASE, path, params)
