@@ -54,6 +54,7 @@
           <div class="contact-info">
             <h3>Timo Sachsenberg, Ph.D.</h3>
             <p class="contact-title">OpenMS Lead Developer</p>
+            <p class="contact-org">University of Tübingen</p>
           </div>
         </div>
 
@@ -63,7 +64,8 @@
             <h3>Mingze Bai</h3>
             <p class="contact-title">Professor</p>
             <p class="contact-org">
-              Chongqing Key Laboratory of Big Data for Bio Intelligence
+              Chongqing University · Chongqing Key Laboratory of Big Data for
+              Bio Intelligence
             </p>
           </div>
         </div>
