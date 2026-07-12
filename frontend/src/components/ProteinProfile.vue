@@ -133,9 +133,14 @@
           v-for="m in ptms"
           :key="m.site"
           class="tag tag-violet pp-count-chip"
-          :title="`${formatNum(m.n_observations)} observations`"
+          :title="ptmTitle(m)"
         >
           {{ m.site }} <span class="pp-count">×{{ formatNum(m.n_datasets) }}</span>
+          <span
+            v-if="ptmClassInfo(m.class)"
+            class="ptm-badge"
+            :class="ptmClassInfo(m.class).tagClass"
+          >{{ ptmClassInfo(m.class).label }}</span>
         </span>
       </div>
     </div>
@@ -176,12 +181,20 @@
 import { ref, computed, watch } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
-import { formatNum, formatBig } from '../utils/format.js'
+import { formatNum, formatBig, ptmClassInfo } from '../utils/format.js'
 
 const props = defineProps({
   // Protein query: UniProt accession or gene. Empty string clears the panel.
   accession: { type: String, default: '' },
 })
+
+// Chip tooltip: keep the observation count, append the biological-relevance class
+// when the backend provides one.
+function ptmTitle(m) {
+  const obs = `${formatNum(m.n_observations)} observations`
+  const info = ptmClassInfo(m.class)
+  return info ? `${obs} · ${info.label}` : obs
+}
 
 // Emitted when the user picks a candidate from the "did you mean" list: the
 // parent re-runs the protein search/profile for that exact accession.

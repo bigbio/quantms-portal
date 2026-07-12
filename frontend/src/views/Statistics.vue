@@ -39,6 +39,10 @@
             </div>
           </div>
           <p class="chart-sub">Distinct {{ modMetricLabel.toLowerCase() }} carrying each modification. Hover a bar for the per-residue split.</p>
+          <div v-if="modHasClass" class="mod-legend">
+            <span class="mod-legend-item"><span class="mod-swatch mod-swatch-bio" /> Biological</span>
+            <span class="mod-legend-item"><span class="mod-swatch mod-swatch-chem" /> Fixed / label / artifact</span>
+          </div>
           <div v-if="modChart.labels.length" class="chart-scroll">
             <StatsChart type="bar" :data="modChart" :options="modOptions" :height="Math.max(280, modChart.labels.length * 26)" />
           </div>
@@ -193,18 +197,35 @@ const kpis = computed(() => {
 const hbarOptions = { indexAxis: 'y' }
 
 // --- PTM (flagship) ----------------------------------------------------------
+// Biological-relevance colouring: real biology stands out (green) from the
+// chemistry/labelling modifications (Carbamidomethyl, TMT, …) that dominate by
+// volume but are not biology (grey).
+const MOD_BIO_COLOR = '#10b981' // --success
+const MOD_CHEM_COLOR = '#94a3b8' // --text-muted
+const modIsBio = (m) =>
+  typeof m.is_biological === 'boolean' ? m.is_biological : String(m.class || '').toLowerCase() === 'biological'
+// Whether stats.json carries the classification. Older payloads omit it → fall
+// back to the original per-index palette (no colour-by-class, no legend).
+const modHasClass = computed(() =>
+  (stats.value?.modifications || []).some((m) => m.class != null || typeof m.is_biological === 'boolean')
+)
+
 const modChart = computed(() => {
   const mods = (stats.value?.modifications || []).slice().sort((a, b) => (b[modMetric.value] || 0) - (a[modMetric.value] || 0))
+  const classed = modHasClass.value
+  const barColor = (m, i) => (classed ? (modIsBio(m) ? MOD_BIO_COLOR : MOD_CHEM_COLOR) : color(i))
   return {
     labels: mods.map((m) => m.modification),
     datasets: [{
       label: modMetricLabel.value,
       data: mods.map((m) => m[modMetric.value] || 0),
-      backgroundColor: mods.map((_, i) => alpha(color(i), 0.85)),
-      borderColor: mods.map((_, i) => color(i)),
+      backgroundColor: mods.map((m, i) => alpha(barColor(m, i), 0.85)),
+      borderColor: mods.map((m, i) => barColor(m, i)),
       borderWidth: 1,
       // stash per-residue split for the tooltip
       _sites: mods.map((m) => m.sites || []),
+      // stash a class label ("Biological" / "Fixed"…) for the tooltip
+      _classLabels: mods.map((m) => (classed ? (modIsBio(m) ? 'Biological' : (m.class ? m.class.charAt(0).toUpperCase() + m.class.slice(1) : 'Chemical')) : '')),
     }],
   }
 })
@@ -214,9 +235,12 @@ const modOptions = {
     tooltip: {
       callbacks: {
         afterLabel: (ctx) => {
+          const lines = []
+          const cls = (ctx.dataset._classLabels || [])[ctx.dataIndex]
+          if (cls) lines.push(cls)
           const sites = (ctx.dataset._sites || [])[ctx.dataIndex] || []
-          if (!sites.length) return ''
-          return sites.map((s) => `  ${s.residue}: ${Number(s.peptidoforms).toLocaleString()}`)
+          for (const s of sites) lines.push(`  ${s.residue}: ${Number(s.peptidoforms).toLocaleString()}`)
+          return lines
         },
       },
     },
@@ -390,6 +414,31 @@ onMounted(load)
   font-size: 13px;
   padding: 24px 0;
   text-align: center;
+}
+.mod-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin: -6px 0 12px;
+}
+.mod-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.mod-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.mod-swatch-bio {
+  background: #10b981;
+}
+.mod-swatch-chem {
+  background: #94a3b8;
 }
 .chart-scroll {
   width: 100%;

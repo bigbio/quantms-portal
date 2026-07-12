@@ -37,6 +37,39 @@ export function cleanInstrument(s) {
   return (m ? m[1] : s).trim()
 }
 
+// --- PTM classification ------------------------------------------------------
+// The backend annotates each modification / PTM site with a coarse biological
+// relevance `class`:
+//   biological          → real post-translational biology (Phospho, Acetyl@K, …)
+//   fixed | label | artifact → chemistry / labelling / sample-prep, not biology
+//   unknown             → unclassified
+// It also sends a redundant boolean `is_biological` (== class === 'biological').
+// Older payloads omit both — callers MUST degrade gracefully: ptmClassInfo()
+// returns null so the UI falls back to its prior, unbadged rendering.
+const PTM_CLASS_META = {
+  biological: { key: 'biological', label: 'Biological', tagClass: 'ptm-bio', biological: true },
+  artifact: { key: 'artifact', label: 'Artifact', tagClass: 'ptm-chem', biological: false },
+  fixed: { key: 'fixed', label: 'Fixed', tagClass: 'ptm-chem', biological: false },
+  label: { key: 'label', label: 'Label', tagClass: 'ptm-chem', biological: false },
+  unknown: { key: 'unknown', label: 'Unknown', tagClass: 'ptm-unknown', biological: false },
+}
+
+// Resolve a raw class string to display metadata, or null when absent / empty /
+// unrecognised (so the caller keeps its previous look).
+export function ptmClassInfo(cls) {
+  if (cls == null || cls === '') return null
+  return PTM_CLASS_META[String(cls).toLowerCase()] || null
+}
+
+// True when a PTM record is biologically meaningful. Prefers the explicit
+// `is_biological` boolean, falls back to the class string; false when neither
+// is present (unknown → not asserted as biology).
+export function isBiologicalPtm(rec) {
+  if (rec && typeof rec.is_biological === 'boolean') return rec.is_biological
+  const info = ptmClassInfo(rec && rec.class)
+  return !!(info && info.biological)
+}
+
 // Stable tag color class per known collection.
 export function collectionTag(name) {
   switch (name) {

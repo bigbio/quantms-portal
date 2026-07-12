@@ -52,15 +52,33 @@
             <option value="peptidoform">Peptidoform</option>
           </select>
 
-          <select v-model="modification" class="facet-select" title="Modification — leave on “Any” to match every form">
+          <select v-model="modification" class="facet-select" title="Modification — leave on “Any” to match every form. Biological modifications are grouped first; chemical / label / artifact modifications remain fully selectable.">
             <option value="">Any modification (all forms)</option>
             <option value="__unmodified__">Unmodified only</option>
-            <option v-for="m in modList" :key="m" :value="m">{{ m }}</option>
+            <!-- Grouped when the backend supplies the biological-relevance class;
+                 biological first, then chemistry/labelling. Both groups stay
+                 selectable — classification annotates, never gates. -->
+            <template v-if="modGroups">
+              <optgroup label="Biological">
+                <option v-for="m in modGroups.bio" :key="m.name" :value="m.name">{{ m.name }}</option>
+              </optgroup>
+              <optgroup label="Chemical / label / artifact">
+                <option v-for="m in modGroups.other" :key="m.name" :value="m.name">{{ m.name }}</option>
+              </optgroup>
+            </template>
+            <!-- Fallback: flat, unlabelled list (no vocabulary or no class info). -->
+            <option v-for="m in modList" v-else :key="m" :value="m">{{ m }}</option>
           </select>
           <select v-model="residue" class="facet-select" title="Modified residue" :disabled="unmodifiedOnly || !residueOptions.length">
             <option value="">Any residue</option>
             <option v-for="r in residueOptions" :key="r" :value="r">{{ r }}</option>
           </select>
+          <span
+            v-if="selectedModClass"
+            class="ptm-badge"
+            :class="selectedModClass.tagClass"
+            :title="`This modification is classified as ${selectedModClass.label.toLowerCase()}${selectedModClass.biological ? ' (real post-translational biology)' : ' — chemistry, labelling or artifact, not biology'}`"
+          >{{ selectedModClass.label }}</span>
 
           <select v-model="organism" class="facet-select" title="Organism">
             <option value="">All organisms</option>
@@ -163,7 +181,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
-import { formatNum, formatBig, cleanInstrument, collectionTag } from '../utils/format.js'
+import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
 import ProteinProfile from '../components/ProteinProfile.vue'
 
@@ -221,6 +239,41 @@ const residueOptions = computed(() => {
     if (entry) return entry.residues || []
   }
   return RESIDUES
+})
+
+// Whether the vocabulary carries the biological-relevance classification (added
+// by the backend later than the vocabulary itself). When absent, the dropdown
+// stays a flat, unlabelled list — no grouping, no class badge.
+const modHasClass = computed(() =>
+  modVocab.value.some((m) => m.class != null || typeof m.is_biological === 'boolean')
+)
+
+// Modifications split into "Biological" vs "Chemical / label / artifact" for the
+// grouped dropdown. Null (→ flat modList fallback) when there is no vocabulary or
+// no class information. Classification annotates only: every modification stays
+// selectable in exactly one group.
+const modGroups = computed(() => {
+  if (!modVocab.value.length || !modHasClass.value) return null
+  const bio = []
+  const other = []
+  for (const m of modVocab.value) {
+    ;(isBiologicalPtm(m) ? bio : other).push(m)
+  }
+  return { bio, other }
+})
+
+// Class of the current modification selection, refined to the chosen residue via
+// classes[] when possible (e.g. Acetyl@K is biological but Acetyl@N-term is an
+// artifact). Null → no badge shown (unknown mod, unclassified, or no vocabulary).
+const selectedModClass = computed(() => {
+  if (unmodifiedOnly.value || !modification.value) return null
+  const entry = modVocab.value.find((m) => m.name === modification.value)
+  if (!entry) return null
+  if (residue.value && Array.isArray(entry.classes)) {
+    const perRes = entry.classes.find((c) => c.residue === residue.value)
+    if (perRes && perRes.class != null) return ptmClassInfo(perRes.class)
+  }
+  return ptmClassInfo(entry.class)
 })
 
 // "Unmodified only" is a sentinel value of the modification dropdown: it maps to
