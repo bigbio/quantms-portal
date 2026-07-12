@@ -13,6 +13,8 @@ export class ApiError extends Error {
   }
 }
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
 function buildQuery(params) {
   if (!params) return ''
   const usp = new URLSearchParams()
@@ -36,31 +38,53 @@ function buildQuery(params) {
 export async function apiGet(base, path, params, opts = {}) {
   const url = `${base}${path}${buildQuery(params)}`
   const timeout = opts.timeout ?? DEFAULT_TIMEOUT_MS
+  // Backends run as a pool of pods behind a proxy; a cold/restarting pod can
+  // briefly return a CORS-less error page (browser reports it as a network
+  // failure) or a 5xx. Retry such transient failures once so the user doesn't
+  // land on an "unavailable" state for a one-off hiccup. Timeouts and external
+  // aborts are NOT retried (the caller already waited / cancelled).
+  const retries = opts.retries ?? 1
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeout)
-  // Allow an external signal to also abort this request.
-  if (opts.signal) {
-    if (opts.signal.aborted) controller.abort()
-    else opts.signal.addEventListener('abort', () => controller.abort(), { once: true })
-  }
+  let attempt = 0
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const controller = new AbortController()
+    let timedOut = false
+    const timer = setTimeout(() => { timedOut = true; controller.abort() }, timeout)
+    // Allow an external signal to also abort this request.
+    if (opts.signal) {
+      if (opts.signal.aborted) controller.abort()
+      else opts.signal.addEventListener('abort', () => controller.abort(), { once: true })
+    }
 
-  let res
-  try {
-    res = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } })
-  } catch (e) {
+    let res
+    try {
+      res = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } })
+    } catch (e) {
+      clearTimeout(timer)
+      const externalAbort = opts.signal && opts.signal.aborted
+      if (!timedOut && !externalAbort && attempt < retries) {
+        attempt++
+        await sleep(400 * attempt)
+        continue
+      }
+      throw new ApiError(`Network error contacting ${url}`, 0)
+    }
     clearTimeout(timer)
-    throw new ApiError(`Network error contacting ${url}`, 0)
-  }
-  clearTimeout(timer)
 
-  if (!res.ok) {
-    throw new ApiError(`Request to ${url} failed (${res.status})`, res.status)
-  }
+    if (!res.ok) {
+      if (res.status >= 500 && attempt < retries) {
+        attempt++
+        await sleep(400 * attempt)
+        continue
+      }
+      throw new ApiError(`Request to ${url} failed (${res.status})`, res.status)
+    }
 
-  try {
-    return await res.json()
-  } catch (e) {
-    throw new ApiError(`Invalid JSON from ${url}`, res.status)
+    try {
+      return await res.json()
+    } catch (e) {
+      throw new ApiError(`Invalid JSON from ${url}`, res.status)
+    }
   }
 }

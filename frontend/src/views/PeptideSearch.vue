@@ -85,7 +85,7 @@
       <!-- Backend unavailable -->
       <div v-if="backendDown" class="notice">
         The search service is temporarily unavailable. Please retry in a moment.
-        <button class="page-btn" style="margin-left: 12px" @click="init">Retry</button>
+        <button class="page-btn" style="margin-left: 12px" @click="retry">Retry</button>
       </div>
 
       <template v-else>
@@ -148,13 +148,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag } from '../utils/format.js'
 
 const MODS = ['Phospho', 'Oxidation', 'Acetyl', 'TMT6plex', 'Carbamidomethyl', 'GlyGly', 'Methyl', 'Deamidated']
 const RESIDUES = ['S', 'T', 'Y', 'M', 'K', 'N', 'Q', 'C', 'R', 'N-term', 'C-term']
+
+const route = useRoute()
+const router = useRouter()
 
 const mode = ref('peptide')
 const sequence = ref('')
@@ -192,12 +196,53 @@ function buildParams() {
   }
 }
 
+// --- Shareable/deep-linkable URL state -------------------------------------
+// Guard so that programmatic route updates (from run) don't re-trigger the
+// route watcher and cause a loop.
+let applyingRoute = false
+
+// Current search state -> minimal, human-readable query object (empty values
+// and defaults omitted).
+function currentQuery() {
+  const q = {}
+  if (mode.value === 'protein') {
+    q.mode = 'protein'
+    if (proteinQuery.value.trim()) q.query = proteinQuery.value.trim()
+  } else {
+    if (sequence.value.trim()) q.sequence = sequence.value.trim().toUpperCase()
+    if (matchMode.value && matchMode.value !== 'exact') q.match = matchMode.value
+  }
+  if (modification.value) q.modification = modification.value
+  if (residue.value) q.residue = residue.value
+  if (organism.value) q.organism = organism.value
+  if (tissue.value) q.tissue = tissue.value
+  if (instrument.value) q.instrument = instrument.value
+  if (collection.value) q.collection = collection.value
+  return q
+}
+
+// Query object -> form refs.
+function applyQuery(q) {
+  mode.value = q.mode === 'protein' ? 'protein' : 'peptide'
+  sequence.value = q.sequence || ''
+  proteinQuery.value = q.query || ''
+  matchMode.value = q.match || 'exact'
+  modification.value = q.modification || ''
+  residue.value = q.residue || ''
+  organism.value = q.organism || ''
+  tissue.value = q.tissue || ''
+  instrument.value = q.instrument || ''
+  collection.value = q.collection || ''
+}
+
 async function init() {
-  backendDown.value = false
+  // facets (filter dropdowns) and stats (ribbon) are best-effort: a hiccup on
+  // either must NOT block the search itself. Only an actual search failure
+  // (in run) raises the "unavailable" banner.
   try {
     facets.value = await apiGet(PEPTIDE_SEARCH_BASE, '/facets')
   } catch (e) {
-    backendDown.value = true
+    // filter dropdowns stay empty; search still works
   }
   try {
     stats.value = await apiGet(PEPTIDE_SEARCH_BASE, '/stats')
@@ -206,8 +251,18 @@ async function init() {
   }
 }
 
+// Retry from the "unavailable" banner: re-probe facets/stats and re-run the
+// current search.
+function retry() {
+  init()
+  run()
+}
+
 async function run() {
   if (!canSearch.value) return
+  // Reflect the search into the URL so it can be shared/bookmarked. Use
+  // replace() so repeated searches don't spam browser history.
+  if (!applyingRoute) router.replace({ query: currentQuery() }).catch(() => {})
   loading.value = true
   result.value = null
   try {
@@ -253,7 +308,23 @@ function clearFilters() {
   collection.value = ''
 }
 
-onMounted(init)
+// Populate the form from the incoming URL and auto-run when a searchable query
+// is present, so a shared/bookmarked link reproduces the exact search.
+watch(
+  () => route.query,
+  (q) => {
+    applyingRoute = true
+    applyQuery(q)
+    if (canSearch.value) run()
+    applyingRoute = false
+  }
+)
+
+onMounted(() => {
+  init()
+  applyQuery(route.query)
+  if (canSearch.value) run()
+})
 </script>
 
 <style scoped>

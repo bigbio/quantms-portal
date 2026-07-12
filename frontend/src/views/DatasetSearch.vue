@@ -70,18 +70,19 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import DatasetResultsTable from '../components/DatasetResultsTable.vue'
 import { apiGet } from '../api.js'
 import { DATASET_SEARCH_BASE, PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatBig, cleanInstrument } from '../utils/format.js'
 
 const route = useRoute()
+const router = useRouter()
 
-const q = ref(route.query.q || '')
-const collection = ref(route.query.collection || '')
-const organism = ref(route.query.organism || '')
+const q = ref('')
+const collection = ref('')
+const organism = ref('')
 const instrument = ref('')
 const sort = ref('peptides')
 const page = ref(1)
@@ -130,7 +131,35 @@ async function loadFacets() {
   }
 }
 
+// --- Shareable/deep-linkable URL state -------------------------------------
+// Guard so programmatic route updates don't re-trigger the route watcher.
+let applyingRoute = false
+
+// Current search state -> minimal, human-readable query object.
+function currentQuery() {
+  const qy = {}
+  if (q.value) qy.q = q.value
+  if (collection.value) qy.collection = collection.value
+  if (organism.value) qy.organism = organism.value
+  if (instrument.value) qy.instrument = instrument.value
+  if (sort.value && sort.value !== 'peptides') qy.sort = sort.value
+  if (page.value && page.value > 1) qy.page = String(page.value)
+  return qy
+}
+
+// Query object -> form refs.
+function applyQuery(qy) {
+  q.value = qy.q || ''
+  collection.value = qy.collection || ''
+  organism.value = qy.organism || ''
+  instrument.value = qy.instrument || ''
+  sort.value = qy.sort || 'peptides'
+  page.value = qy.page ? Math.max(1, parseInt(qy.page, 10) || 1) : 1
+}
+
 async function load() {
+  // Reflect current state into the URL (replace() to avoid history spam).
+  if (!applyingRoute) router.replace({ query: currentQuery() }).catch(() => {})
   loading.value = true
   error.value = false
   try {
@@ -174,8 +203,20 @@ function clearFilters() {
   reload()
 }
 
+// Repopulate + reload when the URL query changes (shared link, back/forward).
+watch(
+  () => route.query,
+  (qy) => {
+    applyingRoute = true
+    applyQuery(qy)
+    load()
+    applyingRoute = false
+  }
+)
+
 onMounted(() => {
   loadFacets()
+  applyQuery(route.query)
   load()
 })
 </script>
