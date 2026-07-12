@@ -78,15 +78,18 @@
 
     <!-- Species / tissue / disease chips with counts -->
     <div v-if="species.length || tissues.length || diseases.length" class="pp-block">
-      <div class="pp-block-label">Observed context</div>
+      <div class="pp-block-label">Observed context <span class="pp-unit">· datasets</span></div>
       <div class="pp-chips">
-        <span v-for="s in species" :key="'sp-' + s.value" class="tag tag-blue pp-count-chip">
+        <span v-for="s in species" :key="'sp-' + s.value" class="tag tag-blue pp-count-chip"
+              :title="`${formatNum(s.n_datasets)} datasets`">
           🧬 {{ s.value }} <span class="pp-count">{{ formatNum(s.n_datasets) }}</span>
         </span>
-        <span v-for="t in tissues" :key="'ts-' + t.value" class="tag tag-green pp-count-chip">
+        <span v-for="t in tissues" :key="'ts-' + t.value" class="tag tag-green pp-count-chip"
+              :title="`${formatNum(t.n_datasets)} datasets`">
           {{ t.value }} <span class="pp-count">{{ formatNum(t.n_datasets) }}</span>
         </span>
-        <span v-for="d in diseases" :key="'ds-' + d.value" class="tag tag-warning pp-count-chip">
+        <span v-for="d in diseases" :key="'ds-' + d.value" class="tag tag-warning pp-count-chip"
+              :title="`${formatNum(d.n_datasets)} datasets`">
           {{ d.value }} <span class="pp-count">{{ formatNum(d.n_datasets) }}</span>
         </span>
       </div>
@@ -109,7 +112,7 @@
 
     <!-- Observation mini-bars -->
     <div v-if="topTissues.length || topSpecies.length" class="pp-block">
-      <div class="pp-block-label">Where it is observed</div>
+      <div class="pp-block-label">Where it is observed <span class="pp-unit">· observations (spectral matches)</span></div>
       <div class="pp-bars-grid">
         <div v-if="topTissues.length" class="pp-bars">
           <div class="pp-bars-cap">By tissue</div>
@@ -118,7 +121,7 @@
             <span class="pp-bar-track">
               <span class="pp-bar-fill pp-bar-green" :style="{ width: pct(row.n_observations, topTissueMax) }" />
             </span>
-            <span class="pp-bar-val">{{ formatBig(row.n_observations) }}</span>
+            <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
           </div>
         </div>
         <div v-if="topSpecies.length" class="pp-bars">
@@ -128,7 +131,7 @@
             <span class="pp-bar-track">
               <span class="pp-bar-fill pp-bar-blue" :style="{ width: pct(row.n_observations, topSpeciesMax) }" />
             </span>
-            <span class="pp-bar-val">{{ formatBig(row.n_observations) }}</span>
+            <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
           </div>
         </div>
       </div>
@@ -334,6 +337,12 @@ watch(() => props.sequence, (s) => load(s), { immediate: true })
   letter-spacing: 0.05em;
   color: var(--text-muted);
   margin-bottom: 8px;
+}
+.pp-unit {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.75;
 }
 .pp-chips {
   display: flex;
