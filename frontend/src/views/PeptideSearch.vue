@@ -42,7 +42,7 @@
             type="text"
             class="filter-search"
             style="width: 280px"
-            placeholder="UniProt / gene (required), e.g. P02768 / ALBU_HUMAN"
+            placeholder="UniProt / gene (required), e.g. P04040 / CAT"
             @keyup.enter="run"
           />
 
@@ -151,7 +151,7 @@
           Try <code @click="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')">ADSRDPASDQMQHWK</code> with Oxidation on M,
           search a specific peptidoform
           <code @click="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')">.(Acetyl)ADSRDPASDQM(Oxidation)QHWK</code>,
-          or switch to Protein and search <code @click="demoProtein('ALBU_HUMAN')">ALBU_HUMAN</code> (Serum albumin).
+          or switch to Protein and search <code @click="demoProtein('P04040')">P04040</code> (Catalase).
         </div>
       </template>
     </div>
