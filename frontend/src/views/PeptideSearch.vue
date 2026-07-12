@@ -55,11 +55,11 @@
           <select v-model="modification" class="facet-select" title="Modification — leave on “Any” to match every form">
             <option value="">Any modification (all forms)</option>
             <option value="__unmodified__">Unmodified only</option>
-            <option v-for="m in MODS" :key="m" :value="m">{{ m }}</option>
+            <option v-for="m in modList" :key="m" :value="m">{{ m }}</option>
           </select>
-          <select v-model="residue" class="facet-select" title="Modified residue" :disabled="unmodifiedOnly">
+          <select v-model="residue" class="facet-select" title="Modified residue" :disabled="unmodifiedOnly || !residueOptions.length">
             <option value="">Any residue</option>
-            <option v-for="r in RESIDUES" :key="r" :value="r">{{ r }}</option>
+            <option v-for="r in residueOptions" :key="r" :value="r">{{ r }}</option>
           </select>
 
           <select v-model="organism" class="facet-select" title="Organism">
@@ -93,6 +93,9 @@
       </div>
 
       <template v-else>
+        <!-- Biological profile for the searched bare peptide, above the rows -->
+        <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
+
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
           <span v-if="query"> — <code>{{ query }}</code></span>
@@ -159,7 +162,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag } from '../utils/format.js'
+import PeptideProfile from '../components/PeptideProfile.vue'
 
+// Fallbacks used only until the data-driven /modifications vocabulary loads (or
+// if it is unavailable): the current free behavior is preserved.
 const MODS = ['Phospho', 'Oxidation', 'Acetyl', 'TMT6plex', 'Carbamidomethyl', 'GlyGly', 'Methyl', 'Deamidated']
 const RESIDUES = ['S', 'T', 'Y', 'M', 'K', 'N', 'Q', 'C', 'R', 'N-term', 'C-term']
 
@@ -184,6 +190,31 @@ const query = ref('')
 const loading = ref(false)
 const backendDown = ref(false)
 
+// Bare peptide whose biological profile is currently shown (set when a peptide
+// search runs; independent of the live input box).
+const profileSequence = ref('')
+
+// Data-driven modification vocabulary: [{ name, residues[], n_datasets }].
+// Empty until /modifications loads; drives the modification→residue cascade so
+// impossible combos (e.g. Carbamidomethyl@M) are never offered.
+const modVocab = ref([])
+
+// Modification names for the dropdown: from the vocabulary when available,
+// otherwise the static fallback.
+const modList = computed(() =>
+  modVocab.value.length ? modVocab.value.map((m) => m.name) : MODS
+)
+
+// Residues valid for the chosen modification. With a vocabulary and a known
+// modification, only its real residues; otherwise the full fallback list.
+const residueOptions = computed(() => {
+  if (modVocab.value.length && modification.value && !unmodifiedOnly.value) {
+    const entry = modVocab.value.find((m) => m.name === modification.value)
+    if (entry) return entry.residues || []
+  }
+  return RESIDUES
+})
+
 // "Unmodified only" is a sentinel value of the modification dropdown: it maps to
 // the backend's `unmodified=true` flag (bare peptides with no mods) rather than a
 // modification name, so it is mutually exclusive with a chosen residue.
@@ -195,6 +226,17 @@ const hasFilters = computed(() =>
 const canSearch = computed(() =>
   mode.value === 'peptide' ? !!sequence.value.trim() : !!proteinQuery.value.trim()
 )
+
+// Reduce an OpenMS peptidoform (e.g. ".(Acetyl)ADSRM(Oxidation)K") to its bare
+// backbone ("ADSRMK") so the profile endpoint, which keys on bare_peptide, gets
+// a clean sequence. Bare inputs pass through unchanged.
+function bareOf(seq) {
+  return String(seq || '')
+    .replace(/\([^)]*\)/g, '') // drop (Mod) groups
+    .replace(/\[[^\]]*\]/g, '') // drop [Mass] groups
+    .replace(/[^A-Za-z]/g, '') // drop dots / digits / separators
+    .toUpperCase()
+}
 
 function buildParams() {
   return {
@@ -262,7 +304,23 @@ async function init() {
   } catch (e) {
     // stats are optional; ignore
   }
+  try {
+    // Modification vocabulary drives the residue cascade. Best-effort: if it is
+    // unavailable the selectors fall back to the free static lists.
+    const data = await apiGet(PEPTIDE_SEARCH_BASE, '/modifications')
+    modVocab.value = Array.isArray(data?.modifications) ? data.modifications : []
+  } catch (e) {
+    // no vocabulary; static fallbacks remain in effect
+  }
 }
+
+// Keep the residue selection consistent with the chosen modification: if the
+// current residue is not valid for the new modification, clear it.
+watch(modification, () => {
+  if (residue.value && !residueOptions.value.includes(residue.value)) {
+    residue.value = ''
+  }
+})
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
 // current search.
@@ -285,10 +343,14 @@ async function run() {
       params.sequence = sequence.value.trim().toUpperCase()
       params.match = matchMode.value
       query.value = params.sequence
+      // Drive the biological profile from the searched bare peptide. A specific
+      // peptidoform query still profiles its bare backbone (mods stripped).
+      profileSequence.value = bareOf(params.sequence)
       path = '/search/peptide'
     } else {
       params.query = proteinQuery.value.trim()
       query.value = params.query
+      profileSequence.value = ''
       path = '/search/protein'
     }
     result.value = await apiGet(PEPTIDE_SEARCH_BASE, path, params)
