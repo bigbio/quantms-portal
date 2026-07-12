@@ -22,6 +22,10 @@ export const PEPTIDE_SEARCH_BASE = `${API_BASE}/peptide-search`
 // S3 browse host for dataset file downloads.
 export const BROWSE_BASE = (env.VITE_BROWSE_BASE || 'https://browse.quantms.org').replace(/\/$/, '')
 
+// Precomputed portal-wide statistics artifact (Tier-1 static app). The Statistics
+// view reads this JSON directly from browse — no stats backend, no per-request compute.
+export const STATS_PATH = '/quantms/apps/statistics/stats.json'
+
 // API documentation hub.
 export const API_DOCS_URL = `${API_BASE}/docs`
 
