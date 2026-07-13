@@ -35,10 +35,11 @@
         <div v-for="row in rows" :key="row.start" class="sm-row">
           <span class="sm-ruler sm-ruler-l">{{ row.start }}</span>
           <span class="sm-cells">
-            <template v-for="cell in row.cells" :key="cell.pos">
+            <template v-for="cell in row.cells">
               <!-- spacer between blocks of 10 -->
-              <span v-if="cell.blockBreak" class="sm-gap" aria-hidden="true" />
+              <span v-if="cell.blockBreak" :key="'g-' + cell.pos" class="sm-gap" aria-hidden="true" />
               <span
+                :key="cell.pos"
                 class="sm-cell"
                 :class="{ 'sm-has-ptm': cell.hasPtm, 'sm-covered': cell.intensity > 0 }"
                 :style="cell.intensity > 0 ? { background: greenAt(cell.intensity) } : null"
@@ -222,6 +223,7 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
 <style scoped>
 .sm-panel {
   margin-top: 18px;
+  margin-bottom: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--border-subtle);
 }
