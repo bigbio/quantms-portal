@@ -22,7 +22,7 @@
         <router-link to="/baseline">Baseline</router-link>
         <router-link to="/models">Models</router-link>
         <router-link to="/contact">Contact</router-link>
-        <router-link to="/api">API &amp; MCP</router-link>
+        <a href="https://api.quantms.org" class="nav-link-ext" target="_blank" rel="noopener">API &amp; MCP &#8599;</a>
         <router-link to="/docs">Docs</router-link>
         <a href="https://quantms.org" class="nav-link-ext" target="_blank" rel="noopener">quantms.org &#8599;</a>
       </div>

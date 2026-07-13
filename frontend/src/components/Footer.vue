@@ -17,7 +17,7 @@
           <router-link to="/search">Search</router-link>
           <router-link to="/statistics">Statistics</router-link>
           <router-link to="/baseline">Baseline</router-link>
-          <router-link to="/api">API &amp; MCP</router-link>
+          <a href="https://api.quantms.org" target="_blank" rel="noopener">API &amp; MCP</a>
           <router-link to="/docs">Documentation</router-link>
         </div>
         <div class="footer-col">
