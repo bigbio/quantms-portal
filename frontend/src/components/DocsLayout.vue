@@ -85,7 +85,7 @@ function onTocClick(id) {
 }
 
 .docs-grid {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr) 200px;

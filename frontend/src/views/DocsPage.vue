@@ -196,7 +196,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 
 /* ── Prose typography (scoped, but :deep for v-html content) ── */
 .docs-prose {
-  max-width: 760px;
+  max-width: 840px;
   font-size: 15.5px;
   line-height: 1.7;
   color: var(--text-primary);
