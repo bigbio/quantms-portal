@@ -70,7 +70,7 @@
         <span class="sm-tip-bar">
           <span class="sm-tip-bar-fill" :style="{ width: Math.round(tip.intensity * 100) + '%' }" />
         </span>
-        <span class="sm-tip-depth-val">{{ Math.round(tip.intensity * 100) }}% depth</span>
+        <span class="sm-tip-depth-val">{{ formatNum(tip.depth) }} observations</span>
       </div>
       <div v-if="!tip.mods.length && tip.intensity === 0" class="sm-tip-empty">Not covered</div>
       <ul v-if="tip.mods.length" class="sm-tip-mods">
@@ -123,6 +123,7 @@ const capped = computed(() => fullLength.value > MAX_RESIDUES)
 const rows = computed(() => {
   const seq = map.value?.sequence || ''
   const intensity = Array.isArray(map.value?.intensity) ? map.value.intensity : []
+  const depth = Array.isArray(map.value?.depth) ? map.value.depth : []
   const n = shownLength.value
   const out = []
   for (let start = 0; start < n; start += cols) {
@@ -132,11 +133,13 @@ const rows = computed(() => {
       const pos = i + 1 // 1-based residue position
       const raw = Number(intensity[i])
       const val = Number.isFinite(raw) ? Math.max(0, Math.min(1, raw)) : 0
+      const obs = Number(depth[i])
       const mods = ptmByPos.value.get(pos) || []
       cells.push({
         pos,
         ch: seq[i] || '',
         intensity: val,
+        depth: Number.isFinite(obs) ? obs : 0,
         hasPtm: mods.length > 0,
         mods,
         // spacer before this cell when it starts a new block (but not the row).
@@ -163,6 +166,7 @@ function showTip(cell, ev) {
     pos: cell.pos,
     ch: cell.ch,
     intensity: cell.intensity,
+    depth: cell.depth,
     mods: cell.mods,
     x: 0,
     y: 0,

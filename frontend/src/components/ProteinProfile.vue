@@ -125,12 +125,13 @@
       </div>
     </div>
 
-    <!-- PTM sites -->
+    <!-- PTM sites: ordered by biological relevance; biology shown first, the
+         prep-chemistry tail collapsed behind a toggle. -->
     <div v-if="ptms.length" class="pp-block">
       <div class="pp-block-label">Known PTM sites</div>
       <div class="pp-chips">
         <span
-          v-for="m in ptms"
+          v-for="m in shownPtms"
           :key="m.site"
           class="tag tag-violet pp-count-chip"
           :title="ptmTitle(m)"
@@ -142,6 +143,15 @@
             :class="ptmClassInfo(m.class).tagClass"
           >{{ ptmClassInfo(m.class).label }}</span>
         </span>
+        <button
+          v-if="hiddenPtmCount > 0"
+          type="button"
+          class="tag pp-ptm-more"
+          :aria-expanded="ptmsExpanded"
+          @click="ptmsExpanded = !ptmsExpanded"
+        >
+          {{ ptmsExpanded ? 'Show less' : `+ ${hiddenPtmCount} more` }}
+        </button>
       </div>
     </div>
 
@@ -185,7 +195,7 @@
 import { ref, computed, watch } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
-import { formatNum, formatBig, ptmClassInfo } from '../utils/format.js'
+import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
 import ProteinSequenceMap from './ProteinSequenceMap.vue'
 
 const props = defineProps({
@@ -258,6 +268,26 @@ const tissues = computed(() => arr(profile.value?.tissues))
 const diseases = computed(() => arr(profile.value?.diseases))
 const ptms = computed(() => arr(profile.value?.ptms))
 
+// PTM display: order by biological relevance, show the leading biological group
+// by default and tuck the prep-chemistry tail behind a "+ N more" toggle. When
+// there is no biology to lead with, show the first few of the ordered list.
+const PTM_FALLBACK_SHOWN = 5
+const ptmsExpanded = ref(false)
+const orderedPtms = computed(() => orderPtms(ptms.value))
+const biologicalPtmCount = computed(
+  () => orderedPtms.value.filter((m) => isBiologicalPtm(m)).length
+)
+// Default-visible count: the biological leading group, or the first N when none.
+const ptmShownCount = computed(
+  () => biologicalPtmCount.value || Math.min(PTM_FALLBACK_SHOWN, orderedPtms.value.length)
+)
+const shownPtms = computed(() =>
+  ptmsExpanded.value ? orderedPtms.value : orderedPtms.value.slice(0, ptmShownCount.value)
+)
+const hiddenPtmCount = computed(() =>
+  Math.max(0, orderedPtms.value.length - ptmShownCount.value)
+)
+
 const obsLevel = computed(() => profile.value?.observations?.level || '')
 const levelClass = computed(() => {
   switch (obsLevel.value) {
@@ -291,6 +321,7 @@ async function load(q) {
   const myReq = ++reqId
   loading.value = true
   profile.value = null
+  ptmsExpanded.value = false
   try {
     const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', { accession: query })
     if (myReq !== reqId) return // a newer query superseded this request
@@ -472,6 +503,23 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   font-variant-numeric: tabular-nums;
   opacity: 0.7;
   font-weight: 600;
+}
+/* "+ N more" / "Show less" toggle for the collapsed PTM tail: a neutral,
+   keyboard-operable chip that sits inline with the PTM chips. */
+.pp-ptm-more {
+  display: inline-flex;
+  align-items: center;
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pp-ptm-more:hover {
+  color: var(--text-primary);
+  border-color: var(--text-muted);
 }
 .pp-bars-grid {
   display: grid;

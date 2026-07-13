@@ -70,6 +70,43 @@ export function isBiologicalPtm(rec) {
   return !!(info && info.biological)
 }
 
+// Display priority for PTM classes: real biology first, prep-chemistry last.
+// Anything that resolves to none of these (missing / unrecognised class) is
+// treated as 'unknown' and sorts last.
+const PTM_CLASS_ORDER = ['biological', 'artifact', 'label', 'fixed', 'unknown']
+
+// Canonical class key for a PTM record, used for ordering & grouping. Prefers a
+// recognised `class` string, then the is_biological boolean, else 'unknown'.
+export function ptmClassKey(rec) {
+  const info = ptmClassInfo(rec && rec.class)
+  if (info) return info.key
+  return isBiologicalPtm(rec) ? 'biological' : 'unknown'
+}
+
+// Order PTM records by biological relevance, then by evidence weight:
+// class priority biological → artifact → label → fixed → unknown, and within a
+// class by n_datasets desc then n_observations desc. Stable (original order
+// breaks any remaining ties). Returns a new array; never mutates the input.
+export function orderPtms(list) {
+  const items = Array.isArray(list) ? list : []
+  const rank = (rec) => {
+    const i = PTM_CLASS_ORDER.indexOf(ptmClassKey(rec))
+    return i === -1 ? PTM_CLASS_ORDER.length : i
+  }
+  return items
+    .map((rec, i) => ({ rec, i }))
+    .sort((a, b) => {
+      const dr = rank(a.rec) - rank(b.rec)
+      if (dr !== 0) return dr
+      const dd = (Number(b.rec.n_datasets) || 0) - (Number(a.rec.n_datasets) || 0)
+      if (dd !== 0) return dd
+      const dobs = (Number(b.rec.n_observations) || 0) - (Number(a.rec.n_observations) || 0)
+      if (dobs !== 0) return dobs
+      return a.i - b.i
+    })
+    .map((x) => x.rec)
+}
+
 // Stable tag color class per known collection.
 export function collectionTag(name) {
   switch (name) {

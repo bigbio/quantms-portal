@@ -24,7 +24,6 @@
           <div class="contact-avatar yasset"></div>
           <div class="contact-info">
             <h3>Yasset Perez-Riverol, Ph.D.</h3>
-            <p class="contact-title">Principal Investigator</p>
             <p class="contact-org">
               European Molecular Biology Laboratory, European Bioinformatics
               Institute (EMBL-EBI), Wellcome Trust Genome Campus, Hinxton,
