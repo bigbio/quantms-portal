@@ -11,6 +11,8 @@ const routes = [
   { path: '/search', component: () => import('./views/Search.vue') },
   { path: '/statistics', component: () => import('./views/Statistics.vue') },
   { path: '/api', component: () => import('./views/ApiDocs.vue') },
+  { path: '/docs', redirect: '/docs/introduction' },
+  { path: '/docs/:page', component: () => import('./views/DocsPage.vue') },
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue') },
   { path: '/models', component: () => import('./views/Models.vue') },
   { path: '/contact', component: () => import('./views/Contact.vue') },

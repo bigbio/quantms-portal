@@ -18,6 +18,7 @@
           <router-link to="/statistics">Statistics</router-link>
           <router-link to="/baseline">Baseline</router-link>
           <router-link to="/api">API &amp; MCP</router-link>
+          <router-link to="/docs">Documentation</router-link>
         </div>
         <div class="footer-col">
           <h4>Ecosystem</h4>
