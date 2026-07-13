@@ -81,6 +81,156 @@ scalability and safety.
 
 # Technical deep-dive
 
+<figure style="margin:30px 0 34px;">
+<svg viewBox="0 0 1120 660" width="1120" height="660" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="sa-title sa-desc" style="width:100%;height:auto;max-width:1000px;display:block;margin:0 auto;color:var(--text-primary);">
+  <title id="sa-title">quantms portal system architecture</title>
+  <desc id="sa-desc">Three zones. Object storage (S3) is the immutable, content-addressed, versioned source of truth holding per-dataset dataset Parquet and index Parquet, a corpus prebuilt DuckDB database, and JSON summaries. A Kubernetes cluster runs two workloads: offline jobs, driven by a weekly CronJob, that index each dataset, assemble the corpus, enrich, build protein metadata, compute statistics and build the prebuilt database, writing all artifacts to S3 and then rolling the serving pods; and a stateless replicated pool of serving query pods that each open the prebuilt DuckDB and read the S3 artifacts in place, writing nothing, exposing REST and MCP. Clients are the web app over REST and AI agents over MCP.</desc>
+  <style>
+    .sa text { font-family: var(--font); }
+    .sa .t-zone { font-size:13px; font-weight:700; fill:var(--text-primary); }
+    .sa .t-badge { font-size:12px; font-weight:700; fill:#ffffff; }
+    .sa .t-sub { font-size:10px; font-weight:600; fill:var(--text-secondary); }
+    .sa .t-head { font-size:12px; font-weight:700; fill:var(--text-primary); }
+    .sa .t-node { font-size:11px; font-weight:600; fill:var(--text-primary); }
+    .sa .t-node-sm { font-size:9.5px; font-weight:500; fill:var(--text-secondary); }
+    .sa .t-chip { font-size:9px; font-weight:600; fill:var(--text-primary); }
+    .sa .t-muted { font-size:9.5px; font-weight:500; fill:var(--text-muted); }
+    .sa .t-accent { font-size:11px; font-weight:700; fill:var(--indigo); }
+    .sa .t-accent-sm { font-size:9.5px; font-weight:600; fill:var(--indigo); }
+    .sa .t-flow { font-size:9px; font-weight:700; fill:var(--indigo); }
+    .sa .t-flow-m { font-size:9px; font-weight:700; fill:var(--text-secondary); }
+    .sa .panel { fill:var(--surface); stroke:var(--border); stroke-width:1; }
+    .sa .subpanel { fill:var(--bg-alt); stroke:var(--border); stroke-width:1; }
+    .sa .node { fill:var(--surface); stroke:var(--border); stroke-width:1; }
+    .sa .chip { fill:var(--surface); stroke:var(--border); stroke-width:1; }
+    .sa .accent { fill:rgba(99,102,241,0.10); stroke:var(--indigo); stroke-width:1.3; }
+    .sa .badge { fill:var(--indigo); }
+    .sa .down { stroke:var(--text-muted); stroke-width:1.4; fill:none; }
+    .sa .flow { stroke:var(--indigo); stroke-width:2; fill:none; }
+    .sa .flow-m { stroke:var(--text-secondary); stroke-width:1.8; fill:none; }
+    .sa .ah-muted { fill:var(--text-secondary); }
+    .sa .ah-accent { fill:var(--indigo); }
+  </style>
+  <defs>
+    <marker id="sa-ahm" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path class="ah-muted" d="M0,0 L5,2.5 L0,5 Z"/></marker>
+    <marker id="sa-aha" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto"><path class="ah-accent" d="M0,0 L6,3 L0,6 Z"/></marker>
+  </defs>
+  <g class="sa">
+    <!-- ============ Zone panels ============ -->
+    <rect class="panel" x="16" y="44" width="212" height="572" rx="12"/>
+    <rect class="panel" x="252" y="44" width="576" height="572" rx="12"/>
+    <rect class="panel" x="856" y="44" width="248" height="572" rx="12"/>
+    <!-- ============ Zone C — Clients ============ -->
+    <circle class="badge" cx="42" cy="68" r="11"/>
+    <text class="t-badge" x="42" y="72" text-anchor="middle">C</text>
+    <text class="t-zone" x="60" y="72">Clients</text>
+    <text class="t-sub" x="32" y="92">web app · AI agents</text>
+    <rect class="node" x="40" y="468" width="176" height="40" rx="8"/>
+    <text class="t-node" x="128" y="486" text-anchor="middle">Web app</text>
+    <text class="t-node-sm" x="128" y="500" text-anchor="middle">static single-page app</text>
+    <rect class="accent" x="40" y="512" width="176" height="40" rx="8"/>
+    <text class="t-accent" x="128" y="530" text-anchor="middle">AI agents</text>
+    <text class="t-accent-sm" x="128" y="544" text-anchor="middle">MCP clients</text>
+    <!-- Clients -> serving front doors -->
+    <line class="flow-m" x1="217" y1="488" x2="279" y2="488" marker-end="url(#sa-ahm)"/>
+    <text class="t-flow-m" x="248" y="480" text-anchor="middle">REST</text>
+    <line class="flow" x1="217" y1="532" x2="279" y2="532" marker-end="url(#sa-aha)"/>
+    <text class="t-flow" x="248" y="566" text-anchor="middle">MCP</text>
+    <!-- ============ Zone B — Kubernetes cluster ============ -->
+    <circle class="badge" cx="282" cy="68" r="11"/>
+    <text class="t-badge" x="282" y="72" text-anchor="middle">B</text>
+    <text class="t-zone" x="300" y="72">Kubernetes cluster</text>
+    <text class="t-sub" x="300" y="90">offline jobs + serving pods</text>
+    <!-- CronJob orchestrator -->
+    <rect class="accent" x="268" y="104" width="170" height="48" rx="8"/>
+    <text class="t-accent" x="353" y="124" text-anchor="middle">weekly CronJob</text>
+    <text class="t-accent-sm" x="353" y="140" text-anchor="middle">orchestrates the pipeline</text>
+    <line class="flow" x1="353" y1="152" x2="353" y2="168" marker-end="url(#sa-aha)"/>
+    <text class="t-flow" x="404" y="165" text-anchor="middle">schedule</text>
+    <!-- Offline jobs subpanel -->
+    <rect class="subpanel" x="268" y="170" width="544" height="190" rx="10"/>
+    <text class="t-head" x="282" y="196">Offline jobs — pipeline</text>
+    <text class="t-node-sm" x="700" y="196" text-anchor="middle">reads raw inputs → writes artifacts</text>
+    <!-- pipeline chips -->
+    <rect class="chip" x="282" y="222" width="72" height="46" rx="6"/>
+    <text class="t-chip" x="318" y="242" text-anchor="middle">Per-dataset</text>
+    <text class="t-chip" x="318" y="254" text-anchor="middle">indexing</text>
+    <line class="down" x1="355" y1="245" x2="369" y2="245" marker-end="url(#sa-ahm)"/>
+    <rect class="chip" x="370" y="222" width="72" height="46" rx="6"/>
+    <text class="t-chip" x="406" y="242" text-anchor="middle">Assemble</text>
+    <text class="t-chip" x="406" y="254" text-anchor="middle">corpus</text>
+    <line class="down" x1="443" y1="245" x2="457" y2="245" marker-end="url(#sa-ahm)"/>
+    <rect class="chip" x="458" y="222" width="72" height="46" rx="6"/>
+    <text class="t-chip" x="494" y="248" text-anchor="middle">Enrich</text>
+    <line class="down" x1="531" y1="245" x2="545" y2="245" marker-end="url(#sa-ahm)"/>
+    <rect class="chip" x="546" y="222" width="72" height="46" rx="6"/>
+    <text class="t-chip" x="582" y="242" text-anchor="middle">Protein</text>
+    <text class="t-chip" x="582" y="254" text-anchor="middle">metadata</text>
+    <line class="down" x1="619" y1="245" x2="633" y2="245" marker-end="url(#sa-ahm)"/>
+    <rect class="chip" x="634" y="222" width="72" height="46" rx="6"/>
+    <text class="t-chip" x="670" y="248" text-anchor="middle">Statistics</text>
+    <line class="down" x1="707" y1="245" x2="721" y2="245" marker-end="url(#sa-ahm)"/>
+    <rect class="accent" x="722" y="222" width="72" height="46" rx="6"/>
+    <text class="t-accent-sm" x="758" y="242" text-anchor="middle">Build</text>
+    <text class="t-accent-sm" x="758" y="254" text-anchor="middle">prebuilt DB</text>
+    <text class="t-muted" x="540" y="298" text-anchor="middle">idempotent · dependency-ordered · best-effort</text>
+    <text class="t-muted" x="540" y="316" text-anchor="middle">one Parquet index per dataset · corpus built once</text>
+    <!-- jobs -> serving pods rollout -->
+    <line class="flow" x1="540" y1="360" x2="540" y2="402" marker-end="url(#sa-aha)"/>
+    <text class="t-flow" x="612" y="386" text-anchor="middle">roll serving pods</text>
+    <!-- Serving query pods subpanel -->
+    <rect class="subpanel" x="268" y="404" width="544" height="200" rx="10"/>
+    <text class="t-head" x="282" y="428">Serving query pods</text>
+    <text class="t-node-sm" x="282" y="444">stateless · replicated pool · read-only</text>
+    <!-- front doors -->
+    <rect class="node" x="282" y="470" width="116" height="34" rx="7"/>
+    <text class="t-node" x="340" y="491" text-anchor="middle">REST API</text>
+    <rect class="accent" x="282" y="512" width="116" height="34" rx="7"/>
+    <text class="t-accent" x="340" y="533" text-anchor="middle">MCP</text>
+    <line class="down" x1="399" y1="491" x2="421" y2="497" marker-end="url(#sa-ahm)"/>
+    <line class="down" x1="399" y1="529" x2="421" y2="520" marker-end="url(#sa-ahm)"/>
+    <!-- replicated pod stack -->
+    <rect class="node" x="440" y="466" width="150" height="46" rx="8"/>
+    <rect class="node" x="432" y="474" width="150" height="46" rx="8"/>
+    <rect class="accent" x="424" y="482" width="150" height="46" rx="8"/>
+    <text class="t-accent" x="499" y="502" text-anchor="middle">Query pods</text>
+    <text class="t-accent-sm" x="499" y="518" text-anchor="middle">stateless · ×N replicas</text>
+    <line class="flow" x1="576" y1="505" x2="604" y2="505" marker-end="url(#sa-aha)"/>
+    <!-- DuckDB engine block -->
+    <rect class="accent" x="606" y="472" width="196" height="66" rx="8"/>
+    <text class="t-accent" x="704" y="498" text-anchor="middle">Open prebuilt DuckDB</text>
+    <text class="t-accent-sm" x="704" y="516" text-anchor="middle">read S3 in place · write nothing</text>
+    <!-- ============ Zone A — Object storage (S3) ============ -->
+    <circle class="badge" cx="882" cy="68" r="11"/>
+    <text class="t-badge" x="882" y="72" text-anchor="middle">A</text>
+    <text class="t-zone" x="900" y="72">Object storage (S3)</text>
+    <text class="t-sub" x="900" y="90">the source of truth</text>
+    <rect class="chip" x="884" y="118" width="192" height="46" rx="7"/>
+    <text class="t-node" x="980" y="136" text-anchor="middle">Dataset Parquet</text>
+    <text class="t-node-sm" x="980" y="152" text-anchor="middle">one per dataset</text>
+    <rect class="chip" x="884" y="172" width="192" height="46" rx="7"/>
+    <text class="t-node" x="980" y="190" text-anchor="middle">Index Parquet</text>
+    <text class="t-node-sm" x="980" y="206" text-anchor="middle">one per dataset</text>
+    <rect class="accent" x="884" y="226" width="192" height="50" rx="7"/>
+    <text class="t-accent" x="980" y="246" text-anchor="middle">Prebuilt DuckDB database</text>
+    <text class="t-accent-sm" x="980" y="262" text-anchor="middle">corpus · built once</text>
+    <rect class="chip" x="884" y="286" width="192" height="76" rx="7"/>
+    <text class="t-node" x="980" y="306" text-anchor="middle">JSON summaries</text>
+    <text class="t-node-sm" x="980" y="326" text-anchor="middle">gene/name map · sequences</text>
+    <text class="t-node-sm" x="980" y="344" text-anchor="middle">statistics · dataset metadata</text>
+    <text class="t-muted" x="980" y="592" text-anchor="middle">immutable · content-addressed · versioned</text>
+    <!-- ============ Cross-zone flows: cluster -> S3 ============ -->
+    <line class="flow-m" x1="813" y1="250" x2="854" y2="250" marker-end="url(#sa-ahm)"/>
+    <text class="t-flow-m" x="834" y="242" text-anchor="middle">write artifacts</text>
+    <line class="flow" x1="804" y1="505" x2="854" y2="505" marker-end="url(#sa-aha)"/>
+    <text class="t-flow" x="829" y="497" text-anchor="middle">read in place</text>
+  </g>
+</svg>
+<figcaption style="text-align:center;font-size:12.5px;color:var(--text-muted);max-width:720px;margin:12px auto 0;line-height:1.55;">
+System architecture and orchestration, for contributors. Immutable, content-addressed artifacts in <strong>object storage (S3)</strong> are the source of truth. Inside the <strong>Kubernetes cluster</strong>, a <strong>weekly CronJob</strong> drives the offline pipeline that rebuilds those artifacts and then rolls a stateless pool of <strong style="color:var(--indigo);">serving query pods</strong>; each pod opens the <strong style="color:var(--indigo);">prebuilt DuckDB</strong> and reads the S3 artifacts <strong style="color:var(--indigo);">in place</strong> — writing nothing — exposing REST for the web app and MCP for AI agents. Nothing at request time mutates shared state.
+</figcaption>
+</figure>
+
 The rest of this page is for collaborators who want to understand *how* the portal
 is built and *why* its queries are fast. Everything below is traceable to the
 serving and indexing code; nothing here is required to use the portal.
