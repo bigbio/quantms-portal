@@ -98,6 +98,21 @@
           <button v-if="hasFilters" class="page-btn" style="padding: 8px 14px" @click="clearFilters">Clear</button>
         </div>
       </div>
+
+      <!-- High-confidence evidence toggle: restricts every search/profile request
+           to high-confidence rows (qc_score >= threshold) via the `qc` query param.
+           Default OFF → behaviour is byte-identical to today. -->
+      <div class="qc-toggle">
+        <label
+          class="qc-switch"
+          title="Hides low-confidence evidence (reproducibility, proteotypicity, length, coverage)"
+        >
+          <input type="checkbox" v-model="highConfidenceOnly" class="qc-input" />
+          <span class="qc-track" aria-hidden="true"><span class="qc-thumb" /></span>
+          <span class="qc-switch-text">High-confidence only</span>
+        </label>
+        <span class="qc-help">Hides low-confidence evidence (reproducibility, proteotypicity, length, coverage).</span>
+      </div>
       <p v-if="mode === 'peptide'" class="req-note">
         A peptide sequence is required. Leave <em>modification</em> on “Any” to match every form (modified and unmodified),
         or pick “Unmodified only” for the bare peptide.
@@ -114,7 +129,7 @@
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
-        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" @pick="pickProtein" />
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :qc="highConfidenceOnly" @pick="pickProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
@@ -203,6 +218,11 @@ const organism = ref('')
 const tissue = ref('')
 const instrument = ref('')
 const collection = ref('')
+
+// "High-confidence only" toggle. OFF by default; when ON, `qc=true` is added to
+// the peptide/protein search AND to the ProteinProfile /protein/profile request,
+// restricting results to high-confidence evidence (qc_score >= threshold).
+const highConfidenceOnly = ref(false)
 
 const facets = ref({ organism: [], collection: [], instrument: [] })
 const stats = ref(null)
@@ -308,6 +328,9 @@ function buildParams() {
     tissue: tissue.value || undefined,
     instrument: instrument.value || undefined,
     collection: collection.value || undefined,
+    // Only sent when ON; omitted (not qc=false) otherwise so requests stay
+    // byte-identical to today when the toggle is off.
+    qc: highConfidenceOnly.value ? true : undefined,
   }
 }
 
@@ -334,6 +357,7 @@ function currentQuery() {
   if (tissue.value) q.tissue = tissue.value
   if (instrument.value) q.instrument = instrument.value
   if (collection.value) q.collection = collection.value
+  if (highConfidenceOnly.value) q.qc = '1'
   return q
 }
 
@@ -349,6 +373,7 @@ function applyQuery(q) {
   tissue.value = q.tissue || ''
   instrument.value = q.instrument || ''
   collection.value = q.collection || ''
+  highConfidenceOnly.value = q.qc === '1' || q.qc === 'true'
 }
 
 async function init() {
@@ -381,6 +406,13 @@ watch(modification, () => {
   if (residue.value && !residueOptions.value.includes(residue.value)) {
     residue.value = ''
   }
+})
+
+// Toggling "High-confidence only" re-runs the current search (and refreshes the
+// ProteinProfile via its :qc prop) so the change is reflected immediately. Only
+// when a search has already been run — never auto-searches before the first one.
+watch(highConfidenceOnly, () => {
+  if (canSearch.value && (result.value || query.value)) run()
 })
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
@@ -541,6 +573,74 @@ onMounted(() => {
   font-size: 12px;
   color: var(--text-muted);
   margin: 4px 0 12px;
+}
+/* --- "High-confidence only" toggle --------------------------------------- */
+.qc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+}
+.qc-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  user-select: none;
+}
+/* Visually-hidden native checkbox: keeps full keyboard + a11y semantics while
+   the styled track/thumb provides the switch appearance. */
+.qc-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.qc-track {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 999px;
+  transition: background 0.15s ease;
+  flex: none;
+}
+.qc-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  transition: transform 0.15s ease;
+}
+.qc-input:checked + .qc-track {
+  background: var(--indigo);
+}
+.qc-input:checked + .qc-track .qc-thumb {
+  transform: translateX(16px);
+}
+.qc-input:focus-visible + .qc-track {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
+.qc-switch-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.qc-help {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 .num {
   text-align: right;

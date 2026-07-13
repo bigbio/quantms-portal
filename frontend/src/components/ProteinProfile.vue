@@ -71,6 +71,11 @@
           <span class="pp-acc">{{ primaryAccession }} ↗</span>
         </a>
         <span v-if="profile.length" class="pp-len">{{ formatNum(profile.length) }} aa</span>
+        <span
+          v-if="proteinTier"
+          class="pp-tier"
+          :title="`HPP protein evidence tier: ${proteinTier}`"
+        >{{ proteinTier }}</span>
       </div>
       <div v-if="hasCoverage" class="pp-coverage" :title="`${coveragePct}% sequence coverage`">
         <span class="pp-cov-track">
@@ -80,23 +85,37 @@
       </div>
     </div>
 
-    <!-- Stats row -->
+    <!-- Stats row. When the backend carries additive high-confidence counts
+         (profile.qc) a subtle secondary figure shows the high-confidence subset
+         under each total; it degrades to just the total when absent. -->
     <div class="pp-stats">
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_datasets) }}</div>
         <div class="pp-stat-label">Datasets</div>
+        <div v-if="qcFig('n_datasets') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_datasets'))} high-confidence datasets`">
+          {{ formatNum(qcFig('n_datasets')) }} high-confidence
+        </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_peptides) }}</div>
         <div class="pp-stat-label">Peptides</div>
+        <div v-if="qcFig('n_peptides') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_peptides'))} high-confidence peptides`">
+          {{ formatNum(qcFig('n_peptides')) }} high-confidence
+        </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_proteotypic_peptides) }}</div>
         <div class="pp-stat-label">Proteotypic peptides</div>
+        <div v-if="qcFig('n_proteotypic_peptides') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_proteotypic_peptides'))} high-confidence proteotypic peptides`">
+          {{ formatNum(qcFig('n_proteotypic_peptides')) }} high-confidence
+        </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatBig(profile.n_observations) }}</div>
         <div class="pp-stat-label">Observations</div>
+        <div v-if="qcFig('n_observations') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_observations'))} high-confidence observations`">
+          {{ formatBig(qcFig('n_observations')) }} high-confidence
+        </div>
       </div>
       <div v-if="obsLevel" class="pp-stat">
         <div class="pp-stat-val">
@@ -303,6 +322,10 @@ async function ensureObsDistribution() {
 const props = defineProps({
   // Protein query: UniProt accession or gene. Empty string clears the panel.
   accession: { type: String, default: '' },
+  // "High-confidence only": when true, `qc=true` is sent so every aggregate is
+  // restricted to high-confidence evidence (qc_score >= threshold). The additive
+  // `qc` counterpart counts are returned regardless (when the backend has QC data).
+  qc: { type: Boolean, default: false },
 })
 
 // Chip tooltip: keep the observation count, append the biological-relevance class
@@ -369,6 +392,26 @@ const species = computed(() => arr(profile.value?.species))
 const tissues = computed(() => arr(profile.value?.tissues))
 const diseases = computed(() => arr(profile.value?.diseases))
 const ptms = computed(() => arr(profile.value?.ptms))
+
+// Additive high-confidence counterpart counts. Present only when the backend
+// carries QC data (`profile.qc = { n_datasets, n_peptides, n_observations,
+// n_proteotypic_peptides, threshold }`). Null on old backends / missing data →
+// the stats row degrades to today's single-figure UI.
+const qcCounts = computed(() => {
+  const q = profile.value?.qc
+  return q && typeof q === 'object' ? q : null
+})
+const hasQcCounts = computed(() => !!qcCounts.value)
+// Show a high-confidence figure for a stat only when the backend supplied it.
+function qcFig(key) {
+  const v = qcCounts.value?.[key]
+  return Number.isFinite(Number(v)) ? Number(v) : null
+}
+// Optional HPP-style protein tier, if the backend ever supplies one (top-level
+// or nested under qc). Purely additive — absent today, so it renders nothing.
+const proteinTier = computed(
+  () => profile.value?.tier || profile.value?.hpp_tier || qcCounts.value?.tier || null
+)
 
 // Observed context: species + tissue + disease chips combined into one list,
 // sorted by observation depth (desc), color-coded by kind. Top 10 shown, the
@@ -582,7 +625,11 @@ async function load(q) {
   contextExpanded.value = false
   open.value = false // close the distribution popover when the protein changes
   try {
-    const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', { accession: query })
+    const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', {
+      accession: query,
+      // Only sent when ON so the off-state request stays identical to today.
+      qc: props.qc ? true : undefined,
+    })
     if (myReq !== reqId) return // a newer query superseded this request
     profile.value = data
   } catch (e) {
@@ -595,7 +642,9 @@ async function load(q) {
   }
 }
 
-watch(() => props.accession, (q) => load(q), { immediate: true })
+// Reload on accession change OR when the high-confidence toggle flips, so the
+// profile aggregates reflect the current qc state.
+watch(() => [props.accession, props.qc], () => load(props.accession), { immediate: true })
 </script>
 
 <style scoped>
@@ -723,6 +772,28 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-muted);
+}
+/* Subtle secondary figure: the high-confidence subset of the stat above it. */
+.pp-stat-qc {
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--indigo);
+  white-space: nowrap;
+}
+/* Optional HPP-style protein evidence tier chip. */
+.pp-tier {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: var(--text-secondary);
+  background: var(--bg-alt);
 }
 .pp-level {
   text-transform: capitalize;
