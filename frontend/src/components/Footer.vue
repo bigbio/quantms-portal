@@ -13,12 +13,15 @@
         </div>
         <div class="footer-col">
           <h4>Portal</h4>
-          <router-link to="/collections">Collections</router-link>
-          <router-link to="/search">Search</router-link>
+          <router-link to="/apps/peptide-search">Peptide Search</router-link>
           <router-link to="/statistics">Statistics</router-link>
+          <router-link to="/apps/dataset-search">Datasets</router-link>
+          <router-link to="/collections">Collections</router-link>
+          <router-link to="/models">Models</router-link>
           <router-link to="/baseline">Baseline</router-link>
-          <a href="https://api.quantms.org" target="_blank" rel="noopener">API &amp; MCP</a>
+          <a href="https://api.quantms.org/docs" target="_blank" rel="noopener">API &amp; MCP</a>
           <router-link to="/docs">Documentation</router-link>
+          <router-link to="/contact">Contact</router-link>
         </div>
         <div class="footer-col">
           <h4>Ecosystem</h4>
