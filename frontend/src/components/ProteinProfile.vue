@@ -106,6 +106,11 @@
       </div>
     </div>
 
+    <!-- Per-residue sequence coverage & intensity map — the visual extension of the
+         coverage %, shown right after the stats. Best-effort: renders nothing when
+         its endpoint has no sequence for this accession. -->
+    <ProteinSequenceMap :accession="primaryAccession" />
+
     <!-- Species / tissue / disease chips with counts -->
     <div v-if="species.length || tissues.length || diseases.length" class="pp-block">
       <div class="pp-block-label">Observed context <span class="pp-unit">· datasets</span></div>
@@ -184,10 +189,6 @@
 
     <!-- Summary line -->
     <p v-if="profile.summary" class="pp-summary">{{ profile.summary }}</p>
-
-    <!-- Per-residue sequence coverage & intensity map. Best-effort: renders
-         nothing when its own endpoint has no sequence for this accession. -->
-    <ProteinSequenceMap :accession="primaryAccession" />
   </div>
 </template>
 
