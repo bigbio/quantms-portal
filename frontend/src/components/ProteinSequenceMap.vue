@@ -100,7 +100,7 @@
       </div>
     </div>
 
-    <div class="sm-scroll">
+    <div ref="scrollEl" class="sm-scroll">
       <div class="sm-grid" :style="{ '--sm-cols': String(cols) }">
         <div v-for="row in rows" :key="row.start" class="sm-row">
           <span class="sm-ruler sm-ruler-l">{{ row.start }}</span>
@@ -151,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
@@ -161,9 +161,42 @@ const props = defineProps({
   accession: { type: String, default: '' },
 })
 
-// Residues per row and block grouping.
-const cols = 50
+// Residues per row (responsive: fills the available width, see computeCols) and
+// block grouping.
+const cols = ref(50)
 const BLOCK = 10
+// Cell + amortized block-gap geometry (must track the .sm-cell / .sm-gap CSS).
+const CELL_W = 15
+const GAP_W = 7
+const RULER_OVERHEAD = 104 // two rulers (~40px) + row gaps
+
+// Container element (for width-driven responsive columns).
+const scrollEl = ref(null)
+
+// Pick the largest multiple of BLOCK residues per row that fits the panel width,
+// so a wide screen shows more sequence per row instead of empty space on the
+// right. Clamped so a narrow viewport keeps a readable row (and still scrolls).
+function computeCols() {
+  const el = scrollEl.value
+  const avail = el && el.clientWidth
+  if (!avail) return
+  const per = CELL_W + GAP_W / BLOCK
+  let n = Math.floor((avail - RULER_OVERHEAD) / per)
+  n = Math.floor(n / BLOCK) * BLOCK
+  cols.value = Math.max(50, Math.min(150, n))
+}
+
+let ro = null
+onMounted(() => {
+  computeCols()
+  if (typeof ResizeObserver !== 'undefined') {
+    ro = new ResizeObserver(() => computeCols())
+    if (scrollEl.value) ro.observe(scrollEl.value)
+  }
+})
+onBeforeUnmount(() => {
+  if (ro) ro.disconnect()
+})
 // Window size: at most this many residues are rendered at once so a titin-scale
 // sequence can never hang the render. Longer proteins get an interactive
 // navigation bar (prev/next + jump-to-range) over the same in-memory data.
@@ -326,8 +359,9 @@ const rows = computed(() => {
   const s0 = windowStart.value
   const e0 = Math.min(windowEnd.value, seq.length)
   const out = []
-  for (let start = s0; start < e0; start += cols) {
-    const end = Math.min(start + cols, e0)
+  const step = cols.value
+  for (let start = s0; start < e0; start += step) {
+    const end = Math.min(start + step, e0)
     const cells = []
     for (let i = start; i < end; i++) {
       const pos = i + 1 // 1-based residue position
@@ -415,6 +449,11 @@ async function load(q) {
       jumpFrom.value = ''
       jumpTo.value = ''
       jumpCapped.value = false
+      // The scroll container mounts with the map (v-if); measure it now.
+      nextTick(() => {
+        computeCols()
+        if (ro && scrollEl.value) ro.observe(scrollEl.value)
+      })
     } else {
       map.value = null
     }
