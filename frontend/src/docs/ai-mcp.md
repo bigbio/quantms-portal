@@ -36,14 +36,12 @@ asking the same question get the same answer.
     <rect class="engine" x="360" y="108" width="180" height="64" rx="12"/>
     <text class="t-node" x="450" y="136" text-anchor="middle">Query engine</text>
     <text class="t-sm" x="450" y="154" text-anchor="middle">DuckDB over S3 artifacts</text>
-
     <!-- Left: REST -> Web app (for people) -->
     <rect class="node" x="40" y="112" width="160" height="56" rx="10"/>
     <text class="t-node" x="120" y="136" text-anchor="middle">Web app</text>
     <text class="t-sm" x="120" y="154" text-anchor="middle">for people</text>
     <line class="conn" x1="360" y1="140" x2="206" y2="140" marker-end="url(#qm-ahm)"/>
     <text class="t-lbl" x="283" y="130" text-anchor="middle">REST API</text>
-
     <!-- Right: MCP -> AI agent (agentic) -->
     <line class="aconn" x1="540" y1="140" x2="694" y2="140" marker-end="url(#qm-aha)"/>
     <text class="t-albl" x="617" y="130" text-anchor="middle">MCP</text>
@@ -54,7 +52,6 @@ asking the same question get the same answer.
     <line class="aconn" x1="785" y1="146" x2="785" y2="156" marker-end="url(#qm-aha)"/>
     <rect class="tool" x="712" y="158" width="146" height="26" rx="6"/>
     <text class="t-tool" x="785" y="175" text-anchor="middle">2 · coverage map</text>
-
     <!-- Captions under each door -->
     <text class="t-muted" x="120" y="196" text-anchor="middle">people</text>
     <text class="t-muted" x="450" y="196" text-anchor="middle">one engine · same tools</text>

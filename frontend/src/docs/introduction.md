@@ -49,12 +49,10 @@ organisms, tissues and instruments.
     <rect class="panel" x="263" y="24" width="223" height="316" rx="12"/>
     <rect class="panel" x="514" y="24" width="223" height="316" rx="12"/>
     <rect class="panel" x="765" y="24" width="223" height="316" rx="12"/>
-
     <!-- Inter-panel flow arrows -->
     <line class="flow" x1="239" y1="182" x2="257" y2="182" marker-end="url(#qp-aha)"/>
     <line class="flow" x1="490" y1="182" x2="508" y2="182" marker-end="url(#qp-aha)"/>
     <line class="flow" x1="741" y1="182" x2="759" y2="182" marker-end="url(#qp-aha)"/>
-
     <!-- Stage 1: Contribute -->
     <circle class="badge" cx="42" cy="46" r="11"/>
     <text class="t-badge" x="42" y="50" text-anchor="middle">1</text>
@@ -74,7 +72,6 @@ organisms, tissues and instruments.
     <rect class="node" x="28" y="260" width="191" height="46" rx="8"/>
     <text class="t-node" x="123.5" y="280" text-anchor="middle">Publish · quantms-portal CLI</text>
     <text class="t-muted" x="123.5" y="295" text-anchor="middle">GitHub-authenticated</text>
-
     <!-- Stage 2: Store -->
     <circle class="badge" cx="293" cy="46" r="11"/>
     <text class="t-badge" x="293" y="50" text-anchor="middle">2</text>
@@ -90,7 +87,6 @@ organisms, tissues and instruments.
     <text class="t-node" x="374.5" y="231" text-anchor="middle">JSON summaries</text>
     <text class="t-muted" x="374.5" y="300" text-anchor="middle">Built offline · read-only ·</text>
     <text class="t-muted" x="374.5" y="314" text-anchor="middle">one canonical entry per dataset</text>
-
     <!-- Stage 3: Query -->
     <circle class="badge" cx="544" cy="46" r="11"/>
     <text class="t-badge" x="544" y="50" text-anchor="middle">3</text>
@@ -105,7 +101,6 @@ organisms, tissues and instruments.
     <text class="t-accent" x="625.5" y="172" text-anchor="middle">DuckDB over the S3 artifacts</text>
     <text class="t-accent-sm" x="625.5" y="189" text-anchor="middle">reads in place · writes nothing</text>
     <text class="t-muted" x="625.5" y="228" text-anchor="middle">Pool of pods · scales horizontally</text>
-
     <!-- Stage 4: Serve -->
     <circle class="badge" cx="795" cy="46" r="11"/>
     <text class="t-badge" x="795" y="50" text-anchor="middle">4</text>
