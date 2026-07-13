@@ -3,7 +3,7 @@
     <div class="container">
       <div class="section-header" style="text-align: left; margin-bottom: 16px">
         <h2>Peptide &amp; Protein Search</h2>
-        <p style="margin: 0">
+        <p style="margin: 0; max-width: none">
           Find the quantms datasets that contain a peptide — optionally carrying a modification
           (e.g. Phospho on S/T/Y, Oxidation on M, TMT6plex) — or a protein (UniProt accession or gene).
           Constrain by organism, tissue and instrument.
