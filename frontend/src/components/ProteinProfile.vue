@@ -174,6 +174,10 @@
 
     <!-- Summary line -->
     <p v-if="profile.summary" class="pp-summary">{{ profile.summary }}</p>
+
+    <!-- Per-residue sequence coverage & intensity map. Best-effort: renders
+         nothing when its own endpoint has no sequence for this accession. -->
+    <ProteinSequenceMap :accession="primaryAccession" />
   </div>
 </template>
 
@@ -182,6 +186,7 @@ import { ref, computed, watch } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo } from '../utils/format.js'
+import ProteinSequenceMap from './ProteinSequenceMap.vue'
 
 const props = defineProps({
   // Protein query: UniProt accession or gene. Empty string clears the panel.
