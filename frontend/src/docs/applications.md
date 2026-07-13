@@ -33,6 +33,11 @@ Questions it answers:
 How to use it: type a peptide sequence or a protein identifier, apply filters, and
 open a result to drill into its profile and coverage map.
 
+**Under the hood:** for a technical deep-dive on how a query resolves to a protein
+(gene-centric mapping), how observations and proteotypicity are counted, how the
+coverage map's per-residue depth and intensity are derived, and how the offline LLM
+dataset summaries are written, see [How search works](/docs/how-search-works).
+
 ## Dataset Search
 
 **Browse and search datasets and the collections that group them.**
