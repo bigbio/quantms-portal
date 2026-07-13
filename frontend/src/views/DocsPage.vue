@@ -44,7 +44,11 @@ for (const [path, src] of Object.entries(rawFiles)) {
   docsBySlug[slug] = src
 }
 
-const md = new MarkdownIt({ html: false, linkify: true, typographer: true })
+// html: true lets first-party docs embed inline SVG/HTML (e.g. the concept
+// diagrams). This is safe here: every page is authored in-repo Markdown loaded
+// at build time via import.meta.glob and reviewed in PRs — never user input —
+// so there is no untrusted HTML to sanitize.
+const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
 
 // Open external (http/https) links in a new tab; leave internal links to the
 // SPA click handler.
