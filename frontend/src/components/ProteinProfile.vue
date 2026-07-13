@@ -111,22 +111,20 @@
          its endpoint has no sequence for this accession. -->
     <ProteinSequenceMap :accession="primaryAccession" />
 
-    <!-- Species / tissue / disease chips with counts -->
-    <div v-if="species.length || tissues.length || diseases.length" class="pp-block">
+    <!-- Species / tissue / disease chips, sorted by observations; top 10 shown,
+         the tail collapsed behind a toggle. -->
+    <div v-if="observedContext.length" class="pp-block">
       <div class="pp-block-label">Observed context <span class="pp-unit">· datasets</span></div>
       <div class="pp-chips">
-        <span v-for="s in species" :key="'sp-' + s.value" class="tag tag-blue pp-count-chip"
-              :title="`${formatNum(s.n_datasets)} datasets`">
-          🧬 {{ s.value }} <span class="pp-count">{{ formatNum(s.n_datasets) }}</span>
+        <span v-for="c in shownContext" :key="c.key" class="tag pp-count-chip" :class="c.tagClass"
+              :title="`${formatNum(c.n_datasets)} datasets · ${formatNum(c.n_observations)} observations`">
+          <template v-if="c.icon">{{ c.icon }} </template>{{ c.value }}
+          <span class="pp-count">{{ formatNum(c.n_datasets) }}</span>
         </span>
-        <span v-for="t in tissues" :key="'ts-' + t.value" class="tag tag-green pp-count-chip"
-              :title="`${formatNum(t.n_datasets)} datasets`">
-          {{ t.value }} <span class="pp-count">{{ formatNum(t.n_datasets) }}</span>
-        </span>
-        <span v-for="d in diseases" :key="'ds-' + d.value" class="tag tag-warning pp-count-chip"
-              :title="`${formatNum(d.n_datasets)} datasets`">
-          {{ d.value }} <span class="pp-count">{{ formatNum(d.n_datasets) }}</span>
-        </span>
+        <button v-if="hiddenContextCount > 0" type="button" class="tag pp-ptm-more"
+                :aria-expanded="contextExpanded" @click="contextExpanded = !contextExpanded">
+          {{ contextExpanded ? 'Show less' : `+ ${hiddenContextCount} more` }}
+        </button>
       </div>
     </div>
 
@@ -269,6 +267,24 @@ const tissues = computed(() => arr(profile.value?.tissues))
 const diseases = computed(() => arr(profile.value?.diseases))
 const ptms = computed(() => arr(profile.value?.ptms))
 
+// Observed context: species + tissue + disease chips combined into one list,
+// sorted by observation depth (desc), color-coded by kind. Top 10 shown, the
+// rest behind a "+ N more" toggle.
+const CONTEXT_SHOWN = 10
+const contextExpanded = ref(false)
+const observedContext = computed(() => {
+  const items = [
+    ...species.value.map((s) => ({ ...s, key: 'sp-' + s.value, tagClass: 'tag-blue', icon: '🧬' })),
+    ...tissues.value.map((t) => ({ ...t, key: 'ts-' + t.value, tagClass: 'tag-green', icon: '' })),
+    ...diseases.value.map((d) => ({ ...d, key: 'ds-' + d.value, tagClass: 'tag-warning', icon: '' })),
+  ]
+  return items.sort((a, b) => (Number(b.n_observations) || 0) - (Number(a.n_observations) || 0))
+})
+const shownContext = computed(() =>
+  contextExpanded.value ? observedContext.value : observedContext.value.slice(0, CONTEXT_SHOWN)
+)
+const hiddenContextCount = computed(() => Math.max(0, observedContext.value.length - CONTEXT_SHOWN))
+
 // PTM display: order by biological relevance, show the leading biological group
 // by default and tuck the prep-chemistry tail behind a "+ N more" toggle. When
 // there is no biology to lead with, show the first few of the ordered list.
@@ -323,6 +339,7 @@ async function load(q) {
   loading.value = true
   profile.value = null
   ptmsExpanded.value = false
+  contextExpanded.value = false
   try {
     const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', { accession: query })
     if (myReq !== reqId) return // a newer query superseded this request
