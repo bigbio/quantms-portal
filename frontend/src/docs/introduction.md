@@ -13,7 +13,7 @@ dataset is processed the same way, results are directly comparable across studie
 organisms, tissues and instruments.
 
 <figure style="margin:32px 0 34px;">
-<svg viewBox="0 0 1000 360" role="img" aria-labelledby="qp-flow-title qp-flow-desc" style="width:100%;height:auto;max-width:920px;display:block;margin:0 auto;color:var(--text-primary);">
+<svg viewBox="0 0 1000 360" width="1000" height="360" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="qp-flow-title qp-flow-desc" style="width:100%;height:auto;max-width:920px;display:block;margin:0 auto;color:var(--text-primary);">
   <title id="qp-flow-title">How the quantms portal works</title>
   <desc id="qp-flow-desc">A four-stage flow: Contribute reprocesses public mass-spectrometry data with the quantms workflow into QPX and publishes it with a GitHub-authenticated CLI; Store keeps immutable, content-addressed artifacts in object storage; Query runs a pool of stateless services with DuckDB directly over those artifacts; Serve exposes one engine through a REST API for the web app and an MCP endpoint for AI agents.</desc>
   <style>

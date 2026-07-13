@@ -6,7 +6,7 @@ data (see [Infrastructure](/docs/infrastructure)), so a person and an assistant
 asking the same question get the same answer.
 
 <figure style="margin:30px 0 32px;">
-<svg viewBox="0 0 900 280" role="img" aria-labelledby="qp-mcp-title qp-mcp-desc" style="width:100%;height:auto;max-width:820px;display:block;margin:0 auto;color:var(--text-primary);">
+<svg viewBox="0 0 900 280" width="900" height="280" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="qp-mcp-title qp-mcp-desc" style="width:100%;height:auto;max-width:820px;display:block;margin:0 auto;color:var(--text-primary);">
   <title id="qp-mcp-title">One query engine, two front doors</title>
   <desc id="qp-mcp-desc">A single query engine in the middle. On the left, a REST API serves the web app for people. On the right, an MCP endpoint lets an AI agent call the same tools, here chaining a protein search into a coverage-map lookup.</desc>
   <style>
