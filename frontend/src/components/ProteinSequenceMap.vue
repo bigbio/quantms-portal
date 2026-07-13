@@ -10,8 +10,10 @@
     Each residue is a monospace cell whose green background opacity encodes the
     normalized (0..1) observation depth for that residue; uncovered residues are
     a neutral grey. PTM sites carry a small marker + accent underline. Rows of 50
-    (grouped in 10s) with left/right position rulers; very long sequences are
-    capped with a notice so the page can't hang.
+    (grouped in 10s) with left/right position rulers (absolute residue numbers).
+    Only a WINDOW-sized slice renders at once so the page can't hang; proteins
+    longer than the window get a navigation bar (prev/next + jump-to-range) plus
+    a minimap. A PTM filter lets the user hide specific modification types.
   -->
   <div v-if="map" class="sm-panel">
     <div class="sm-head">
@@ -27,6 +29,74 @@
           <span class="sm-legend-cell sm-has-ptm"><span class="sm-res">A</span></span>
           <span class="sm-legend-label">PTM site</span>
         </span>
+      </div>
+    </div>
+
+    <div v-if="ptmTypes.length" class="sm-ptm-filter">
+      <span class="sm-ptm-filter-label">PTMs</span>
+      <div class="sm-ptm-chips">
+        <button
+          v-for="t in ptmTypes"
+          :key="t.name"
+          type="button"
+          class="sm-ptm-chip"
+          :class="{ 'sm-ptm-off': hiddenPtms.has(t.name) }"
+          :aria-pressed="!hiddenPtms.has(t.name)"
+          @click="togglePtm(t.name)"
+        >
+          <span class="sm-ptm-name">{{ t.name }}</span>
+          <span class="sm-ptm-count">{{ formatNum(t.count) }}</span>
+          <span
+            v-if="ptmClassInfo(t.class)"
+            class="ptm-badge"
+            :class="ptmClassInfo(t.class).tagClass"
+          >{{ ptmClassInfo(t.class).label }}</span>
+        </button>
+      </div>
+      <div class="sm-ptm-actions">
+        <button type="button" class="sm-btn sm-btn-sm" @click="biologicalOnlyPtms">Biological only</button>
+        <button type="button" class="sm-btn sm-btn-sm" @click="showAllPtms">Show all</button>
+      </div>
+    </div>
+
+    <div v-if="hasNav" class="sm-nav">
+      <div class="sm-nav-main">
+        <span class="sm-nav-label">
+          Residues {{ formatNum(windowStart + 1) }}–{{ formatNum(windowEnd) }} of {{ formatNum(fullLength) }}
+        </span>
+        <div class="sm-nav-btns">
+          <button type="button" class="sm-btn" :disabled="atStart" @click="pagePrev">◀ Prev</button>
+          <button type="button" class="sm-btn" :disabled="atEnd" @click="pageNext">Next ▶</button>
+        </div>
+        <form class="sm-nav-jump" @submit.prevent="doJump">
+          <label class="sm-nav-jump-lbl">Go to</label>
+          <input
+            v-model="jumpFrom"
+            class="sm-nav-input"
+            type="number"
+            min="1"
+            :max="fullLength"
+            placeholder="from"
+            aria-label="Jump to residue (from)"
+          />
+          <span class="sm-nav-dash" aria-hidden="true">–</span>
+          <input
+            v-model="jumpTo"
+            class="sm-nav-input"
+            type="number"
+            min="1"
+            :max="fullLength"
+            placeholder="to"
+            aria-label="Jump to residue (to)"
+          />
+          <button type="submit" class="sm-btn">Go</button>
+        </form>
+      </div>
+      <div class="sm-minimap" aria-hidden="true">
+        <span class="sm-minimap-seg" :style="{ left: miniLeft, width: miniWidth }" />
+      </div>
+      <div v-if="jumpCapped" class="sm-note sm-nav-note">
+        Requested range exceeds {{ formatNum(WINDOW) }} residues; showing the first {{ formatNum(WINDOW) }}.
       </div>
     </div>
 
@@ -58,10 +128,6 @@
       </div>
     </div>
 
-    <div v-if="capped" class="sm-note">
-      Showing the first {{ formatNum(shownLength) }} of {{ formatNum(fullLength) }} residues.
-    </div>
-
     <!-- Floating tooltip (fixed-position, follows the cursor) -->
     <div v-if="tip" class="sm-tip" :style="{ left: tip.x + 'px', top: tip.y + 'px' }">
       <div class="sm-tip-head">
@@ -88,7 +154,7 @@
 import { ref, computed, watch } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
-import { formatNum } from '../utils/format.js'
+import { formatNum, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
 
 const props = defineProps({
   // Protein query: UniProt accession or gene. Empty clears the map.
@@ -98,9 +164,10 @@ const props = defineProps({
 // Residues per row and block grouping.
 const cols = 50
 const BLOCK = 10
-// Hard cap so a titin-scale sequence can never hang the render (a real
-// minimap/virtualization is a noted design follow-up, out of scope for v1).
-const MAX_RESIDUES = 3000
+// Window size: at most this many residues are rendered at once so a titin-scale
+// sequence can never hang the render. Longer proteins get an interactive
+// navigation bar (prev/next + jump-to-range) over the same in-memory data.
+const WINDOW = 3000
 
 const map = ref(null)
 
@@ -118,25 +185,158 @@ const ptmByPos = computed(() => {
 })
 
 const fullLength = computed(() => (map.value?.sequence || '').length)
-const shownLength = computed(() => Math.min(fullLength.value, MAX_RESIDUES))
-const capped = computed(() => fullLength.value > MAX_RESIDUES)
+
+// --- Region navigation -------------------------------------------------------
+// Only proteins longer than WINDOW get a nav bar; otherwise the whole sequence
+// is the window. windowStart is 0-based; windowEnd is an exclusive residue index
+// clamped to fullLength with windowEnd - windowStart <= WINDOW.
+const windowStart = ref(0)
+const windowEnd = ref(0)
+const hasNav = computed(() => fullLength.value > WINDOW)
+// Start of the last page when paging in WINDOW-sized steps from 0.
+const lastPageStart = computed(
+  () => Math.floor(Math.max(0, fullLength.value - 1) / WINDOW) * WINDOW
+)
+const atStart = computed(() => windowStart.value <= 0)
+const atEnd = computed(() => windowStart.value >= lastPageStart.value)
+
+// Position/size of the current window within the whole protein, for the minimap.
+const miniLeft = computed(
+  () => (fullLength.value ? (windowStart.value / fullLength.value) * 100 : 0) + '%'
+)
+const miniWidth = computed(() => {
+  if (!fullLength.value) return '0%'
+  const w = ((windowEnd.value - windowStart.value) / fullLength.value) * 100
+  return Math.max(1, w) + '%'
+})
+
+// Set the visible window, clamping start/end to the sequence and capping the
+// span to WINDOW residues.
+function setWindow(start, end) {
+  const n = fullLength.value
+  const s = Math.max(0, Math.min(Math.floor(start), Math.max(0, n - 1)))
+  let e = Math.max(s + 1, Math.min(Math.floor(end), n))
+  if (e - s > WINDOW) e = s + WINDOW
+  windowStart.value = s
+  windowEnd.value = Math.min(e, n)
+}
+function pagePrev() {
+  if (atStart.value) return
+  jumpCapped.value = false
+  const s = Math.max(0, windowStart.value - WINDOW)
+  setWindow(s, s + WINDOW)
+  hideTip()
+}
+function pageNext() {
+  if (atEnd.value) return
+  jumpCapped.value = false
+  const s = Math.min(lastPageStart.value, windowStart.value + WINDOW)
+  setWindow(s, s + WINDOW)
+  hideTip()
+}
+
+// Jump-to-range: two 1-based inclusive inputs + Go. Invalid/empty input is
+// ignored; from>to is swapped; spans wider than WINDOW render the first WINDOW.
+const jumpFrom = ref('')
+const jumpTo = ref('')
+const jumpCapped = ref(false)
+function doJump() {
+  const n = fullLength.value
+  if (!n) return
+  let f = parseInt(jumpFrom.value, 10)
+  let t = parseInt(jumpTo.value, 10)
+  const fOk = Number.isFinite(f)
+  const tOk = Number.isFinite(t)
+  if (!fOk && !tOk) return // nothing usable entered
+  if (!fOk) f = 1
+  if (!tOk) t = n
+  f = Math.max(1, Math.min(f, n))
+  t = Math.max(1, Math.min(t, n))
+  if (f > t) {
+    const tmp = f
+    f = t
+    t = tmp
+  }
+  jumpCapped.value = t - f + 1 > WINDOW
+  if (jumpCapped.value) t = f + WINDOW - 1
+  setWindow(f - 1, t) // t is 1-based inclusive -> exclusive index === t
+  hideTip()
+}
+
+// --- PTM visibility ----------------------------------------------------------
+// Distinct PTM types across the WHOLE protein, each with a site count (a name is
+// counted once per site). Ordered biological → artifact → label → fixed →
+// unknown via the shared helper; each item keeps enough of a representative mod
+// record for ptmClassInfo() to badge it.
+const ptmTypes = computed(() => {
+  const list = Array.isArray(map.value?.ptms) ? map.value.ptms : []
+  const byName = new Map()
+  for (const site of list) {
+    const mods = Array.isArray(site?.mods) ? site.mods : []
+    const seen = new Set()
+    for (const m of mods) {
+      const name = m?.name
+      if (!name || seen.has(name)) continue // count each name once per site
+      seen.add(name)
+      let cur = byName.get(name)
+      if (!cur) {
+        cur = {
+          name,
+          count: 0,
+          class: m.class,
+          is_biological: m.is_biological,
+          n_datasets: m.n_datasets,
+          n_observations: m.n_observations,
+        }
+        byName.set(name, cur)
+      }
+      cur.count += 1
+    }
+  }
+  return orderPtms(Array.from(byName.values()))
+})
+
+// Names of PTM types the user has hidden. Default: all shown.
+const hiddenPtms = ref(new Set())
+function togglePtm(name) {
+  const s = new Set(hiddenPtms.value)
+  if (s.has(name)) s.delete(name)
+  else s.add(name)
+  hiddenPtms.value = s
+}
+function showAllPtms() {
+  hiddenPtms.value = new Set()
+}
+function biologicalOnlyPtms() {
+  const s = new Set()
+  for (const t of ptmTypes.value) {
+    if (!isBiologicalPtm(t)) s.add(t.name)
+  }
+  hiddenPtms.value = s
+}
 
 // Rows of `cols` residues, each split into blocks of BLOCK by a spacer cell.
+// Only the current [windowStart, windowEnd) slice is rendered; positions stay
+// absolute (1-based) so rulers and tooltips show real residue numbers.
 const rows = computed(() => {
   const seq = map.value?.sequence || ''
   const intensity = Array.isArray(map.value?.intensity) ? map.value.intensity : []
   const depth = Array.isArray(map.value?.depth) ? map.value.depth : []
-  const n = shownLength.value
+  const hidden = hiddenPtms.value
+  const s0 = windowStart.value
+  const e0 = Math.min(windowEnd.value, seq.length)
   const out = []
-  for (let start = 0; start < n; start += cols) {
-    const end = Math.min(start + cols, n)
+  for (let start = s0; start < e0; start += cols) {
+    const end = Math.min(start + cols, e0)
     const cells = []
     for (let i = start; i < end; i++) {
       const pos = i + 1 // 1-based residue position
       const raw = Number(intensity[i])
       const val = Number.isFinite(raw) ? Math.max(0, Math.min(1, raw)) : 0
       const obs = Number(depth[i])
-      const mods = ptmByPos.value.get(pos) || []
+      const allMods = ptmByPos.value.get(pos) || []
+      // Only visible (non-hidden) mods drive the marker + tooltip list.
+      const mods = hidden.size ? allMods.filter((m) => !hidden.has(m?.name)) : allMods
       cells.push({
         pos,
         ch: seq[i] || '',
@@ -208,6 +408,13 @@ async function load(q) {
     // (found:false, missing sequence) renders nothing.
     if (data && data.found && typeof data.sequence === 'string' && data.sequence.length) {
       map.value = data
+      // New protein: reset the window to the front and clear PTM/jump state.
+      windowStart.value = 0
+      windowEnd.value = Math.min(WINDOW, data.sequence.length)
+      hiddenPtms.value = new Set()
+      jumpFrom.value = ''
+      jumpTo.value = ''
+      jumpCapped.value = false
     } else {
       map.value = null
     }
@@ -352,6 +559,169 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   margin-top: 10px;
   font-size: 12px;
   color: var(--text-muted);
+}
+
+/* --- Shared control button ------------------------------------------------ */
+.sm-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease;
+}
+.sm-btn:hover:not(:disabled) {
+  border-color: var(--indigo);
+  color: var(--indigo);
+}
+.sm-btn:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
+}
+.sm-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.sm-btn-sm {
+  padding: 3px 9px;
+  font-size: 11px;
+}
+
+/* --- Region navigation ---------------------------------------------------- */
+.sm-nav {
+  margin-bottom: 12px;
+}
+.sm-nav-main {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.sm-nav-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.sm-nav-btns {
+  display: inline-flex;
+  gap: 6px;
+}
+.sm-nav-jump {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.sm-nav-jump-lbl {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.sm-nav-input {
+  width: 74px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+.sm-nav-input:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
+  border-color: var(--indigo);
+}
+.sm-nav-dash {
+  color: var(--text-muted);
+}
+.sm-nav-note {
+  margin-top: 6px;
+}
+.sm-minimap {
+  position: relative;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: var(--bg-alt);
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+}
+.sm-minimap-seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 2px;
+  border-radius: 3px;
+  background: linear-gradient(to right, var(--indigo), var(--violet));
+}
+
+/* --- PTM visibility filter ------------------------------------------------ */
+.sm-ptm-filter {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sm-ptm-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding-top: 5px;
+}
+.sm-ptm-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+.sm-ptm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, opacity 0.12s ease;
+}
+.sm-ptm-chip:hover {
+  border-color: var(--indigo);
+}
+.sm-ptm-chip:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
+}
+.sm-ptm-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sm-ptm-count {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+.sm-ptm-chip.sm-ptm-off {
+  opacity: 0.5;
+}
+.sm-ptm-chip.sm-ptm-off .sm-ptm-name {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+}
+.sm-ptm-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* Legend PTM demo cell */
