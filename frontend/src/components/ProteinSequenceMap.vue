@@ -112,7 +112,11 @@
               <span v-if="cell.blockBreak" class="sm-gap" aria-hidden="true" />
               <span
                 class="sm-cell"
-                :class="{ 'sm-has-ptm': cell.hasPtm, 'sm-covered': cell.intensity > 0 }"
+                :class="{
+                  'sm-has-ptm': cell.hasPtm,
+                  'sm-covered': cell.intensity > 0,
+                  'sm-has-term': !!cell.terminal,
+                }"
                 :style="cell.intensity > 0 ? { background: greenAt(cell.intensity) } : null"
                 @mouseenter="showTip(cell, $event)"
                 @mousemove="moveTip($event)"
@@ -120,6 +124,13 @@
               >
                 <span class="sm-res">{{ cell.ch }}</span>
                 <span v-if="cell.hasPtm" class="sm-dot" aria-hidden="true" />
+                <span
+                  v-if="cell.terminal"
+                  class="sm-term-badge"
+                  :class="cell.terminal === 'N-term' ? 'sm-term-n' : 'sm-term-c'"
+                  :title="cell.terminal === 'N-term' ? 'N-terminal modification' : 'C-terminal modification'"
+                  >{{ cell.terminal === 'N-term' ? 'Nt' : 'Ct' }}</span
+                >
               </span>
             </template>
           </span>
@@ -142,8 +153,9 @@
       </div>
       <div v-if="!tip.mods.length && tip.intensity === 0" class="sm-tip-empty">Not covered</div>
       <ul v-if="tip.mods.length" class="sm-tip-mods">
-        <li v-for="m in tip.mods" :key="m.name">
-          {{ m.name }}<span v-if="m.n_datasets" class="sm-tip-mod-n"> · {{ formatNum(m.n_datasets) }} datasets</span>
+        <li v-for="m in tip.mods" :key="`${m.name}:${m.terminal || ''}`">
+          <span v-if="m.terminal" class="sm-tip-term">{{ m.terminal === 'N-term' ? 'N-terminal' : 'C-terminal' }}</span
+          >{{ m.terminal ? ' ' : '' }}{{ m.name }}<span v-if="m.n_datasets" class="sm-tip-mod-n"> · {{ formatNum(m.n_datasets) }} datasets</span>
         </li>
       </ul>
     </div>
@@ -371,12 +383,16 @@ const rows = computed(() => {
       const allMods = ptmByPos.value.get(pos) || []
       // Only visible (non-hidden) mods drive the marker + tooltip list.
       const mods = hidden.size ? allMods.filter((m) => !hidden.has(m?.name)) : allMods
+      // A terminal mod keeps its residue mark but is badged N-/C-term. Older
+      // backends omit `terminal` entirely -> no badge (graceful degradation).
+      const terminal = mods.find((m) => m?.terminal)?.terminal || null
       cells.push({
         pos,
         ch: seq[i] || '',
         intensity: val,
         depth: Number.isFinite(obs) ? obs : 0,
         hasPtm: mods.length > 0,
+        terminal,
         mods,
         // spacer before this cell when it starts a new block (but not the row).
         blockBreak: i !== start && (i % BLOCK === 0),
@@ -593,6 +609,31 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   border-radius: 50%;
   background: var(--violet);
   z-index: 2;
+}
+/* Terminal (N-/C-term) mods keep their residue mark but gain a distinct accent
+   underline + a tiny corner badge so they don't read as ordinary side-chain marks. */
+.sm-cell.sm-has-term {
+  box-shadow: inset 0 -2px 0 0 var(--indigo);
+}
+.sm-term-badge {
+  position: absolute;
+  top: -4px;
+  left: -3px;
+  z-index: 3;
+  padding: 0 2px;
+  font-size: 7px;
+  line-height: 1.4;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #fff;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.sm-term-n {
+  background: var(--indigo);
+}
+.sm-term-c {
+  background: var(--violet);
 }
 .sm-note {
   margin-top: 10px;
@@ -845,5 +886,9 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
 }
 .sm-tip-mod-n {
   opacity: 0.75;
+}
+.sm-tip-term {
+  font-weight: 700;
+  color: var(--indigo-light);
 }
 </style>
