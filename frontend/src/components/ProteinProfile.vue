@@ -326,6 +326,9 @@ const props = defineProps({
   // restricted to high-confidence evidence (qc_score >= threshold). The additive
   // `qc` counterpart counts are returned regardless (when the backend has QC data).
   qc: { type: Boolean, default: false },
+  // Optional explicit confidence cutoff (0..1) from the advanced slider; when null
+  // the backend's calibrated default (0.15) applies. Only meaningful with qc = true.
+  qcThreshold: { type: Number, default: null },
 })
 
 // Chip tooltip: keep the observation count, append the biological-relevance class
@@ -629,6 +632,8 @@ async function load(q) {
       accession: query,
       // Only sent when ON so the off-state request stays identical to today.
       qc: props.qc ? true : undefined,
+      // Explicit cutoff from the advanced slider (else the backend default applies).
+      qc_threshold: props.qc && props.qcThreshold != null ? props.qcThreshold : undefined,
     })
     if (myReq !== reqId) return // a newer query superseded this request
     profile.value = data
@@ -644,7 +649,7 @@ async function load(q) {
 
 // Reload on accession change OR when the high-confidence toggle flips, so the
 // profile aggregates reflect the current qc state.
-watch(() => [props.accession, props.qc], () => load(props.accession), { immediate: true })
+watch(() => [props.accession, props.qc, props.qcThreshold], () => load(props.accession), { immediate: true })
 </script>
 
 <style scoped>

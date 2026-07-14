@@ -111,7 +111,32 @@
           <span class="qc-track" aria-hidden="true"><span class="qc-thumb" /></span>
           <span class="qc-switch-text">High-confidence only</span>
         </label>
-        <span class="qc-help">Hides low-confidence evidence (reproducibility, proteotypicity, length, coverage).</span>
+        <span class="qc-help">Hides low-confidence evidence (reproducibility, proteotypicity, length, tissue, coverage).</span>
+        <button
+          v-if="highConfidenceOnly"
+          type="button"
+          class="qc-adv-toggle"
+          :aria-expanded="qcAdvanced"
+          @click="qcAdvanced = !qcAdvanced"
+        >{{ qcAdvanced ? 'Hide advanced' : 'Advanced' }}</button>
+      </div>
+
+      <!-- Advanced: move the exact confidence cutoff (qc_score >= threshold) from 0
+           (show all evidence) to 1 (strictest). The default 0.15 is calibrated against
+           UniProt protein-existence levels; advanced users can tune it live. -->
+      <div v-if="highConfidenceOnly && qcAdvanced" class="qc-slider-row">
+        <label class="qc-slider-label" for="qc-threshold">Confidence cutoff</label>
+        <input
+          id="qc-threshold"
+          class="qc-slider"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          v-model.number="qcThreshold"
+        />
+        <output class="qc-slider-val" for="qc-threshold">{{ qcThreshold.toFixed(2) }}</output>
+        <span class="qc-slider-hint">0 = show all · 0.15 = default · 1 = strictest</span>
       </div>
       <p v-if="mode === 'peptide'" class="req-note">
         A peptide sequence is required. Leave <em>modification</em> on “Any” to match every form (modified and unmodified),
@@ -129,7 +154,7 @@
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
-        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :qc="highConfidenceOnly" @pick="pickProtein" />
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :qc="highConfidenceOnly" :qc-threshold="highConfidenceOnly && qcAdvanced ? qcThreshold : null" @pick="pickProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
@@ -223,6 +248,12 @@ const collection = ref('')
 // the peptide/protein search AND to the ProteinProfile /protein/profile request,
 // restricting results to high-confidence evidence (qc_score >= threshold).
 const highConfidenceOnly = ref(false)
+// Advanced QC control: an explicit confidence cutoff (0..1) that overrides the
+// calibrated default (0.15) when the user opens the advanced panel. Only sent when
+// the toggle is ON and the panel is open, so the plain toggle path is unchanged.
+const QC_DEFAULT_THRESHOLD = 0.15
+const qcAdvanced = ref(false)
+const qcThreshold = ref(QC_DEFAULT_THRESHOLD)
 
 const facets = ref({ organism: [], collection: [], instrument: [] })
 const stats = ref(null)
@@ -329,8 +360,11 @@ function buildParams() {
     instrument: instrument.value || undefined,
     collection: collection.value || undefined,
     // Only sent when ON; omitted (not qc=false) otherwise so requests stay
-    // byte-identical to today when the toggle is off.
+    // byte-identical to today when the toggle is off. The explicit threshold is
+    // sent only from the advanced panel (otherwise the backend default applies).
     qc: highConfidenceOnly.value ? true : undefined,
+    qc_threshold:
+      highConfidenceOnly.value && qcAdvanced.value ? qcThreshold.value : undefined,
   }
 }
 
@@ -358,6 +392,9 @@ function currentQuery() {
   if (instrument.value) q.instrument = instrument.value
   if (collection.value) q.collection = collection.value
   if (highConfidenceOnly.value) q.qc = '1'
+  if (highConfidenceOnly.value && qcAdvanced.value && qcThreshold.value !== QC_DEFAULT_THRESHOLD) {
+    q.qct = String(qcThreshold.value)
+  }
   return q
 }
 
@@ -374,6 +411,11 @@ function applyQuery(q) {
   instrument.value = q.instrument || ''
   collection.value = q.collection || ''
   highConfidenceOnly.value = q.qc === '1' || q.qc === 'true'
+  const qt = q.qct != null ? Number(q.qct) : NaN
+  if (Number.isFinite(qt) && qt >= 0 && qt <= 1) {
+    qcThreshold.value = qt
+    qcAdvanced.value = true
+  }
 }
 
 async function init() {
@@ -413,6 +455,17 @@ watch(modification, () => {
 // when a search has already been run — never auto-searches before the first one.
 watch(highConfidenceOnly, () => {
   if (canSearch.value && (result.value || query.value)) run()
+})
+
+// Dragging the advanced confidence slider re-runs the current search, debounced so a
+// drag doesn't fire a request per tick. Only re-runs once a search already exists.
+let qcSliderTimer = null
+watch([qcThreshold, qcAdvanced], () => {
+  if (!highConfidenceOnly.value) return
+  if (qcSliderTimer) clearTimeout(qcSliderTimer)
+  qcSliderTimer = setTimeout(() => {
+    if (canSearch.value && (result.value || query.value)) run()
+  }, 250)
 })
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
@@ -639,6 +692,48 @@ onMounted(() => {
   color: var(--text-primary);
 }
 .qc-help {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.qc-adv-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent, #2563eb);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.qc-adv-toggle:hover {
+  opacity: 0.8;
+}
+.qc-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 4px;
+  flex-wrap: wrap;
+}
+.qc-slider-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.qc-slider {
+  flex: 1 1 220px;
+  max-width: 320px;
+  accent-color: var(--accent, #2563eb);
+  cursor: pointer;
+}
+.qc-slider-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 3ch;
+  color: var(--text-primary);
+}
+.qc-slider-hint {
   font-size: 12px;
   color: var(--text-muted);
 }
