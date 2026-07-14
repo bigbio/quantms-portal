@@ -159,6 +159,9 @@
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
           <span v-if="query"> — <code>{{ query }}</code></span>
+          <span v-if="highConfidenceOnly" class="result-qc-note">
+            · high-confidence only<span v-if="qcAdvanced"> (cutoff ≥ {{ qcThreshold.toFixed(2) }})</span>
+          </span>
         </div>
 
         <div v-if="loading" class="loading-block">Searching…</div>
@@ -457,15 +460,22 @@ watch(highConfidenceOnly, () => {
   if (canSearch.value && (result.value || query.value)) run()
 })
 
-// Dragging the advanced confidence slider re-runs the current search, debounced so a
-// drag doesn't fire a request per tick. Only re-runs once a search already exists.
+// Dragging the advanced confidence slider re-runs the current search so BOTH the
+// results table and the profile reflect the new cutoff. Debounced so a drag doesn't
+// fire a request per tick; only re-runs once a search already exists.
+function rerunIfSearched() {
+  if (canSearch.value && (result.value || query.value)) run()
+}
 let qcSliderTimer = null
-watch([qcThreshold, qcAdvanced], () => {
-  if (!highConfidenceOnly.value) return
+watch(qcThreshold, () => {
+  if (!highConfidenceOnly.value || !qcAdvanced.value) return
   if (qcSliderTimer) clearTimeout(qcSliderTimer)
-  qcSliderTimer = setTimeout(() => {
-    if (canSearch.value && (result.value || query.value)) run()
-  }, 250)
+  qcSliderTimer = setTimeout(rerunIfSearched, 200)
+})
+// Opening/closing the advanced panel changes whether an explicit cutoff is sent, so
+// re-run immediately (no debounce needed for a single click).
+watch(qcAdvanced, () => {
+  if (highConfidenceOnly.value) rerunIfSearched()
 })
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
@@ -736,6 +746,10 @@ onMounted(() => {
 .qc-slider-hint {
   font-size: 12px;
   color: var(--text-muted);
+}
+.result-qc-note {
+  color: var(--text-muted);
+  font-size: 13px;
 }
 .num {
   text-align: right;
