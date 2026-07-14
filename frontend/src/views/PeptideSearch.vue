@@ -174,6 +174,7 @@
                 <th>Collection</th>
                 <th>Organism</th>
                 <th>Instrument</th>
+                <th class="num">Peptides</th>
                 <th class="num">Peptidoforms</th>
                 <th class="num">Obs.</th>
                 <th>Matching peptidoform(s)</th>
@@ -182,7 +183,7 @@
             </thead>
             <tbody>
               <tr v-if="result.datasets.length === 0">
-                <td colspan="8" style="text-align: center; padding: 32px; color: var(--text-muted)">No datasets match.</td>
+                <td colspan="9" style="text-align: center; padding: 32px; color: var(--text-muted)">No datasets match.</td>
               </tr>
               <tr v-for="ds in result.datasets" :key="ds.dataset_ref">
                 <td>
@@ -191,6 +192,7 @@
                 <td><span class="tag" :class="collectionTag(ds.collection)">{{ ds.collection }}</span></td>
                 <td style="font-size: 13px">{{ ds.organism || '—' }}</td>
                 <td style="font-size: 13px; color: var(--text-secondary)">{{ cleanInstrument(ds.instrument) || '—' }}</td>
+                <td class="td-num">{{ formatNum(ds.n_peptides) }}</td>
                 <td class="td-num">{{ formatNum(ds.n_peptidoforms) }}</td>
                 <td class="td-num">{{ formatNum(ds.total_obs) }}</td>
                 <td style="font-size: 12px">
