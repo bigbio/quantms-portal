@@ -16,6 +16,7 @@ export const DOCS_NAV = [
     items: [
       { slug: 'applications', title: 'Applications' },
       { slug: 'how-search-works', title: 'How search works' },
+      { slug: 'evidence-quality', title: 'Evidence quality' },
       { slug: 'data', title: 'Data' },
       { slug: 'collections', title: 'Collections' },
       { slug: 'download', title: 'Download data' },
