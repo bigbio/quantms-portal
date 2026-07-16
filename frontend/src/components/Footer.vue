@@ -22,6 +22,7 @@
           <a href="https://api.quantms.org/docs" target="_blank" rel="noopener">API &amp; MCP</a>
           <router-link to="/docs">Documentation</router-link>
           <router-link to="/contact">Contact</router-link>
+          <a href="https://github.com/bigbio/quantms-portal/issues" target="_blank" rel="noopener">Report an issue</a>
         </div>
         <div class="footer-col">
           <h4>Ecosystem</h4>
