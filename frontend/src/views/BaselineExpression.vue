@@ -636,7 +636,6 @@ function stripX(val) {
   color: var(--text-primary);
   font-size: 13px;
   white-space: nowrap;
-  text-transform: capitalize;
 }
 
 /* Heatmap cells */
