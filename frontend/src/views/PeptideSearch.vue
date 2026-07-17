@@ -80,9 +80,9 @@
             :title="`This modification is classified as ${selectedModClass.label.toLowerCase()}${selectedModClass.biological ? ' (real post-translational biology)' : ' — chemistry, labelling or artifact, not biology'}`"
           >{{ selectedModClass.label }}</span>
 
-          <select v-model="organism" class="facet-select" title="Organism">
+          <select v-model="organism" class="facet-select" title="Organism — scoped to the current results">
             <option value="">All organisms</option>
-            <option v-for="o in facets.organism" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
+            <option v-for="o in organismOptions" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
           <input v-model="tissue" type="text" class="filter-search" style="width: 150px" placeholder="Tissue / organism part" />
           <select v-model="instrument" class="facet-select" title="Instrument">
@@ -336,6 +336,16 @@ const selectedModClass = computed(() => {
 // the backend's `unmodified=true` flag (bare peptides with no mods) rather than a
 // modification name, so it is mutually exclusive with a chosen residue.
 const unmodifiedOnly = computed(() => modification.value === '__unmodified__')
+
+// Organism dropdown options: prefer the CURRENT query's scoped facet (only the
+// organisms that actually occur in these results, so a human protein like TITIN
+// never offers "Mus musculus"), and fall back to the global corpus facet before
+// any search — or when the backend returns no scoped facet (older deployment).
+const organismOptions = computed(() => {
+  const scoped = result.value?.organism_facet
+  if (Array.isArray(scoped) && scoped.length) return scoped
+  return facets.value.organism || []
+})
 
 const hasFilters = computed(() =>
   !!(modification.value || residue.value || organism.value || tissue.value || instrument.value || collection.value)
