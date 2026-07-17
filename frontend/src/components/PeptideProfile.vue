@@ -241,8 +241,8 @@ const levelClass = computed(() => {
 })
 
 // Mini-bars: top few tissues/species by observation count.
-const topTissues = computed(() => arr(profile.value?.observations?.by_tissue).slice(0, 5))
-const topSpecies = computed(() => arr(profile.value?.observations?.by_species).slice(0, 5))
+const topTissues = computed(() => arr(profile.value?.observations?.by_tissue).slice(0, 20))
+const topSpecies = computed(() => arr(profile.value?.observations?.by_species).slice(0, 20))
 const topTissueMax = computed(() => Math.max(1, ...topTissues.value.map((r) => Number(r.n_observations) || 0)))
 const topSpeciesMax = computed(() => Math.max(1, ...topSpecies.value.map((r) => Number(r.n_observations) || 0)))
 
