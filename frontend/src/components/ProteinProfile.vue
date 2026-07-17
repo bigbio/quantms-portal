@@ -255,7 +255,7 @@
     </div>
 
     <!-- Observation mini-bars -->
-    <div v-if="topTissues.length || topSpecies.length" class="pp-block">
+    <div v-if="topTissues.length || topDiseases.length || topSpecies.length" class="pp-block">
       <div class="pp-block-label">Where it is observed <span class="pp-unit">· observations (spectral matches)</span></div>
       <div class="pp-bars-grid">
         <div v-if="topTissues.length" class="pp-bars">
@@ -268,7 +268,19 @@
             <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
           </div>
         </div>
-        <div v-if="topSpecies.length" class="pp-bars">
+        <div v-if="topDiseases.length" class="pp-bars">
+          <div class="pp-bars-cap">By disease</div>
+          <div v-for="row in topDiseases" :key="'bd-' + row.value" class="pp-bar-row">
+            <span class="pp-bar-label" :title="row.value">{{ row.value }}</span>
+            <span class="pp-bar-track">
+              <span class="pp-bar-fill pp-bar-amber" :style="{ width: pct(row.n_observations, topDiseaseMax) }" />
+            </span>
+            <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
+          </div>
+        </div>
+        <!-- Species is one-to-one for nearly every protein (a gene-centric, organism-scoped
+             profile), so the breakdown only carries information when >1 organism appears. -->
+        <div v-if="topSpecies.length > 1" class="pp-bars">
           <div class="pp-bars-cap">By species</div>
           <div v-for="row in topSpecies" :key="'bs-' + row.value" class="pp-bar-row">
             <span class="pp-bar-label" :title="row.value">{{ row.value }}</span>
@@ -601,10 +613,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('scroll', onScrollResize, true)
 })
 
-// Mini-bars: top few tissues/species by observation count.
+// Mini-bars: top few tissues/diseases/species by observation count.
 const topTissues = computed(() => arr(profile.value?.observations?.by_tissue).slice(0, 5))
+const topDiseases = computed(() => arr(profile.value?.observations?.by_disease).slice(0, 5))
 const topSpecies = computed(() => arr(profile.value?.observations?.by_species).slice(0, 5))
 const topTissueMax = computed(() => Math.max(1, ...topTissues.value.map((r) => Number(r.n_observations) || 0)))
+const topDiseaseMax = computed(() => Math.max(1, ...topDiseases.value.map((r) => Number(r.n_observations) || 0)))
 const topSpeciesMax = computed(() => Math.max(1, ...topSpecies.value.map((r) => Number(r.n_observations) || 0)))
 
 function pct(v, max) {
@@ -1057,6 +1071,7 @@ watch(() => [props.accession, props.qc, props.qcThreshold], () => load(props.acc
   border-radius: 4px;
 }
 .pp-bar-green { background: var(--success); }
+.pp-bar-amber { background: #f59e0b; }
 .pp-bar-blue { background: var(--blue); }
 .pp-bar-val {
   font-size: 11px;
