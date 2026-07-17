@@ -575,6 +575,15 @@ function clearFilters() {
   collection.value = ''
 }
 
+// Drop the results table + profiles. Used when the route becomes empty (e.g. clicking the navbar
+// "Peptide Search" while a search is open) so the previous results don't linger under a blank form.
+function clearResults() {
+  result.value = null
+  query.value = ''
+  profileSequence.value = ''
+  profileProtein.value = ''
+}
+
 // Populate the form from the incoming URL and auto-run when a searchable query
 // is present, so a shared/bookmarked link reproduces the exact search.
 watch(
@@ -583,6 +592,7 @@ watch(
     applyingRoute = true
     applyQuery(q)
     if (canSearch.value) run()
+    else clearResults()          // empty route (e.g. navbar click) -> clear the lingering results
     applyingRoute = false
   }
 )
@@ -591,6 +601,7 @@ onMounted(() => {
   init()
   applyQuery(route.query)
   if (canSearch.value) run()
+  else clearResults()
 })
 </script>
 
