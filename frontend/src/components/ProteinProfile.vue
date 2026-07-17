@@ -293,8 +293,12 @@
       </div>
     </div>
 
-    <!-- Summary line -->
-    <p v-if="profile.summary" class="pp-summary">{{ profile.summary }}</p>
+    <!-- AI description (pre-computed, UniProt function + corpus evidence) when available,
+         otherwise the deterministic fact restatement. -->
+    <p v-if="aiDescription" class="pp-summary pp-ai">
+      <span class="pp-ai-tag">AI</span> {{ aiDescription }}
+    </p>
+    <p v-else-if="profile.summary" class="pp-summary">{{ profile.summary }}</p>
   </div>
 </template>
 
@@ -614,6 +618,8 @@ onBeforeUnmount(() => {
 })
 
 // Mini-bars: top few tissues/diseases/species by observation count.
+// Pre-computed AI description (UniProt function + corpus evidence); empty -> deterministic summary.
+const aiDescription = computed(() => (profile.value?.ai_description || '').trim())
 const topTissues = computed(() => arr(profile.value?.observations?.by_tissue).slice(0, 20))
 const topDiseases = computed(() => arr(profile.value?.observations?.by_disease).slice(0, 20))
 const topSpecies = computed(() => arr(profile.value?.observations?.by_species).slice(0, 20))
@@ -1087,6 +1093,18 @@ watch(() => [props.accession, props.qc, props.qcThreshold], () => load(props.acc
   margin-top: 4px;
   padding-top: 14px;
   border-top: 1px solid var(--border-subtle);
+}
+.pp-ai-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent, #6366f1);
+  border: 1px solid var(--accent, #6366f1);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-right: 6px;
+  vertical-align: 1px;
 }
 
 /* --- "Did you mean" candidate picker ------------------------------------- */
