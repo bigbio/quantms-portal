@@ -26,6 +26,13 @@ export const BROWSE_BASE = (env.VITE_BROWSE_BASE || 'https://browse.quantms.org'
 // view reads this JSON directly from browse — no stats backend, no per-request compute.
 export const STATS_PATH = '/quantms/apps/statistics/stats.json'
 
+// GPP (Global Peptide Probability) — the per-observation evidence-quality score.
+// The "high-confidence only" filter sends a single `gpp_min` cutoff (0..1); its
+// presence enables the filter and its value IS the cutoff. The default cutoff is
+// DYNAMIC (computed per-build by the backend and exposed at /stats → gpp.default_min);
+// this constant is only the FALLBACK used when the backend reports no GPP data.
+export const GPP_FALLBACK_MIN = 0.15
+
 // API documentation hub.
 export const API_DOCS_URL = `${API_BASE}/docs`
 

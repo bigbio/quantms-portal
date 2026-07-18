@@ -86,35 +86,35 @@
     </div>
 
     <!-- Stats row. When the backend carries additive high-confidence counts
-         (profile.qc) a subtle secondary figure shows the high-confidence subset
+         (profile.gpp) a subtle secondary figure shows the high-confidence subset
          under each total; it degrades to just the total when absent. -->
     <div class="pp-stats">
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_datasets) }}</div>
         <div class="pp-stat-label">Datasets</div>
-        <div v-if="qcFig('n_datasets') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_datasets'))} high-confidence datasets`">
-          {{ formatNum(qcFig('n_datasets')) }} high-confidence
+        <div v-if="gppFig('n_datasets') != null" class="pp-stat-gpp" :title="`${formatNum(gppFig('n_datasets'))} high-confidence datasets`">
+          {{ formatNum(gppFig('n_datasets')) }} high-confidence
         </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_peptides) }}</div>
         <div class="pp-stat-label">Peptides</div>
-        <div v-if="qcFig('n_peptides') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_peptides'))} high-confidence peptides`">
-          {{ formatNum(qcFig('n_peptides')) }} high-confidence
+        <div v-if="gppFig('n_peptides') != null" class="pp-stat-gpp" :title="`${formatNum(gppFig('n_peptides'))} high-confidence peptides`">
+          {{ formatNum(gppFig('n_peptides')) }} high-confidence
         </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatNum(profile.n_proteotypic_peptides) }}</div>
         <div class="pp-stat-label">Proteotypic peptides</div>
-        <div v-if="qcFig('n_proteotypic_peptides') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_proteotypic_peptides'))} high-confidence proteotypic peptides`">
-          {{ formatNum(qcFig('n_proteotypic_peptides')) }} high-confidence
+        <div v-if="gppFig('n_proteotypic_peptides') != null" class="pp-stat-gpp" :title="`${formatNum(gppFig('n_proteotypic_peptides'))} high-confidence proteotypic peptides`">
+          {{ formatNum(gppFig('n_proteotypic_peptides')) }} high-confidence
         </div>
       </div>
       <div class="pp-stat">
         <div class="pp-stat-val">{{ formatBig(profile.n_observations) }}</div>
         <div class="pp-stat-label">Observations</div>
-        <div v-if="qcFig('n_observations') != null" class="pp-stat-qc" :title="`${formatNum(qcFig('n_observations'))} high-confidence observations`">
-          {{ formatBig(qcFig('n_observations')) }} high-confidence
+        <div v-if="gppFig('n_observations') != null" class="pp-stat-gpp" :title="`${formatNum(gppFig('n_observations'))} high-confidence observations`">
+          {{ formatBig(gppFig('n_observations')) }} high-confidence
         </div>
       </div>
       <div v-if="obsLevel" class="pp-stat">
@@ -338,13 +338,12 @@ async function ensureObsDistribution() {
 const props = defineProps({
   // Protein query: UniProt accession or gene. Empty string clears the panel.
   accession: { type: String, default: '' },
-  // "High-confidence only": when true, `qc=true` is sent so every aggregate is
-  // restricted to high-confidence evidence (qc_score >= threshold). The additive
-  // `qc` counterpart counts are returned regardless (when the backend has QC data).
-  qc: { type: Boolean, default: false },
-  // Optional explicit confidence cutoff (0..1) from the advanced slider; when null
-  // the backend's calibrated default (0.15) applies. Only meaningful with qc = true.
-  qcThreshold: { type: Number, default: null },
+  // "High-confidence only" cutoff: the GPP (Global Peptide Probability) minimum,
+  // 0..1. When non-null, `gpp_min=<value>` is sent so every aggregate is restricted
+  // to high-confidence evidence (gpp >= gpp_min); null = filter off. The additive
+  // `profile.gpp` counterpart counts are returned regardless (when the backend has
+  // GPP data).
+  gppMin: { type: Number, default: null },
 })
 
 // Chip tooltip: keep the observation count, append the biological-relevance class
@@ -413,23 +412,23 @@ const diseases = computed(() => arr(profile.value?.diseases))
 const ptms = computed(() => arr(profile.value?.ptms))
 
 // Additive high-confidence counterpart counts. Present only when the backend
-// carries QC data (`profile.qc = { n_datasets, n_peptides, n_observations,
-// n_proteotypic_peptides, threshold }`). Null on old backends / missing data →
-// the stats row degrades to today's single-figure UI.
-const qcCounts = computed(() => {
-  const q = profile.value?.qc
-  return q && typeof q === 'object' ? q : null
+// carries GPP data (`profile.gpp = { n_datasets, n_peptides, n_observations,
+// n_proteotypic_peptides, default_min, threshold }`). Null on old backends /
+// missing data → the stats row degrades to today's single-figure UI.
+const gppCounts = computed(() => {
+  const g = profile.value?.gpp
+  return g && typeof g === 'object' ? g : null
 })
-const hasQcCounts = computed(() => !!qcCounts.value)
+const hasGppCounts = computed(() => !!gppCounts.value)
 // Show a high-confidence figure for a stat only when the backend supplied it.
-function qcFig(key) {
-  const v = qcCounts.value?.[key]
+function gppFig(key) {
+  const v = gppCounts.value?.[key]
   return Number.isFinite(Number(v)) ? Number(v) : null
 }
 // Optional HPP-style protein tier, if the backend ever supplies one (top-level
-// or nested under qc). Purely additive — absent today, so it renders nothing.
+// or nested under gpp). Purely additive — absent today, so it renders nothing.
 const proteinTier = computed(
-  () => profile.value?.tier || profile.value?.hpp_tier || qcCounts.value?.tier || null
+  () => profile.value?.tier || profile.value?.hpp_tier || gppCounts.value?.tier || null
 )
 
 // Observed context: species + tissue + disease chips combined into one list,
@@ -650,10 +649,10 @@ async function load(q) {
   try {
     const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', {
       accession: query,
-      // Only sent when ON so the off-state request stays identical to today.
-      qc: props.qc ? true : undefined,
-      // Explicit cutoff from the advanced slider (else the backend default applies).
-      qc_threshold: props.qc && props.qcThreshold != null ? props.qcThreshold : undefined,
+      // Single self-describing param: presence enables the high-confidence filter,
+      // its value IS the cutoff. Omitted (filter off) when gppMin is null so the
+      // off-state request stays identical to today.
+      gpp_min: props.gppMin != null ? props.gppMin : undefined,
     })
     if (myReq !== reqId) return // a newer query superseded this request
     profile.value = data
@@ -667,9 +666,9 @@ async function load(q) {
   }
 }
 
-// Reload on accession change OR when the high-confidence toggle flips, so the
-// profile aggregates reflect the current qc state.
-watch(() => [props.accession, props.qc, props.qcThreshold], () => load(props.accession), { immediate: true })
+// Reload on accession change OR when the GPP cutoff changes (toggle flip or slider),
+// so the profile aggregates reflect the current high-confidence state.
+watch(() => [props.accession, props.gppMin], () => load(props.accession), { immediate: true })
 </script>
 
 <style scoped>
@@ -799,7 +798,7 @@ watch(() => [props.accession, props.qc, props.qcThreshold], () => load(props.acc
   color: var(--text-muted);
 }
 /* Subtle secondary figure: the high-confidence subset of the stat above it. */
-.pp-stat-qc {
+.pp-stat-gpp {
   margin-top: 3px;
   font-size: 11px;
   font-weight: 600;

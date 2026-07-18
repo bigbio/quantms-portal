@@ -11,7 +11,7 @@ The **evidence quality score** — named **GPP, the Global Peptide Probability**
 the portal deals with this. It is a per-observation confidence lens over the existing
 evidence — a way to ask *"how likely is this particular detection to be real?"* —
 without re-searching anything and without hiding data by default. (In the API and the
-stored index the score is the field `qc_score`; "GPP" is its name, `qc_score` is its
+stored index the score is the field `gpp`; "GPP" is its name, `gpp` is its
 column.)
 
 *(FDR = false discovery rate, the expected fraction of identifications that are wrong
@@ -34,7 +34,7 @@ can be down-weighted while the real testis detection is kept.
 
 ## What GPP is
 
-Every piece of evidence gets a **GPP (`qc_score`) between 0 and 1** — a label-free
+Every piece of evidence gets a **GPP (`gpp`) between 0 and 1** — a label-free
 probability that the detection is true. It is:
 
 - **Computed once, at indexing time**, and stored on each evidence row. It adds no
@@ -140,7 +140,7 @@ derived independently of this corpus:
 If GPP is meaningful, it should be high for well-established proteins and low
 for shaky ones. It tracks PE strongly:
 
-| PE level | median `qc_score` |
+| PE level | median `gpp` |
 | --- | --- |
 | PE1 (protein evidence) | 0.99 |
 | PE2 (transcript only) | 0.003 |
@@ -148,9 +148,10 @@ for shaky ones. It tracks PE strongly:
 | PE4 (predicted) | 0.008 |
 | PE5 (uncertain) | 0.030 |
 
-The **default cutoff is 0.15**, chosen to sit in the gap between these populations. At
-that cutoff, the filter keeps about **87% of protein-evidence (PE1)** rows while
-removing about **74% of transcript- or predicted-only (PE2/PE4/PE5)** evidence.
+The **default cutoff is computed per build** (targeting roughly 5% FDR) and sits in the
+gap between these populations; **0.15** is the historical and fallback value. At that
+cutoff, the filter keeps about **87% of protein-evidence (PE1)** rows while removing
+about **74% of transcript- or predicted-only (PE2/PE4/PE5)** evidence.
 
 One honest caveat: because the cutoff was *placed* in the PE gap, the strong PE
 agreement is partly by construction — you should read it as "the cutoff is sensibly
@@ -173,7 +174,7 @@ Across the full corpus of **~24.5 million evidence rows**, the default cutoff ke
 about **62%** and removes about **38%**. Broken down by protein-existence level, the
 removal lands overwhelmingly on the weakly-supported proteins:
 
-| PE level | proteins | evidence rows | median `qc_score` | kept at default |
+| PE level | proteins | evidence rows | median `gpp` | kept at default |
 | --- | --- | --- | --- | --- |
 | PE1 | 33,586 | 8.9M | 0.99 | 87% |
 | PE2 | 518 | 2,243 | 0.003 | 12% |
@@ -199,7 +200,7 @@ Nearly all of these fall into two groups:
   genuinely abundant in plasma and serum but are conservatively annotated in UniProt.
 
 So the right way to read a high score here is: **"this peptide is really detected,"**
-not automatically **"this specific gene is a newly confirmed protein."** What the QC
+not automatically **"this specific gene is a newly confirmed protein."** What the GPP
 score gives you is a useful **shortlist** — it surfaces *which* low-existence proteins
 have strong mass-spec support and are worth a closer look. Roughly **54 non-PE1
 proteins** have strong high-confidence evidence (≥ 3 datasets and ≥ 2 peptides).
@@ -264,7 +265,7 @@ keeps what's credible and steps back the rest.
 ## Where to find it
 
 The evidence quality filter is available **today** on the Peptide & Protein Search,
-via the toggle and the advanced slider. It is also available through the API using the
-**`qc`** parameter (turn the filter on) and **`qc_threshold`** (set the cutoff). By
-default everything stays off and unfiltered — the score is there when you want a
-quality lens, and out of the way when you don't.
+via the toggle and the advanced slider. It is also available through the API using a
+single **`gpp_min`** parameter (a cutoff in 0..1): its presence turns the filter on and
+its value is the cutoff; omit it and everything stays off and unfiltered — the score is
+there when you want a quality lens, and out of the way when you don't.

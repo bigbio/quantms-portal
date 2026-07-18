@@ -101,44 +101,44 @@
         </div>
       </div>
 
-      <!-- High-confidence evidence toggle: restricts every search/profile request
-           to high-confidence rows (qc_score >= threshold) via the `qc` query param.
-           Default OFF → behaviour is byte-identical to today. -->
-      <div class="qc-toggle">
+      <!-- High-confidence evidence toggle (GPP): restricts every search/profile
+           request to high-confidence rows (gpp >= gpp_min) via a single `gpp_min`
+           query param. Default OFF → behaviour is byte-identical to today. -->
+      <div class="gpp-toggle">
         <label
-          class="qc-switch"
+          class="gpp-switch"
           title="Hides low-confidence evidence (reproducibility, proteotypicity, length, coverage)"
         >
-          <input type="checkbox" v-model="highConfidenceOnly" class="qc-input" />
-          <span class="qc-track" aria-hidden="true"><span class="qc-thumb" /></span>
-          <span class="qc-switch-text">High-confidence only</span>
+          <input type="checkbox" v-model="highConfidenceOnly" class="gpp-input" />
+          <span class="gpp-track" aria-hidden="true"><span class="gpp-thumb" /></span>
+          <span class="gpp-switch-text">High-confidence only (GPP)</span>
         </label>
-        <span class="qc-help">Hides low-confidence evidence (reproducibility, proteotypicity, length, tissue, coverage).</span>
+        <span class="gpp-help">Hides low-confidence evidence (reproducibility, proteotypicity, length, tissue, coverage).</span>
         <button
           v-if="highConfidenceOnly"
           type="button"
-          class="qc-adv-toggle"
-          :aria-expanded="qcAdvanced"
-          @click="qcAdvanced = !qcAdvanced"
-        >{{ qcAdvanced ? 'Hide advanced' : 'Advanced' }}</button>
+          class="gpp-adv-toggle"
+          :aria-expanded="gppAdvanced"
+          @click="gppAdvanced = !gppAdvanced"
+        >{{ gppAdvanced ? 'Hide advanced' : 'Advanced' }}</button>
       </div>
 
-      <!-- Advanced: move the exact confidence cutoff (qc_score >= threshold) from 0
-           (show all evidence) to 1 (strictest). The default 0.15 is calibrated against
-           UniProt protein-existence levels; advanced users can tune it live. -->
-      <div v-if="highConfidenceOnly && qcAdvanced" class="qc-slider-row">
-        <label class="qc-slider-label" for="qc-threshold">Confidence cutoff</label>
+      <!-- Advanced: move the exact GPP cutoff (gpp >= gpp_min) from 0 (show all
+           evidence) to 1 (strictest). The default is computed per-build by the
+           backend (5% FDR) and fetched from /stats; advanced users can tune it live. -->
+      <div v-if="highConfidenceOnly && gppAdvanced" class="gpp-slider-row">
+        <label class="gpp-slider-label" for="gpp-min">Confidence cutoff (GPP)</label>
         <input
-          id="qc-threshold"
-          class="qc-slider"
+          id="gpp-min"
+          class="gpp-slider"
           type="range"
           min="0"
           max="1"
           step="0.01"
-          v-model.number="qcThreshold"
+          v-model.number="gppMin"
         />
-        <output class="qc-slider-val" for="qc-threshold">{{ qcThreshold.toFixed(2) }}</output>
-        <span class="qc-slider-hint">0 = show all · 0.15 = default · 1 = strictest</span>
+        <output class="gpp-slider-val" for="gpp-min">{{ gppMin.toFixed(2) }}</output>
+        <span class="gpp-slider-hint">0 = show all · {{ gppDefault.toFixed(2) }} = default (5% FDR) · 1 = strictest</span>
       </div>
       <p v-if="mode === 'peptide'" class="req-note">
         A peptide sequence is required. Leave <em>modification</em> on “Any” to match every form (modified and unmodified),
@@ -156,13 +156,13 @@
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
-        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :qc="highConfidenceOnly" :qc-threshold="highConfidenceOnly && qcAdvanced ? qcThreshold : null" @pick="pickProtein" />
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :gpp-min="highConfidenceOnly ? gppMin : null" @pick="pickProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
           <span v-if="query"> — <code>{{ query }}</code></span>
-          <span v-if="highConfidenceOnly" class="result-qc-note">
-            · high-confidence only<span v-if="qcAdvanced"> (cutoff ≥ {{ qcThreshold.toFixed(2) }})</span>
+          <span v-if="highConfidenceOnly" class="result-gpp-note">
+            · high-confidence only<span v-if="gppAdvanced"> (cutoff ≥ {{ gppMin.toFixed(2) }})</span>
           </span>
         </div>
 
@@ -256,7 +256,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
-import { PEPTIDE_SEARCH_BASE } from '../config.js'
+import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
 import ProteinProfile from '../components/ProteinProfile.vue'
@@ -280,16 +280,21 @@ const tissue = ref('')
 const instrument = ref('')
 const collection = ref('')
 
-// "High-confidence only" toggle. OFF by default; when ON, `qc=true` is added to
-// the peptide/protein search AND to the ProteinProfile /protein/profile request,
-// restricting results to high-confidence evidence (qc_score >= threshold).
+// "High-confidence only (GPP)" toggle. OFF by default; when ON, a single
+// `gpp_min=<cutoff>` param is added to the peptide/protein search AND to the
+// ProteinProfile /protein/profile request, restricting results to high-confidence
+// evidence (gpp >= gpp_min). Presence of the param enables the filter; its value
+// IS the cutoff.
 const highConfidenceOnly = ref(false)
-// Advanced QC control: an explicit confidence cutoff (0..1) that overrides the
-// calibrated default (0.15) when the user opens the advanced panel. Only sent when
-// the toggle is ON and the panel is open, so the plain toggle path is unchanged.
-const QC_DEFAULT_THRESHOLD = 0.15
-const qcAdvanced = ref(false)
-const qcThreshold = ref(QC_DEFAULT_THRESHOLD)
+// The GPP cutoff (0..1). Initialized from the backend's DYNAMIC per-build default
+// (fetched from /stats → gpp.default_min); falls back to GPP_FALLBACK_MIN until/if
+// the backend reports one. The advanced slider adjusts this live.
+const gppDefault = ref(GPP_FALLBACK_MIN)
+const gppMin = ref(GPP_FALLBACK_MIN)
+const gppAdvanced = ref(false)
+// True once the cutoff has been pinned by the URL or by the user touching the
+// slider, so the dynamic default arriving from /stats must not clobber it.
+let gppMinPinned = false
 
 const facets = ref({ organism: [], collection: [], instrument: [] })
 const stats = ref(null)
@@ -414,12 +419,10 @@ function buildParams() {
     tissue: tissue.value || undefined,
     instrument: instrument.value || undefined,
     collection: collection.value || undefined,
-    // Only sent when ON; omitted (not qc=false) otherwise so requests stay
-    // byte-identical to today when the toggle is off. The explicit threshold is
-    // sent only from the advanced panel (otherwise the backend default applies).
-    qc: highConfidenceOnly.value ? true : undefined,
-    qc_threshold:
-      highConfidenceOnly.value && qcAdvanced.value ? qcThreshold.value : undefined,
+    // Single self-describing param: presence enables the high-confidence filter,
+    // its value IS the cutoff. Omitted when the toggle is off so requests stay
+    // byte-identical to today.
+    gpp_min: highConfidenceOnly.value ? gppMin.value : undefined,
   }
 }
 
@@ -446,10 +449,9 @@ function currentQuery() {
   if (tissue.value) q.tissue = tissue.value
   if (instrument.value) q.instrument = instrument.value
   if (collection.value) q.collection = collection.value
-  if (highConfidenceOnly.value) q.qc = '1'
-  if (highConfidenceOnly.value && qcAdvanced.value && qcThreshold.value !== QC_DEFAULT_THRESHOLD) {
-    q.qct = String(qcThreshold.value)
-  }
+  // One self-describing param: written only when the filter is on; its value is
+  // the cutoff. Absence in the URL means the filter is off.
+  if (highConfidenceOnly.value) q.gpp_min = String(gppMin.value)
   return q
 }
 
@@ -465,11 +467,19 @@ function applyQuery(q) {
   tissue.value = q.tissue || ''
   instrument.value = q.instrument || ''
   collection.value = q.collection || ''
-  highConfidenceOnly.value = q.qc === '1' || q.qc === 'true'
-  const qt = q.qct != null ? Number(q.qct) : NaN
-  if (Number.isFinite(qt) && qt >= 0 && qt <= 1) {
-    qcThreshold.value = qt
-    qcAdvanced.value = true
+  // Hard cutover: the sole signal is `gpp_min`. Present → filter on and its value
+  // is the cutoff (clamped 0..1); absent → filter off. A bare legacy `?qc=1` is
+  // intentionally NOT honoured.
+  const gm = q.gpp_min != null ? parseFloat(q.gpp_min) : NaN
+  if (Number.isFinite(gm)) {
+    highConfidenceOnly.value = true
+    gppMin.value = Math.max(0, Math.min(1, gm))
+    gppMinPinned = true
+    // Reveal the slider when the URL carries a non-default cutoff, so the active
+    // value is visible and adjustable.
+    if (gppMin.value !== gppDefault.value) gppAdvanced.value = true
+  } else {
+    highConfidenceOnly.value = false
   }
 }
 
@@ -484,6 +494,13 @@ async function init() {
   }
   try {
     stats.value = await apiGet(PEPTIDE_SEARCH_BASE, '/stats')
+    // Dynamic, per-build GPP default cutoff lives at /stats → gpp.default_min.
+    // Absent (backend has no GPP data) → keep the GPP_FALLBACK_MIN constant.
+    const d = Number(stats.value?.gpp?.default_min)
+    if (Number.isFinite(d)) gppDefault.value = d
+    // Adopt the dynamic default as the active cutoff unless it was already pinned
+    // by the URL or a user edit.
+    if (!gppMinPinned) gppMin.value = gppDefault.value
   } catch (e) {
     // stats are optional; ignore
   }
@@ -505,29 +522,26 @@ watch(modification, () => {
   }
 })
 
-// Toggling "High-confidence only" re-runs the current search (and refreshes the
-// ProteinProfile via its :qc prop) so the change is reflected immediately. Only
-// when a search has already been run — never auto-searches before the first one.
+// Toggling "High-confidence only (GPP)" re-runs the current search (and refreshes
+// the ProteinProfile via its :gpp-min prop) so the change is reflected immediately.
+// Only when a search has already been run — never auto-searches before the first one.
 watch(highConfidenceOnly, () => {
   if (canSearch.value && (result.value || query.value)) run()
 })
 
-// Dragging the advanced confidence slider re-runs the current search so BOTH the
-// results table and the profile reflect the new cutoff. Debounced so a drag doesn't
-// fire a request per tick; only re-runs once a search already exists.
+// Dragging the advanced GPP slider re-runs the current search so BOTH the results
+// table and the profile reflect the new cutoff. Debounced so a drag doesn't fire a
+// request per tick; only re-runs once a search already exists.
 function rerunIfSearched() {
   if (canSearch.value && (result.value || query.value)) run()
 }
-let qcSliderTimer = null
-watch(qcThreshold, () => {
-  if (!highConfidenceOnly.value || !qcAdvanced.value) return
-  if (qcSliderTimer) clearTimeout(qcSliderTimer)
-  qcSliderTimer = setTimeout(rerunIfSearched, 200)
-})
-// Opening/closing the advanced panel changes whether an explicit cutoff is sent, so
-// re-run immediately (no debounce needed for a single click).
-watch(qcAdvanced, () => {
-  if (highConfidenceOnly.value) rerunIfSearched()
+let gppSliderTimer = null
+watch(gppMin, () => {
+  // A user-driven change pins the cutoff so the dynamic default won't overwrite it.
+  gppMinPinned = true
+  if (!highConfidenceOnly.value || !gppAdvanced.value) return
+  if (gppSliderTimer) clearTimeout(gppSliderTimer)
+  gppSliderTimer = setTimeout(rerunIfSearched, 200)
 })
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
@@ -702,14 +716,14 @@ onMounted(() => {
   margin: 4px 0 12px;
 }
 /* --- "High-confidence only" toggle --------------------------------------- */
-.qc-toggle {
+.gpp-toggle {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
   margin: 12px 0 4px;
 }
-.qc-switch {
+.gpp-switch {
   display: inline-flex;
   align-items: center;
   gap: 9px;
@@ -718,7 +732,7 @@ onMounted(() => {
 }
 /* Visually-hidden native checkbox: keeps full keyboard + a11y semantics while
    the styled track/thumb provides the switch appearance. */
-.qc-input {
+.gpp-input {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -729,7 +743,7 @@ onMounted(() => {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
-.qc-track {
+.gpp-track {
   position: relative;
   display: inline-block;
   width: 34px;
@@ -739,7 +753,7 @@ onMounted(() => {
   transition: background 0.15s ease;
   flex: none;
 }
-.qc-thumb {
+.gpp-thumb {
   position: absolute;
   top: 2px;
   left: 2px;
@@ -750,26 +764,26 @@ onMounted(() => {
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
   transition: transform 0.15s ease;
 }
-.qc-input:checked + .qc-track {
+.gpp-input:checked + .gpp-track {
   background: var(--indigo);
 }
-.qc-input:checked + .qc-track .qc-thumb {
+.gpp-input:checked + .gpp-track .gpp-thumb {
   transform: translateX(16px);
 }
-.qc-input:focus-visible + .qc-track {
+.gpp-input:focus-visible + .gpp-track {
   outline: 2px solid var(--indigo);
   outline-offset: 2px;
 }
-.qc-switch-text {
+.gpp-switch-text {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
 }
-.qc-help {
+.gpp-help {
   font-size: 12px;
   color: var(--text-muted);
 }
-.qc-adv-toggle {
+.gpp-adv-toggle {
   background: none;
   border: none;
   padding: 0;
@@ -779,39 +793,39 @@ onMounted(() => {
   cursor: pointer;
   text-decoration: underline;
 }
-.qc-adv-toggle:hover {
+.gpp-adv-toggle:hover {
   opacity: 0.8;
 }
-.qc-slider-row {
+.gpp-slider-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 8px 0 4px;
   flex-wrap: wrap;
 }
-.qc-slider-label {
+.gpp-slider-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
 }
-.qc-slider {
+.gpp-slider {
   flex: 1 1 220px;
   max-width: 320px;
   accent-color: var(--accent, #2563eb);
   cursor: pointer;
 }
-.qc-slider-val {
+.gpp-slider-val {
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   font-size: 13px;
   min-width: 3ch;
   color: var(--text-primary);
 }
-.qc-slider-hint {
+.gpp-slider-hint {
   font-size: 12px;
   color: var(--text-muted);
 }
-.result-qc-note {
+.result-gpp-note {
   color: var(--text-muted);
   font-size: 13px;
 }
