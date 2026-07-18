@@ -1,16 +1,18 @@
 # Evidence quality
 
-The portal aggregates identifications from **~232 datasets**. Each one was
-FDR-controlled to about **1% locally** — a reasonable standard for a single study.
-But aggregation changes the math. When you pile 232 studies together, those local
-1% false-positive rates compound, and "sticky" false identifications accumulate:
-the same implausible detection passes FDR in study after study and shows up looking
-like a real, reproducible signal.
+The portal aggregates identifications from **~231 datasets** (**24.5 million evidence
+rows**). Each one was FDR-controlled to about **1% locally** — a reasonable standard for
+a single study. But aggregation changes the math. When you pile hundreds of studies
+together, those local 1% false-positive rates compound, and "sticky" false
+identifications accumulate: the same implausible detection passes FDR in study after
+study and shows up looking like a real, reproducible signal.
 
-The **evidence quality score** (`qc_score`) is how the portal deals with this. It is
-a per-observation confidence lens over the existing evidence — a way to ask *"how
-likely is this particular detection to be real?"* — without re-searching anything and
-without hiding data by default.
+The **evidence quality score** — named **GPP, the Global Peptide Probability** — is how
+the portal deals with this. It is a per-observation confidence lens over the existing
+evidence — a way to ask *"how likely is this particular detection to be real?"* —
+without re-searching anything and without hiding data by default. (In the API and the
+stored index the score is the field `qc_score`; "GPP" is its name, `qc_score` is its
+column.)
 
 *(FDR = false discovery rate, the expected fraction of identifications that are wrong
 at a given threshold.)*
@@ -30,9 +32,9 @@ The portal does **not** re-control FDR at the aggregate level. Instead it scores
 piece of evidence individually, so implausible detections like the brain SPANXN5 rows
 can be down-weighted while the real testis detection is kept.
 
-## What the QC score is
+## What GPP is
 
-Every piece of evidence gets a **`qc_score` between 0 and 1** — a label-free
+Every piece of evidence gets a **GPP (`qc_score`) between 0 and 1** — a label-free
 probability that the detection is true. It is:
 
 - **Computed once, at indexing time**, and stored on each evidence row. It adds no
@@ -49,9 +51,13 @@ probability that the detection is true. It is:
 The score combines several **orthogonal signals** — each capturing a different reason
 to trust or doubt a detection — into a single probability. The signals are added
 together in **log-odds** (evidence-for-minus-evidence-against) space, and the summed
-score is then **calibrated into a real 0–1 probability** by fitting a two-component
+score is then **mapped onto a 0–1 probability scale** by fitting a two-component
 mixture (a "true" and a "false" population) to the overall score distribution. This
-is the same idea behind **PeptideProphet**, and it needs **no decoys**.
+is the same idea behind **PeptideProphet**, and it needs **no decoys**. Because the
+signals are combined with fixed weights, the *ranking* of evidence is driven mostly by
+the strongest signal — reproducibility — and the mixture step turns that ranking into a
+calibrated number rather than changing its order. Whether that number is a
+*trustworthy* probability is a separate, empirical question — answered next.
 
 Every signal is **optional**: if the information needed for a signal is missing for a
 given peptide, that signal is simply left out — it is never counted as a penalty.
@@ -96,10 +102,34 @@ time.**
 
 ## Does it actually work?
 
-To check that `qc_score` measures something real, we validated it against an
-**independent** yardstick: **UniProt Protein Existence (PE)** levels. PE is UniProt's
-own rating of how well-established a protein is, and it is derived independently of
-this corpus:
+### The direct test: held-out re-detection
+
+The cleanest way to ask "is this score a real probability of being true?" is to check
+whether it predicts something it was **not** built from. We split the datasets into two
+independent halves, compute the evidence from **half A only**, and then ask: *does a
+peptide seen in half A reappear in half B?* Re-detection in a completely separate set of
+studies is about as close to ground truth as a decoy-free corpus can get.
+
+GPP predicts it well. Ranked against held-out re-detection, GPP achieves a **ROC AUC of
+0.93** in human — strong discrimination between detections that reproduce and those that
+don't. And the probability is well-calibrated to reproducibility:
+
+| Seen in (independent datasets) | Chance it re-appears in a held-out half | Held-out false-discovery rate |
+| --- | --- | --- |
+| 1 dataset | ~19% | ~71% |
+| 3+ datasets | ~100% | **1.6%** |
+| 5+ datasets | ~100% | **0.03%** |
+
+This is the important result: **"keep peptides seen in ≥ 3 independent datasets" is a
+real, measurable aggregate FDR of about 1.6%** — not a self-referential estimate, but a
+number you can check by held-out re-detection. It is the empirical backbone under the
+score.
+
+### A second, independent check: UniProt Protein Existence
+
+As a cross-check against an **outside** authority, we compared GPP to **UniProt Protein
+Existence (PE)** levels. PE is UniProt's own rating of how well-established a protein is,
+derived independently of this corpus:
 
 - **PE1** — protein-level evidence exists
 - **PE2** — transcript evidence only
@@ -107,7 +137,7 @@ this corpus:
 - **PE4** — predicted
 - **PE5** — uncertain / dubious
 
-If the QC score is meaningful, it should be high for well-established proteins and low
+If GPP is meaningful, it should be high for well-established proteins and low
 for shaky ones. It tracks PE strongly:
 
 | PE level | median `qc_score` |
@@ -122,9 +152,24 @@ The **default cutoff is 0.15**, chosen to sit in the gap between these populatio
 that cutoff, the filter keeps about **87% of protein-evidence (PE1)** rows while
 removing about **74% of transcript- or predicted-only (PE2/PE4/PE5)** evidence.
 
+One honest caveat: because the cutoff was *placed* in the PE gap, the strong PE
+agreement is partly by construction — you should read it as "the cutoff is sensibly
+positioned," not as independent proof. That is exactly why the held-out re-detection
+test above, which owes nothing to the cutoff, is the primary evidence.
+
+### A third check: agreement with PeptideAtlas
+
+Against **PeptideAtlas** — an independent, decoy-controlled community reprocessing of a
+much larger corpus — GPP's high-confidence human proteins agree **98.6%** with the
+PeptideAtlas canonical set. We recover about **69%** of their canonical proteins (they
+integrate far more data, so we do not expect full coverage), and essentially no
+high-confidence protein contradicts them. GPP is a **reproducibility-and-plausibility
+quality lens on our corpus, not a novelty engine** — it is deliberately conservative
+about calling something new.
+
 ## What the filter removes across the corpus
 
-Across the full corpus of **~23.8 million evidence rows**, the default cutoff keeps
+Across the full corpus of **~24.5 million evidence rows**, the default cutoff keeps
 about **62%** and removes about **38%**. Broken down by protein-existence level, the
 removal lands overwhelmingly on the weakly-supported proteins:
 
@@ -158,6 +203,30 @@ not automatically **"this specific gene is a newly confirmed protein."** What th
 score gives you is a useful **shortlist** — it surfaces *which* low-existence proteins
 have strong mass-spec support and are worth a closer look. Roughly **54 non-PE1
 proteins** have strong high-confidence evidence (≥ 3 datasets and ≥ 2 peptides).
+
+## Limitations & what to keep in mind
+
+GPP is a useful lens, not an oracle. Three things are worth knowing before you lean on
+it:
+
+- **It rewards reproducibility, which is close to popularity — so common contaminants
+  score *high*.** Keratins, trypsin and other ubiquitous lab contaminants appear in
+  nearly every study, so on reproducibility alone they look maximally "true" (they in
+  fact score *higher* than the average real peptide). GPP does not distinguish "truly
+  detected" from "truly a contaminant." A separate, deterministic **contaminant filter**
+  handles those, and it is a mandatory companion to GPP, not something the score
+  replaces.
+- **It is calibrated on human, well-sampled data.** The strongest signal needs a peptide
+  to appear across *many* datasets, and the tissue and protein-existence priors are
+  human. Organisms with only a handful of datasets, and peptides seen in a single study,
+  necessarily score low — GPP is not yet a cross-species-comparable probability. Read a
+  low score for a sparsely-studied organism as "not enough independent evidence *here*,"
+  not "false."
+- **The 0–1 value is a calibrated confidence, not a decoy/q-value.** The per-result
+  confidence GPP reports is fit from the score distribution itself. The number you should
+  trust as a genuine error rate is the **held-out aggregate FDR** above (≥ 3 datasets ≈
+  1.6%) — that is the decoy-free equivalent of a q-value, and it is what the "high-
+  confidence" filter is really buying you.
 
 ## Using it
 
