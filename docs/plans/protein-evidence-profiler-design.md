@@ -102,10 +102,51 @@ PE-upgrade candidates, tissue heatmap).
   **PE-upgrade rigor** → frame T2 as candidates, HPP-guideline filter. **Denominator drift** → pin
   + display the reference-proteome ID wherever a % appears.
 
-## First slice
-Human-only v1: UniProt + PeptideAtlas + HPA → `protein_profile.parquet` + `gap_summary.json`, the
-protein page, and the **reanalysis-targets** dashboard (highest operational payoff). neXtProt/HPP +
-multi-organism in v2.
+## Scope — ALL corpus species (decided), with per-organism source availability
+
+v1 covers **every organism in the quantms corpus**, not human-only — more robust and, because the
+data model is already keyed on `(uniprot_acc, organism)` with nullable source columns and
+organism-partitioned artifacts, essentially free architecturally. The builder simply iterates the
+corpus organisms; each protein page/dashboard renders whatever sources exist for that organism.
+
+**Concrete scope (live corpus, 52 organisms):** homo sapiens (171 datasets), mus musculus (7),
+danio rerio / herpes simplex (2 each), then **~48 single-dataset organisms** (gut-microbiome
+bacteria, viruses, plants, fungi, model organisms). So the source coverage is tiered:
+
+| Source | Availability across the 52 | Gives |
+| --- | --- | --- |
+| **UniProt** reference proteome + PE | **all 52** (identity spine + denominator) | coverage % + PE-upgrade candidates everywhere |
+| **quantms** MS evidence | **all 52** | the observed set + confidence |
+| **PeptideAtlas** build | only where a build exists — human, mouse, and a few model organisms in the corpus (e.g. *A. thaliana*, *D. melanogaster*, *D. rerio*, *E. coli*, yeast) | reanalysis targets + external MS recovery |
+| **HPA** (RNA/IHC) | **human** (some mouse) | tissue reference + orthogonal (non-MS) axis |
+| **neXtProt/HPP** overlay | **human** | HPP missing-protein framing |
+
+**Value tiers that fall out of this:**
+- **Rich, multi-resource** (human; mouse; the ~5-8 PA-covered model organisms): full gap analysis,
+  reanalysis targets, and — human only — the tissue acquisition-gap map and HPP framing.
+- **UniProt baseline** (the ~44 single-dataset organisms): "what % of this organism's reference
+  proteome did our (one) dataset cover, and which PE2-5 proteins did we nonetheless see" — still a
+  genuinely useful proteome-coverage + PE-upgrade view, with PA/HPA columns simply absent.
+
+**All-species ingest wrinkle — organism resolution.** Corpus organism names are free-text SDRF and
+noisy (typos like "akkermansia muciniphilia", "mycoplasmen"; missing strain; "drosophila" vs
+"drosophila melanogaster" as two entries). Going all-species needs an **organism → NCBI taxon →
+UniProt reference proteome** resolution step (the OLS/taxonomy harmonizer tooling in the workspace
+can drive it), with an unresolved-organism QC metric per release. Human/mouse/model organisms resolve
+cleanly; the microbiome long tail needs this normalization before the UniProt join.
+
+**Sparsity caveat baked in:** for single-dataset organisms the GPP **reproducibility** signal is weak
+by construction (it needs many independent datasets; sparse/non-human organisms cap low). So for
+those, the `observed` flag must lean on the per-dataset (class-1 FDR) evidence + pGPP's non-
+reproducibility features, NOT on cross-study re-detection — and the UI should show `n_datasets` so a
+single-study call is transparent. Do not present a low sparse-organism GPP as "low quality"; it is
+"not enough independent evidence *here*."
+
+## First build slice
+Still lead with **human** (the richest 4-source join + the reanalysis-targets + tissue-gap
+dashboards — highest payoff), but ship the **all-organism `protein_profile.parquet` + per-organism
+`gap_summary.json`** in the same v1 by looping the builder over all 52 (UniProt+quantms for every
+organism; PA/HPA where present). neXtProt/HPP overlay can follow as v2 without reshaping anything.
 
 ## Verified sources
 PeptideAtlas builds/bulk downloads + format help + THISP; HPA download + licence; UniProt website
