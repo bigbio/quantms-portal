@@ -330,7 +330,7 @@ Described by role, not deployment:
 2. **All-datasets assembly** — runs the per-dataset step across every collection so
    the whole corpus of index files is present and current.
 3. **Enrichment** — generates the human-readable dataset summaries (see the LLM
-   summaries section on the [How search works](/docs/how-search-works) page).
+   summaries section on the [How search works](/docs/ps-how-search-works) page).
 4. **Protein metadata** — builds the shared gene / protein-name map and the
    canonical protein sequences used by resolution and the coverage map.
 5. **Statistics** — computes the portal-wide numbers (dataset / peptide /

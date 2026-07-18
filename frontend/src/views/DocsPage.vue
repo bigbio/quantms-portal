@@ -28,7 +28,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import DocsLayout from '../components/DocsLayout.vue'
-import { DOCS_DEFAULT } from '../docs/nav.js'
+import { DOCS_DEFAULT, DOCS_REDIRECTS } from '../docs/nav.js'
 
 // Eagerly load every docs Markdown file as a raw string. Keyed by file path.
 const rawFiles = import.meta.glob('../docs/*.md', {
@@ -105,6 +105,13 @@ const activeHeading = ref('')
 const contentEl = ref(null)
 
 function load() {
+  // Restructure redirect: an old slug (evidence-quality, how-search-works) resolves to its
+  // new by-application home so existing links / bookmarks don't 404.
+  const moved = DOCS_REDIRECTS[slug.value]
+  if (moved) {
+    router.replace(`/docs/${moved}`)
+    return
+  }
   const src = docsBySlug[slug.value]
   if (!src) {
     html.value = ''

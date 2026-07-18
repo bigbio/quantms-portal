@@ -1,4 +1,4 @@
-# Evidence quality
+# Evidence quality (GPP)
 
 The portal aggregates identifications from **~231 datasets** (**24.5 million evidence
 rows**). Each one was FDR-controlled to about **1% locally** — a reasonable standard for
