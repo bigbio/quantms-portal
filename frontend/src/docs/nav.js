@@ -14,6 +14,7 @@ export const DOCS_NAV = [
     group: 'Overview',
     items: [
       { slug: 'introduction', title: 'Introduction' },
+      { slug: 'concepts', title: 'Concepts' },
       { slug: 'data', title: 'The data' },
       { slug: 'collections', title: 'Collections' },
       { slug: 'infrastructure', title: 'Infrastructure' },
@@ -31,6 +32,7 @@ export const DOCS_NAV = [
       { slug: 'ps-overview', title: 'Overview' },
       { slug: 'ps-how-search-works', title: 'How search works' },
       { slug: 'ps-gpp', title: 'Evidence quality (GPP)' },
+      { slug: 'ps-api', title: 'API & MCP' },
     ],
   },
   {
