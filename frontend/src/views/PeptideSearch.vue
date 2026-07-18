@@ -20,8 +20,8 @@
 
       <!-- Search mode toggle -->
       <div class="mode-toggle">
-        <button :class="{ active: mode === 'peptide' }" @click="mode = 'peptide'">Peptide</button>
-        <button :class="{ active: mode === 'protein' }" @click="mode = 'protein'">Protein</button>
+        <button type="button" :class="{ active: mode === 'peptide' }" :aria-pressed="mode === 'peptide'" @click="mode = 'peptide'">Peptide</button>
+        <button type="button" :class="{ active: mode === 'protein' }" :aria-pressed="mode === 'protein'" @click="mode = 'protein'">Protein</button>
       </div>
 
       <!-- Query bar -->
@@ -34,6 +34,7 @@
             class="filter-search"
             style="width: 280px; text-transform: uppercase"
             placeholder="Peptide sequence (required), e.g. ADSRDPASDQMQHWK"
+            aria-label="Peptide sequence"
             @keyup.enter="run"
           />
           <input
@@ -43,16 +44,17 @@
             class="filter-search"
             style="width: 280px"
             placeholder="UniProt / gene (required), e.g. P04040 / CAT"
+            aria-label="Protein accession or gene"
             @keyup.enter="run"
           />
 
-          <select v-if="mode === 'peptide'" v-model="matchMode" class="facet-select" title="Match mode">
+          <select v-if="mode === 'peptide'" v-model="matchMode" class="facet-select" title="Match mode" aria-label="Match mode">
             <option value="exact">Exact</option>
             <option value="contains">Contains</option>
             <option value="peptidoform">Peptidoform</option>
           </select>
 
-          <select v-model="modification" class="facet-select" title="Modification — leave on “Any” to match every form. Biological modifications are grouped first; chemical / label / artifact modifications remain fully selectable.">
+          <select v-model="modification" class="facet-select" aria-label="Modification" title="Modification — leave on “Any” to match every form. Biological modifications are grouped first; chemical / label / artifact modifications remain fully selectable.">
             <option value="">Any modification (all forms)</option>
             <option value="__unmodified__">Unmodified only</option>
             <!-- Grouped when the backend supplies the biological-relevance class;
@@ -69,7 +71,7 @@
             <!-- Fallback: flat, unlabelled list (no vocabulary or no class info). -->
             <option v-for="m in modList" v-else :key="m" :value="m">{{ m }}</option>
           </select>
-          <select v-model="residue" class="facet-select" title="Modified residue" :disabled="unmodifiedOnly || !residueOptions.length">
+          <select v-model="residue" class="facet-select" aria-label="Modified residue" title="Modified residue" :disabled="unmodifiedOnly || !residueOptions.length">
             <option value="">Any residue</option>
             <option v-for="r in residueOptions" :key="r" :value="r">{{ r }}</option>
           </select>
@@ -80,16 +82,16 @@
             :title="`This modification is classified as ${selectedModClass.label.toLowerCase()}${selectedModClass.biological ? ' (real post-translational biology)' : ' — chemistry, labelling or artifact, not biology'}`"
           >{{ selectedModClass.label }}</span>
 
-          <select v-model="organism" class="facet-select" title="Organism — scoped to the current results">
+          <select v-model="organism" class="facet-select" aria-label="Organism" title="Organism — scoped to the current results">
             <option value="">All organisms</option>
             <option v-for="o in organismOptions" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
-          <input v-model="tissue" type="text" class="filter-search" style="width: 150px" placeholder="Tissue / organism part" />
-          <select v-model="instrument" class="facet-select" title="Instrument">
+          <input v-model="tissue" type="text" class="filter-search" style="width: 150px" placeholder="Tissue / organism part" aria-label="Tissue or organism part" />
+          <select v-model="instrument" class="facet-select" aria-label="Instrument" title="Instrument">
             <option value="">All instruments</option>
             <option v-for="i in facets.instrument" :key="i.value" :value="i.value">{{ cleanInstrument(i.value) }}</option>
           </select>
-          <select v-model="collection" class="facet-select" title="Collection">
+          <select v-model="collection" class="facet-select" aria-label="Collection" title="Collection">
             <option value="">All collections</option>
             <option v-for="c in facets.collection" :key="c.value" :value="c.value">{{ c.value }}</option>
           </select>
@@ -185,7 +187,7 @@
               <tr v-if="result.datasets.length === 0">
                 <td colspan="9" style="text-align: center; padding: 32px; color: var(--text-muted)">No datasets match.</td>
               </tr>
-              <tr v-for="ds in result.datasets" :key="ds.dataset_ref">
+              <tr v-for="ds in visibleDatasets" :key="ds.dataset_ref">
                 <td>
                   <router-link :to="`/collections/${ds.collection}/${ds.dataset_accession}`" class="accession-link">{{ ds.dataset_accession }}</router-link>
                 </td>
@@ -200,7 +202,7 @@
                   <span v-if="ds.n_peptidoforms > 3" style="color: var(--text-muted)"> +{{ ds.n_peptidoforms - 3 }}</span>
                 </td>
                 <td style="text-align: center">
-                  <a v-if="ds.dataset_url" :href="ds.dataset_url" target="_blank" rel="noopener" class="dl-link" title="Browse dataset">
+                  <a v-if="ds.dataset_url" :href="ds.dataset_url" target="_blank" rel="noopener" class="dl-link" title="Browse dataset" :aria-label="`Browse dataset ${ds.dataset_accession}`">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </a>
                   <span v-else style="color: var(--text-muted)">—</span>
@@ -208,13 +210,42 @@
               </tr>
             </tbody>
           </table>
+
+          <div v-if="result.datasets.length > visibleCount" class="show-more-bar">
+            <span class="show-more-info">
+              Showing {{ visibleCount }} of {{ result.datasets.length }} datasets
+            </span>
+            <button type="button" class="page-btn" @click="showMore">
+              Show {{ Math.min(PAGE_SIZE, result.datasets.length - visibleCount) }} more
+            </button>
+          </div>
         </div>
 
         <div v-else class="hint">
-          Try <code @click="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')">ADSRDPASDQMQHWK</code> with Oxidation on M,
+          Try
+          <code
+            role="button"
+            tabindex="0"
+            @click="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')"
+            @keydown.enter="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')"
+            @keydown.space.prevent="demo('ADSRDPASDQMQHWK', 'Oxidation', 'M')"
+          >ADSRDPASDQMQHWK</code> with Oxidation on M,
           search a specific peptidoform
-          <code @click="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')">.(Acetyl)ADSRDPASDQM(Oxidation)QHWK</code>,
-          or switch to Protein and search <code @click="demoProtein('P04040')">P04040</code> (Catalase).
+          <code
+            role="button"
+            tabindex="0"
+            @click="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')"
+            @keydown.enter="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')"
+            @keydown.space.prevent="demoPeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK')"
+          >.(Acetyl)ADSRDPASDQM(Oxidation)QHWK</code>,
+          or switch to Protein and search
+          <code
+            role="button"
+            tabindex="0"
+            @click="demoProtein('P04040')"
+            @keydown.enter="demoProtein('P04040')"
+            @keydown.space.prevent="demoProtein('P04040')"
+          >P04040</code> (Catalase).
         </div>
       </template>
     </div>
@@ -266,6 +297,15 @@ const result = ref(null)
 const query = ref('')
 const loading = ref(false)
 const backendDown = ref(false)
+
+// Client-side cap on rendered result rows: the backend returns the full match
+// list, so cap the DOM and reveal more on demand (mirrors DatasetSearch paging).
+const PAGE_SIZE = 50
+const visibleCount = ref(PAGE_SIZE)
+const visibleDatasets = computed(() => (result.value?.datasets || []).slice(0, visibleCount.value))
+function showMore() {
+  visibleCount.value += PAGE_SIZE
+}
 
 // Bare peptide whose biological profile is currently shown (set when a peptide
 // search runs; independent of the live input box).
@@ -504,6 +544,7 @@ async function run() {
   if (!applyingRoute) router.replace({ query: currentQuery() }).catch(() => {})
   loading.value = true
   result.value = null
+  visibleCount.value = PAGE_SIZE // reset the row cap for each new search
   try {
     const params = buildParams()
     let path
@@ -823,5 +864,23 @@ onMounted(() => {
 .notice code {
   cursor: pointer;
   color: var(--indigo);
+}
+.hint code:focus-visible,
+.notice code:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.show-more-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 0 4px;
+}
+.show-more-info {
+  font-size: 13px;
+  color: var(--text-muted);
 }
 </style>

@@ -14,7 +14,17 @@
         </svg>
         <span>quant<span class="logo-accent">ms</span> <span class="nav-portal-badge">Portal</span></span>
       </router-link>
-      <div class="nav-links">
+      <button
+        type="button"
+        class="nav-hamburger"
+        aria-label="Toggle navigation menu"
+        :aria-expanded="mobileOpen"
+        aria-controls="nav-links"
+        @click="mobileOpen = !mobileOpen"
+      >
+        <span class="nav-hamburger-icon" aria-hidden="true">{{ mobileOpen ? '✕' : '☰' }}</span>
+      </button>
+      <div id="nav-links" class="nav-links" :class="{ open: mobileOpen }">
         <router-link to="/apps/peptide-search">Peptide Search</router-link>
         <router-link to="/statistics">Statistics</router-link>
 
@@ -72,6 +82,7 @@
         </div>
       </div>
     </div>
+    <div v-if="mobileOpen" class="nav-scrim" @click="mobileOpen = false"></div>
   </nav>
 </template>
 
@@ -81,6 +92,8 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const openMenu = ref(null)
+// Mobile navigation drawer (revealed by the hamburger toggle ≤768px).
+const mobileOpen = ref(false)
 
 // Paths grouped under each dropdown, used for active-state highlighting.
 const dataPaths = ['/apps/dataset-search', '/collections', '/models', '/baseline']
@@ -115,11 +128,34 @@ function onDocumentClick(event) {
 onMounted(() => document.addEventListener('click', onDocumentClick))
 onBeforeUnmount(() => document.removeEventListener('click', onDocumentClick))
 
-// Close on route change (e.g. navigating via a dropdown link).
-watch(() => route.fullPath, closeAll)
+// Close on route change (e.g. navigating via a dropdown link or mobile drawer).
+watch(() => route.fullPath, () => {
+  closeAll()
+  mobileOpen.value = false
+})
 </script>
 
 <style scoped>
+/* Hamburger toggle: hidden on desktop, shown ≤768px. */
+.nav-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+.nav-hamburger-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+.nav-scrim {
+  display: none;
+}
 .nav-dropdown {
   position: relative;
   display: inline-flex;
@@ -207,5 +243,65 @@ watch(() => route.fullPath, closeAll)
 }
 .nav-dropdown-menu .nav-link-ext:hover {
   opacity: 1;
+}
+
+/* ── Mobile drawer (≤768px) ────────────────────────────────────────────────
+   The global stylesheet hides .nav-links at this width; the hamburger reveals
+   them as a stacked sheet below the bar. Dropdowns flatten to inline lists so
+   every item (Peptide Search, Statistics, Data, About, Docs, Contact) is
+   reachable without hover. */
+@media (max-width: 768px) {
+  .nav-hamburger {
+    display: inline-flex;
+  }
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    position: fixed;
+    top: 59px;
+    left: 0;
+    right: 0;
+    padding: 14px 24px 22px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+    max-height: calc(100vh - 59px);
+    overflow-y: auto;
+    z-index: 1200;
+  }
+  .nav-links.open > a,
+  .nav-links.open .nav-dropdown {
+    padding: 8px 0;
+    width: 100%;
+  }
+  .nav-links.open .nav-dropdown {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .nav-links.open .nav-dropdown-menu {
+    position: static;
+    display: flex;
+    min-width: 0;
+    margin-top: 4px;
+    padding: 4px 0 4px 12px;
+    border: none;
+    border-left: 2px solid var(--border);
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .nav-links.open .nav-dropdown-menu::before {
+    display: none;
+  }
+  .nav-scrim {
+    display: block;
+    position: fixed;
+    inset: 59px 0 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 1150;
+  }
 }
 </style>

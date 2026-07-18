@@ -4,22 +4,62 @@
       <thead>
         <tr>
           <th style="width: 28px"></th>
-          <th :class="{ sortable: true }" @click="onSort('accession')">
+          <th
+            class="sortable"
+            role="button"
+            tabindex="0"
+            :aria-sort="ariaSort('accession')"
+            @click="onSort('accession')"
+            @keydown.enter.prevent="onSort('accession')"
+            @keydown.space.prevent="onSort('accession')"
+          >
             Accession<span class="sort-ind">{{ ind('accession') }}</span>
           </th>
           <th>Collection</th>
           <th>Organism</th>
           <th>Instrument</th>
-          <th class="num sortable" @click="onSort('peptides')">
+          <th
+            class="num sortable"
+            role="button"
+            tabindex="0"
+            :aria-sort="ariaSort('peptides')"
+            @click="onSort('peptides')"
+            @keydown.enter.prevent="onSort('peptides')"
+            @keydown.space.prevent="onSort('peptides')"
+          >
             Peptides<span class="sort-ind">{{ ind('peptides') }}</span>
           </th>
-          <th class="num sortable" @click="onSort('proteins')">
+          <th
+            class="num sortable"
+            role="button"
+            tabindex="0"
+            :aria-sort="ariaSort('proteins')"
+            @click="onSort('proteins')"
+            @keydown.enter.prevent="onSort('proteins')"
+            @keydown.space.prevent="onSort('proteins')"
+          >
             Proteins<span class="sort-ind">{{ ind('proteins') }}</span>
           </th>
-          <th class="num sortable" @click="onSort('samples')">
+          <th
+            class="num sortable"
+            role="button"
+            tabindex="0"
+            :aria-sort="ariaSort('samples')"
+            @click="onSort('samples')"
+            @keydown.enter.prevent="onSort('samples')"
+            @keydown.space.prevent="onSort('samples')"
+          >
             Samples<span class="sort-ind">{{ ind('samples') }}</span>
           </th>
-          <th class="num sortable" @click="onSort('size')">
+          <th
+            class="num sortable"
+            role="button"
+            tabindex="0"
+            :aria-sort="ariaSort('size')"
+            @click="onSort('size')"
+            @keydown.enter.prevent="onSort('size')"
+            @keydown.space.prevent="onSort('size')"
+          >
             Size<span class="sort-ind">{{ ind('size') }}</span>
           </th>
         </tr>
@@ -29,7 +69,17 @@
           <td colspan="9" class="empty-cell">No datasets match.</td>
         </tr>
         <template v-for="(ds, idx) in datasets" :key="rowKey(ds, idx)">
-          <tr class="row-clickable" :class="{ 'row-open': isOpen(ds, idx) }" @click="toggle(ds, idx)">
+          <tr
+            class="row-clickable"
+            :class="{ 'row-open': isOpen(ds, idx) }"
+            role="button"
+            tabindex="0"
+            :aria-expanded="isOpen(ds, idx)"
+            :aria-label="`Toggle details for ${ds.accession}`"
+            @click="toggle(ds, idx)"
+            @keydown.enter.prevent="toggle(ds, idx)"
+            @keydown.space.prevent="toggle(ds, idx)"
+          >
             <td class="caret-cell">
               <span class="caret" :class="{ open: isOpen(ds, idx) }">▸</span>
             </td>
@@ -82,6 +132,10 @@ function onSort(key) {
 }
 function ind(key) {
   return props.sort === key ? ' ↓' : ''
+}
+// Backend sort is always descending on the active key; other columns are unsorted.
+function ariaSort(key) {
+  return props.sort === key ? 'descending' : 'none'
 }
 </script>
 

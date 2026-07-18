@@ -49,7 +49,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-wrap: wrap; gap: 8px;">
           <div style="font-size: 13px; color: var(--text-muted);">
             Examples:
-            <span v-for="ex in examples" :key="ex" class="example-link" @click="useExample(ex)">{{ ex }}</span>
+            <button v-for="ex in examples" :key="ex" type="button" class="example-link" @click="useExample(ex)">{{ ex }}</button>
           </div>
           <button v-if="proteins.length" class="btn-text" @click="clearResults" style="font-size: 13px; color: var(--text-muted); cursor: pointer; background: none; border: none; text-decoration: underline;">
             Clear all
@@ -540,6 +540,9 @@ function stripX(val) {
 .example-link {
   display: inline-block;
   margin-left: 8px;
+  padding: 0;
+  background: none;
+  border: none;
   color: var(--indigo);
   cursor: pointer;
   font-family: var(--mono);
@@ -549,6 +552,11 @@ function stripX(val) {
 }
 
 .example-link:hover { opacity: 0.75; }
+.example-link:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
 
 /* Protein tags */
 .protein-tag {

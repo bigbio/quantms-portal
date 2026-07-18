@@ -7,6 +7,7 @@
           type="text"
           class="filter-search"
           placeholder="Search accession or title..."
+          aria-label="Search datasets by accession or title"
         />
       </div>
       <span class="result-count"
@@ -25,43 +26,139 @@
       <table class="dataset-table">
         <thead>
           <tr>
-            <th class="sortable" @click="clickSort('accession')">
+            <th
+              class="sortable"
+              role="button"
+              tabindex="0"
+              :aria-sort="ariaSort('accession')"
+              @click="clickSort('accession')"
+              @keydown.enter.prevent="clickSort('accession')"
+              @keydown.space.prevent="clickSort('accession')"
+            >
               Accession {{ icon("accession") }}
             </th>
-            <th class="sortable" @click="clickSort('title')">
+            <th
+              class="sortable"
+              role="button"
+              tabindex="0"
+              :aria-sort="ariaSort('title')"
+              @click="clickSort('title')"
+              @keydown.enter.prevent="clickSort('title')"
+              @keydown.space.prevent="clickSort('title')"
+            >
               Title {{ icon("title") }}
             </th>
             <template v-if="isMsnet">
-              <th class="sortable" @click="clickSort('species')">
+              <th
+                class="sortable"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('species')"
+                @click="clickSort('species')"
+                @keydown.enter.prevent="clickSort('species')"
+                @keydown.space.prevent="clickSort('species')"
+              >
                 Species {{ icon("species") }}
               </th>
-              <th class="sortable" @click="clickSort('instrument')">
+              <th
+                class="sortable"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('instrument')"
+                @click="clickSort('instrument')"
+                @keydown.enter.prevent="clickSort('instrument')"
+                @keydown.space.prevent="clickSort('instrument')"
+              >
                 Instrument {{ icon("instrument") }}
               </th>
-              <th class="sortable" @click="clickSort('label')">
+              <th
+                class="sortable"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('label')"
+                @click="clickSort('label')"
+                @keydown.enter.prevent="clickSort('label')"
+                @keydown.space.prevent="clickSort('label')"
+              >
                 Label {{ icon("label") }}
               </th>
-              <th class="sortable" @click="clickSort('acquisition_method')">
+              <th
+                class="sortable"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('acquisition_method')"
+                @click="clickSort('acquisition_method')"
+                @keydown.enter.prevent="clickSort('acquisition_method')"
+                @keydown.space.prevent="clickSort('acquisition_method')"
+              >
                 Acquisition Method {{ icon("acquisition_method") }}
               </th>
-              <th class="sortable num" @click="clickSort('psm_count')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('psm_count')"
+                @click="clickSort('psm_count')"
+                @keydown.enter.prevent="clickSort('psm_count')"
+                @keydown.space.prevent="clickSort('psm_count')"
+              >
                 PSMs {{ icon("psm_count") }}
               </th>
-              <th class="sortable num" @click="clickSort('runs')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('runs')"
+                @click="clickSort('runs')"
+                @keydown.enter.prevent="clickSort('runs')"
+                @keydown.space.prevent="clickSort('runs')"
+              >
                 Runs {{ icon("runs") }}
               </th>
             </template>
             <template v-else>
-              <th class="sortable num" @click="clickSort('samples')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('samples')"
+                @click="clickSort('samples')"
+                @keydown.enter.prevent="clickSort('samples')"
+                @keydown.space.prevent="clickSort('samples')"
+              >
                 Samples {{ icon("samples") }}
               </th>
-              <th class="sortable num" @click="clickSort('runs')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('runs')"
+                @click="clickSort('runs')"
+                @keydown.enter.prevent="clickSort('runs')"
+                @keydown.space.prevent="clickSort('runs')"
+              >
                 Runs {{ icon("runs") }}
               </th>
-              <th class="sortable num" @click="clickSort('proteins')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('proteins')"
+                @click="clickSort('proteins')"
+                @keydown.enter.prevent="clickSort('proteins')"
+                @keydown.space.prevent="clickSort('proteins')"
+              >
                 Proteins {{ icon("proteins") }}
               </th>
-              <th class="sortable num" @click="clickSort('peptides')">
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
+                :aria-sort="ariaSort('peptides')"
+                @click="clickSort('peptides')"
+                @keydown.enter.prevent="clickSort('peptides')"
+                @keydown.space.prevent="clickSort('peptides')"
+              >
                 Peptides {{ icon("peptides") }}
               </th>
             </template>
@@ -70,7 +167,7 @@
             <th></th>
             <th></th>
             <th>
-              <select v-model="filterSpecies" class="col-filter">
+              <select v-model="filterSpecies" class="col-filter" aria-label="Filter by species">
                 <option value="">All species</option>
                 <option v-for="s in uniqueSpecies" :key="s" :value="s">
                   {{ s }}
@@ -78,7 +175,7 @@
               </select>
             </th>
             <th>
-              <select v-model="filterInstrument" class="col-filter">
+              <select v-model="filterInstrument" class="col-filter" aria-label="Filter by instrument">
                 <option value="">All instruments</option>
                 <option v-for="i in uniqueInstruments" :key="i" :value="i">
                   {{ i }}
@@ -86,7 +183,7 @@
               </select>
             </th>
             <th>
-              <select v-model="filterLabel" class="col-filter">
+              <select v-model="filterLabel" class="col-filter" aria-label="Filter by label">
                 <option value="">All labels</option>
                 <option v-for="l in uniqueLabels" :key="l" :value="l">
                   {{ l }}
@@ -94,7 +191,7 @@
               </select>
             </th>
             <th>
-              <select v-model="filterAcquisitionMethod" class="col-filter">
+              <select v-model="filterAcquisitionMethod" class="col-filter" aria-label="Filter by acquisition method">
                 <option value="">All acquisition methods</option>
                 <option
                   v-for="a in uniqueAcquisitionMethods"
@@ -112,7 +209,7 @@
         <tbody>
           <tr v-if="rows.length === 0">
             <td
-              :colspan="isMsnet ? 6 : 6"
+              :colspan="isMsnet ? 8 : 6"
               style="
                 text-align: center;
                 padding: 32px;
@@ -127,7 +224,12 @@
             :key="ds.accession + '-' + idx"
             :class="{ 'new-row': isNewDataset(ds) }"
             style="cursor: pointer"
+            role="button"
+            tabindex="0"
+            :aria-label="`Open dataset ${ds.accession}`"
             @click="navigateTo(ds)"
+            @keydown.enter="navigateTo(ds)"
+            @keydown.space.prevent="navigateTo(ds)"
           >
             <td>
               <a
@@ -273,29 +375,28 @@ const uniqueAcquisitionMethods = computed(() => {
 
 // Final rows: only sort and prioritize NEW entries. Filtering is handled by parent.
 const rows = computed(() => {
-  const arr = props.datasets.slice();
   const k = sKey.value;
   const asc = sAsc.value;
   const numeric = NUM.has(k);
 
-  return arr.slice().sort((a, b) => {
-    const na = isNewDataset(a);
-    const nb = isNewDataset(b);
-    if (na !== nb) return na ? -1 : 1;
+  return props.datasets.slice().sort((a, b) => {
+    const aNew = isNewDataset(a);
+    const bNew = isNewDataset(b);
+    if (aNew !== bNew) return aNew ? -1 : 1;
     if (!k) return 0;
 
     const va = a[k];
     const vb = b[k];
 
     if (numeric) {
-      const na = typeof va === "number" ? va : va ? parseFloat(va) : NaN;
-      const nb = typeof vb === "number" ? vb : vb ? parseFloat(vb) : NaN;
-      const aOk = !isNaN(na) && na > 0;
-      const bOk = !isNaN(nb) && nb > 0;
+      const numA = typeof va === "number" ? va : va ? parseFloat(va) : NaN;
+      const numB = typeof vb === "number" ? vb : vb ? parseFloat(vb) : NaN;
+      const aOk = !isNaN(numA) && numA > 0;
+      const bOk = !isNaN(numB) && numB > 0;
       if (!aOk && !bOk) return 0;
       if (!aOk) return 1; // empty always last
       if (!bOk) return -1;
-      return asc ? na - nb : nb - na;
+      return asc ? numA - numB : numB - numA;
     }
 
     const sa = String(va || "");
@@ -338,6 +439,12 @@ function clickSort(key) {
 function icon(key) {
   if (sKey.value !== key) return " ▲▼";
   return sAsc.value ? " ▲" : " ▼";
+}
+
+// aria-sort value for a column header reflecting the current sort state.
+function ariaSort(key) {
+  if (sKey.value !== key) return "none";
+  return sAsc.value ? "ascending" : "descending";
 }
 
 function fmtNum(n) {

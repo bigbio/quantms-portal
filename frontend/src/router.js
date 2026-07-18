@@ -18,8 +18,23 @@ const routes = [
   { path: '/contact', component: () => import('./views/Contact.vue') },
 ]
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior() { return { top: 0 } }
 })
+
+// SPA page views: gtag('config') in index.html only fires on the initial load,
+// so client-side navigations must report a page_view themselves. Guarded so it
+// is a no-op when analytics is absent (e.g. blocked or local dev).
+router.afterEach((to) => {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+    window.gtag('event', 'page_view', {
+      page_path: to.fullPath,
+      page_location: window.location.href,
+      page_title: document.title,
+    })
+  }
+})
+
+export default router

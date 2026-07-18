@@ -35,7 +35,7 @@
           <div class="chart-head">
             <h3>Modification landscape</h3>
             <div class="metric-toggle">
-              <button v-for="m in modMetrics" :key="m.key" :class="{ active: modMetric === m.key }" @click="modMetric = m.key">{{ m.label }}</button>
+              <button v-for="m in modMetrics" :key="m.key" type="button" :class="{ active: modMetric === m.key }" :aria-pressed="modMetric === m.key" @click="modMetric = m.key">{{ m.label }}</button>
             </div>
           </div>
           <p class="chart-sub">Distinct {{ modMetricLabel.toLowerCase() }} carrying each modification. Hover a bar for the per-residue split.</p>
@@ -55,7 +55,7 @@
             <div class="chart-head">
               <h3>Species distribution</h3>
               <div class="metric-toggle">
-                <button v-for="m in speciesMetrics" :key="m.key" :class="{ active: speciesMetric === m.key }" @click="speciesMetric = m.key">{{ m.label }}</button>
+                <button v-for="m in speciesMetrics" :key="m.key" type="button" :class="{ active: speciesMetric === m.key }" :aria-pressed="speciesMetric === m.key" @click="speciesMetric = m.key">{{ m.label }}</button>
               </div>
             </div>
             <p class="chart-sub">Distinct {{ speciesMetricLabel.toLowerCase() }} per organism (top {{ TOP }} + long tail).</p>

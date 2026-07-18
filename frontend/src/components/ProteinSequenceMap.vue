@@ -32,6 +32,10 @@
       </div>
     </div>
 
+    <p v-if="coverageSummary" class="sm-summary">
+      {{ coverageSummary }}
+    </p>
+
     <div v-if="ptmTypes.length" class="sm-ptm-filter">
       <span class="sm-ptm-filter-label">PTMs</span>
       <div class="sm-ptm-chips">
@@ -118,9 +122,14 @@
                   'sm-has-term': !!cell.terminal,
                 }"
                 :style="cell.intensity > 0 ? { background: greenAt(cell.intensity) } : null"
+                tabindex="0"
+                role="img"
+                :aria-label="cellLabel(cell)"
                 @mouseenter="showTip(cell, $event)"
                 @mousemove="moveTip($event)"
                 @mouseleave="hideTip"
+                @focus="showTipAtEl(cell, $event)"
+                @blur="hideTip"
               >
                 <span class="sm-res">{{ cell.ch }}</span>
                 <span v-if="cell.hasPtm" class="sm-dot" aria-hidden="true" />
@@ -230,6 +239,45 @@ const ptmByPos = computed(() => {
 })
 
 const fullLength = computed(() => (map.value?.sequence || '').length)
+
+// Accessible, plain-text coverage overview (also read by screen readers). Covers
+// the whole protein, not just the visible window, so it summarizes the map that
+// the per-residue cells present visually.
+const coverageSummary = computed(() => {
+  if (!map.value) return ''
+  const len = fullLength.value
+  if (!len) return ''
+  const intensity = Array.isArray(map.value.intensity) ? map.value.intensity : []
+  const depth = Array.isArray(map.value.depth) ? map.value.depth : []
+  let covered = 0
+  for (let i = 0; i < len; i++) {
+    if (Number(intensity[i]) > 0 || Number(depth[i]) > 0) covered++
+  }
+  const pct = Math.round((covered / len) * 1000) / 10
+  const ptmSites = Array.isArray(map.value.ptms) ? map.value.ptms.length : 0
+  const ptmPart = ptmSites
+    ? ` ${formatNum(ptmSites)} residue${ptmSites === 1 ? '' : 's'} carry modifications.`
+    : ''
+  return `Sequence coverage: ${formatNum(covered)} of ${formatNum(len)} residues observed (${pct}%).${ptmPart}`
+})
+
+// Per-cell accessible label so keyboard/AT users get the same information the
+// pointer tooltip conveys (residue, position, depth, modifications).
+function cellLabel(cell) {
+  const parts = [`Residue ${cell.ch || '?'} at position ${cell.pos}`]
+  if (cell.intensity > 0 || cell.depth > 0) {
+    parts.push(`${formatNum(cell.depth)} observations`)
+  } else {
+    parts.push('not covered')
+  }
+  if (cell.mods && cell.mods.length) {
+    const names = cell.mods
+      .map((m) => (m.terminal ? `${m.terminal} ${m.name}` : m.name))
+      .join(', ')
+    parts.push(`modifications: ${names}`)
+  }
+  return parts.join('; ')
+}
 
 // --- Region navigation -------------------------------------------------------
 // Only proteins longer than WINDOW get a nav bar; otherwise the whole sequence
@@ -425,6 +473,24 @@ function showTip(cell, ev) {
   }
   moveTip(ev)
 }
+// Keyboard focus mirror of showTip: anchor the tooltip to the focused cell's
+// box (there is no cursor position on focus) so Tab-navigation surfaces the same
+// popover as hovering.
+function showTipAtEl(cell, ev) {
+  tip.value = {
+    pos: cell.pos,
+    ch: cell.ch,
+    intensity: cell.intensity,
+    depth: cell.depth,
+    mods: cell.mods,
+    x: 0,
+    y: 0,
+  }
+  const rect = ev.target?.getBoundingClientRect?.()
+  if (rect) {
+    moveTip({ clientX: rect.left + rect.width / 2, clientY: rect.bottom })
+  }
+}
 function moveTip(ev) {
   if (!tip.value) return
   // Fixed positioning: offset from the cursor, nudged left/up near edges.
@@ -504,6 +570,11 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-muted);
+}
+.sm-summary {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
 }
 
 /* --- Legend --------------------------------------------------------------- */
@@ -591,6 +662,11 @@ watch(() => props.accession, (q) => load(q), { immediate: true })
 }
 .sm-cell.sm-covered {
   color: var(--text-primary);
+}
+.sm-cell:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 1px;
+  z-index: 4;
 }
 .sm-res {
   position: relative;

@@ -26,17 +26,18 @@
             class="filter-search"
             style="width: 280px"
             placeholder="Search title, summary, keywords…"
+            aria-label="Search datasets by title, summary or keywords"
             @keyup.enter="reload"
           />
-          <select v-model="collection" class="facet-select" @change="reload">
+          <select v-model="collection" class="facet-select" aria-label="Filter by collection" @change="reload">
             <option value="">All collections</option>
             <option v-for="c in facetCollections" :key="c.name" :value="c.name">{{ c.title }}</option>
           </select>
-          <select v-model="organism" class="facet-select" @change="reload">
+          <select v-model="organism" class="facet-select" aria-label="Filter by organism" @change="reload">
             <option value="">All organisms</option>
             <option v-for="o in facetOrganisms" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
-          <select v-model="instrument" class="facet-select" @change="reload">
+          <select v-model="instrument" class="facet-select" aria-label="Filter by instrument" @change="reload">
             <option value="">All instruments</option>
             <option v-for="i in facetInstruments" :key="i.value" :value="i.value">{{ cleanInstrument(i.value) }}</option>
           </select>
