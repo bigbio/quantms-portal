@@ -83,6 +83,40 @@ MCP tools (`get_protein_profile`, `list_reanalysis_targets`, `list_pe_upgrade_ca
 datasets) and gap dashboards (`/gaps`: coverage cards, tier donut, PE bar, reanalysis-targets table,
 PE-upgrade candidates, tissue heatmap).
 
+## 6.5 Exploration model — faceted set-queries + taxonomy tree
+
+The app is a **faceted explorer**, not just fixed dashboards. Every profile row already carries
+presence flags + counts per resource, so cross-resource set-queries are plain column filters in
+DuckDB (the same faceting engine peptide-search uses) — composed interactively, URL-shareable, and
+exportable.
+
+**Facetable dimensions (per protein):** seen-by-quantms · PeptideAtlas presence level · UniProt PE
+(1-5) · HPA RNA/IHC · evidence tier (T1-T6) · quantms counts (n_datasets / n_unique_peptides /
+coverage_pct) · PA counts (n_samples / n_observations) · tissue · organism / clade.
+
+**Set-queries the user can build (as facet combinations, with one-click presets):**
+- **"in PeptideAtlas NOT in quantms"** → `pa_observed AND NOT quantms_observed` (tier T4) — the
+  reanalysis-target set.
+- **"in quantms NOT in PeptideAtlas"** → T3 (recovered / novel).
+- **"PA observations > quantms observations"** → `pa_n_observations > quantms_n_obs` — proteins PA
+  samples more deeply than we do (under-sampled); and the inverse (we exceed PA).
+- **"UniProt PE2-5 WITH quantms evidence"** → PE-upgrade / missing-protein candidates (T2).
+- **"HPA RNA-expressed but MS-absent everywhere"** → the orthogonal-only set.
+Each preset is a named facet state; the URL captures it (like peptide-search's sync) so a filtered
+view is shareable. Output = a sortable protein table + a live count summary + CSV/parquet export.
+
+**Comparative view (PA vs quantms):** per-protein side-by-side (observation counts, tissue breadth,
+coverage), plus a corpus-level **PA n_obs vs quantms n_obs** scatter/table to spot systematically
+over/under-sampled proteins at a glance.
+
+**Taxonomy tree navigation:** resolve each organism to its **NCBI taxon** (already required for the
+UniProt join) and build a `taxonomy_tree.json` artifact from the NCBI taxdump — a clade hierarchy
+(superkingdom → … → species) over the corpus organisms with per-node protein/coverage counts. The UI
+offers a collapsible tree to browse and **scope any facet query to a clade** — "all Bacteria," "all
+Mammalia," a single species. This turns the bacteria/virus/plant/animal spread into a navigable
+hierarchy and future-proofs it as species (and datasets per species) are added over time. Adds one
+MCP tool `browse_taxonomy(clade)` and facet endpoints (`GET /facets`, `GET /query?…&clade=`).
+
 ## 7. Naming
 1. **quantms Proteome Compass** (recommended; `/compass`; gap dashboards = "Gap Finder")
 2. ProteoGap / Evidence Gap Profiler
@@ -140,7 +174,9 @@ by construction (it needs many independent datasets; sparse/non-human organisms 
 those, the `observed` flag must lean on the per-dataset (class-1 FDR) evidence + pGPP's non-
 reproducibility features, NOT on cross-study re-detection — and the UI should show `n_datasets` so a
 single-study call is transparent. Do not present a low sparse-organism GPP as "low quality"; it is
-"not enough independent evidence *here*."
+"not enough independent evidence *here*." This is a **transient** state: as more datasets per species
+are added over time, the reproducibility signal (and the whole profile) fills in — the design does
+not need to solve sparse organisms now, just represent them honestly.
 
 ## First build slice
 Still lead with **human** (the richest 4-source join + the reanalysis-targets + tissue-gap
