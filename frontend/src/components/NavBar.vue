@@ -26,6 +26,7 @@
       </button>
       <div id="nav-links" class="nav-links" :class="{ open: mobileOpen }">
         <router-link to="/apps/peptide-search">Peptide Search</router-link>
+        <router-link to="/apps/compass">Proteome Compass</router-link>
         <router-link to="/statistics">Statistics</router-link>
 
         <!-- Data dropdown -->
