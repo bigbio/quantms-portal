@@ -6,9 +6,18 @@
         <span v-if="profile.gene" class="cc-gene">{{ profile.gene }}</span>
       </div>
       <div class="cc-badges">
+        <span v-if="profile.is_swissprot === true" class="cc-rev" title="UniProtKB/Swiss-Prot (reviewed)">SwissProt</span>
+        <span v-else-if="profile.is_swissprot === false" class="cc-unrev" title="UniProtKB/TrEMBL (unreviewed)">TrEMBL</span>
         <span class="cc-tier" :class="'tier-' + profile.evidence_tier">{{ profile.evidence_tier }}</span>
         <span v-if="profile.hpp_compliant" class="cc-hpp" title="Meets HPP 3.0 rigor (≥2 unique ≥9-aa peptides, class-1 FDR, USI-referenced)">HPP-compliant</span>
       </div>
+    </div>
+
+    <!-- Cross-resource protein links -->
+    <div class="cc-links">
+      <router-link :to="qmsTo(profile.uniprot_acc)" class="cc-link">quantms peptide-search ↗</router-link>
+      <a :href="paUrl(profile.uniprot_acc)" target="_blank" rel="noopener" class="cc-link">PeptideAtlas ↗</a>
+      <a :href="uniprotUrl(profile.uniprot_acc)" target="_blank" rel="noopener" class="cc-link">UniProt ↗</a>
     </div>
 
     <!-- Agreement banner: PA↔quantms concordance is MS, not independent -->
@@ -26,6 +35,7 @@
           <dl>
             <div><dt>Datasets</dt><dd>{{ profile.n_datasets ?? '—' }}</dd></div>
             <div><dt>Unique peptides</dt><dd>{{ profile.n_unique_peptides ?? '—' }}</dd></div>
+            <div v-if="profile.best_peptide_gpp != null" title="Best Global Peptide Probability across the protein's peptides"><dt>Best GPP</dt><dd>{{ Number(profile.best_peptide_gpp).toFixed(3) }}</dd></div>
             <div v-if="profile.coverage_pct != null"><dt>Coverage</dt><dd>{{ profile.coverage_pct }}%</dd></div>
             <div v-if="profile.pgpp != null"><dt>pGPP</dt><dd>{{ profile.pgpp }}</dd></div>
           </dl>
@@ -79,6 +89,13 @@ import { computed } from 'vue'
 
 const props = defineProps({ profile: { type: Object, required: true } })
 
+// Cross-resource protein links (built from the accession).
+function qmsTo(acc) { return { path: '/apps/peptide-search', query: { mode: 'protein', query: acc } } }
+function paUrl(acc) {
+  return `https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/Search?action=GO&search_key=${encodeURIComponent(acc)}&search_scope=Global`
+}
+function uniprotUrl(acc) { return `https://www.uniprot.org/uniprotkb/${encodeURIComponent(acc)}/entry` }
+
 const usis = computed(() => props.profile.usis || [])
 const subcellular = computed(() => props.profile.subcellular || [])
 const rnaTissues = computed(() => {
@@ -101,6 +118,11 @@ const agreement = computed(() => {
 .cc-tier.tier-T4 { background: #fef3c7; color: #92400e; }
 .cc-tier.tier-T6 { background: #f3f4f6; color: #6b7280; }
 .cc-hpp { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #ecfeff; color: #155e75; }
+.cc-rev { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; }
+.cc-unrev { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #f3f4f6; color: #6b7280; }
+.cc-links { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+.cc-link { font-size: 13px; color: #4f46e5; text-decoration: none; font-weight: 600; }
+.cc-link:hover { text-decoration: underline; }
 .cc-banner { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; background: #f8fafc; color: #475569; }
 .cc-banner.concordant { background: #f0fdf4; color: #15803d; }
 .cc-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }

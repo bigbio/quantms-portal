@@ -29,22 +29,31 @@
 
       <!-- Gap Finder mode -->
       <div v-else-if="mode === 'gaps'">
-        <div v-if="summary && summary.n_uniprot" class="cc-cards">
-          <div class="cc-metric"><div class="m-val">{{ pct(summary.pct_uniprot_covered_quantms) }}</div><div class="m-lab">UniProt covered by quantms</div></div>
-          <div class="cc-metric"><div class="m-val">{{ pct(summary.pct_uniprot_covered_pa) }}</div><div class="m-lab">covered by PeptideAtlas</div></div>
-          <div class="cc-metric"><div class="m-val">{{ pct(summary.pct_pa_recovered_by_quantms) }}</div><div class="m-lab">of PA also in quantms</div></div>
-          <div class="cc-metric"><div class="m-val">{{ summary.n_uniprot }}</div><div class="m-lab">reference proteins <small v-if="summary.reference_proteome_upid">({{ summary.reference_proteome_upid }})</small></div></div>
+        <div v-if="summary && summary.n_full" class="cc-cards">
+          <div class="cc-metric">
+            <div class="m-val">{{ pct(summary.pct_swissprot_covered_quantms) }}</div>
+            <div class="m-lab">SwissProt covered by quantms<br><small>{{ pct(summary.pct_full_covered_quantms) }} of full proteome</small></div>
+          </div>
+          <div class="cc-metric">
+            <div class="m-val">{{ pct(summary.pct_swissprot_covered_pa) }}</div>
+            <div class="m-lab">SwissProt covered by PeptideAtlas<br><small>{{ pct(summary.pct_full_covered_pa) }} of full proteome</small></div>
+          </div>
+          <div class="cc-metric"><div class="m-val">{{ pct(summary.pct_pa_recovered_by_quantms) }}</div><div class="m-lab">of PeptideAtlas also in quantms<br><small>quantms = proteins passing GPP</small></div></div>
+          <div class="cc-metric">
+            <div class="m-val">{{ fmt(summary.n_swissprot) }}</div>
+            <div class="m-lab">SwissProt proteins<br><small>{{ fmt(summary.n_full) }} incl. TrEMBL <template v-if="summary.reference_proteome_upid">· {{ summary.reference_proteome_upid }}</template></small></div>
+          </div>
         </div>
 
         <h3 class="cc-h3">Reanalysis targets <small>— PeptideAtlas observes them, quantms doesn't (ranked)</small></h3>
-        <table class="cc-table"><thead><tr><th>Accession</th><th>Gene</th><th>PA level</th><th>PA samples</th><th>Tissues</th></tr></thead>
-          <tbody><tr v-for="r in targets" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td>{{ r.gene }}</td><td>{{ r.pa_presence_level }}</td><td>{{ r.pa_n_samples }}</td><td>{{ r.pa_n_tissues }}</td></tr>
-          <tr v-if="!targets.length"><td colspan="5" class="cc-muted">None.</td></tr></tbody></table>
+        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PA level</th><th>PA samples</th><th>Tissues</th></tr></thead>
+          <tbody><tr v-for="r in targets" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>{{ r.pa_presence_level }}</td><td>{{ r.pa_n_samples }}</td><td>{{ r.pa_n_tissues }}</td></tr>
+          <tr v-if="!targets.length"><td colspan="6" class="cc-muted">None.</td></tr></tbody></table>
 
         <h3 class="cc-h3">PE-upgrade candidates <small>— MS-confirmed, UniProt PE below 1 (HPP-framed)</small></h3>
-        <table class="cc-table"><thead><tr><th>Accession</th><th>Gene</th><th>PE</th><th>Unique peptides</th><th>Datasets</th></tr></thead>
-          <tbody><tr v-for="r in peUps" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.n_unique_peptides }}</td><td>{{ r.n_datasets }}</td></tr>
-          <tr v-if="!peUps.length"><td colspan="5" class="cc-muted">None.</td></tr></tbody></table>
+        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PE</th><th>Unique peptides</th><th>Datasets</th></tr></thead>
+          <tbody><tr v-for="r in peUps" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.n_unique_peptides }}</td><td>{{ r.n_datasets }}</td></tr>
+          <tr v-if="!peUps.length"><td colspan="6" class="cc-muted">None.</td></tr></tbody></table>
       </div>
 
       <!-- Explorer mode -->
@@ -55,9 +64,9 @@
           <button v-if="preset" class="chip clear" @click="applyPreset('')">clear</button>
         </div>
         <p class="cc-muted" v-if="query">{{ query.count }} protein(s)</p>
-        <table class="cc-table" v-if="query"><thead><tr><th>Accession</th><th>Gene</th><th>Tier</th><th>PE</th><th>quantms</th><th>PeptideAtlas</th></tr></thead>
-          <tbody><tr v-for="r in query.rows" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td>{{ r.gene }}</td><td>{{ r.evidence_tier }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.quantms_observed ? '✓' : '' }}</td><td>{{ r.pa_observed ? (r.pa_presence_level || '✓') : '' }}</td></tr>
-          <tr v-if="!query.rows.length"><td colspan="6" class="cc-muted">No matches.</td></tr></tbody></table>
+        <table class="cc-table" v-if="query"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>Tier</th><th>PE</th><th>quantms</th><th>PeptideAtlas</th></tr></thead>
+          <tbody><tr v-for="r in query.rows" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>{{ r.evidence_tier }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.quantms_observed ? '✓' : '' }}</td><td>{{ r.pa_observed ? (r.pa_presence_level || '✓') : '' }}</td></tr>
+          <tr v-if="!query.rows.length"><td colspan="7" class="cc-muted">No matches.</td></tr></tbody></table>
       </div>
     </div>
   </div>
@@ -112,6 +121,19 @@ async function runQuery() {
 }
 
 function pct(v) { return v == null ? '—' : `${Number(v).toFixed(1)}%` }
+function fmt(v) { return v == null ? '—' : Number(v).toLocaleString() }
+
+// Per-accession cross-resource links (quantms peptide-search + PeptideAtlas + UniProt).
+// Rendered via v-html; the accession is URL-encoded and never injected as raw markup.
+function links(acc) {
+  const a = encodeURIComponent(acc)
+  const qms = `/apps/peptide-search?mode=protein&query=${a}`
+  const pa = `https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/Search?action=GO&search_key=${a}&search_scope=Global`
+  const up = `https://www.uniprot.org/uniprotkb/${a}/entry`
+  return `<a href="${qms}" class="rlink">quantms</a> · `
+    + `<a href="${pa}" target="_blank" rel="noopener" class="rlink">PA</a> · `
+    + `<a href="${up}" target="_blank" rel="noopener" class="rlink">UniProt</a>`
+}
 </script>
 
 <style scoped>
@@ -129,6 +151,9 @@ function pct(v) { return v == null ? '—' : `${Number(v).toFixed(1)}%` }
 .cc-table th, .cc-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border, #eef0f3); }
 .cc-table th { color: var(--muted, #6b7280); font-weight: 600; }
 .cc-muted { color: #9ca3af; }
+.cc-table :deep(.rlink) { color: #4f46e5; text-decoration: none; font-weight: 600; }
+.cc-table :deep(.rlink):hover { text-decoration: underline; }
+.cc-metric small { color: var(--muted, #6b7280); font-weight: 400; font-size: 11px; }
 .cc-presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .chip { padding: 4px 12px; border: 1px solid var(--border, #e2e5ea); border-radius: 999px; background: #fff; cursor: pointer; font-size: 13px; }
 .chip.active { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; font-weight: 600; }
