@@ -26,6 +26,14 @@
       <template v-else>Evidence spans different axes — see columns below.</template>
     </div>
 
+    <!-- Cross-resource discordances: the disagreements, made explicit -->
+    <div v-if="discordances.length" class="cc-discord">
+      <div class="cc-discord-h">Cross-resource discordances</div>
+      <div v-for="d in discordances" :key="d.type" class="cc-drow" :class="'sev-' + d.severity">
+        <span class="sev-dot"></span>{{ d.message }}
+      </div>
+    </div>
+
     <div class="cc-cols">
       <!-- quantms -->
       <div class="cc-col">
@@ -105,6 +113,9 @@ const hasHpa = computed(() => props.profile.hpa_reliability || subcellular.value
 const agreement = computed(() => {
   try { return JSON.parse(props.profile.agreement_summary_json || 'null') } catch { return null }
 })
+const discordances = computed(() => {
+  try { return JSON.parse(props.profile.discordances_json || '[]') } catch { return [] }
+})
 </script>
 
 <style scoped>
@@ -125,6 +136,11 @@ const agreement = computed(() => {
 .cc-link:hover { text-decoration: underline; }
 .cc-banner { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; background: #f8fafc; color: #475569; }
 .cc-banner.concordant { background: #f0fdf4; color: #15803d; }
+.cc-discord { margin-bottom: 10px; border: 1px solid var(--border, #eef0f3); border-radius: 8px; padding: 8px 10px; }
+.cc-discord-h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted, #6b7280); margin-bottom: 6px; }
+.cc-drow { display: flex; align-items: baseline; gap: 8px; font-size: 13px; padding: 2px 0; color: #374151; }
+.sev-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; }
+.sev-action .sev-dot { background: #d97706; } .sev-warning .sev-dot { background: #dc2626; } .sev-info .sev-dot { background: #0891b2; }
 .cc-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
 .cc-col { border: 1px solid var(--border, #eef0f3); border-radius: 8px; padding: 10px; }
 .cc-col h4 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted, #6b7280); }
