@@ -12,6 +12,7 @@
 
       <div class="mode-toggle">
         <button type="button" :class="{ active: mode === 'protein' }" @click="mode = 'protein'">Protein</button>
+        <button type="button" :class="{ active: mode === 'proteomes' }" @click="mode = 'proteomes'; loadProteomes()">Proteomes</button>
         <button type="button" :class="{ active: mode === 'gaps' }" @click="mode = 'gaps'; loadGaps()">Gap Finder</button>
         <button type="button" :class="{ active: mode === 'explore' }" @click="mode = 'explore'; loadFacets()">Explorer</button>
       </div>
@@ -25,6 +26,39 @@
         </div>
         <p v-if="profileErr" class="cc-muted">{{ profileErr }}</p>
         <CompassProteinCard v-if="profile && profile.uniprot_acc" :profile="profile" />
+      </div>
+
+      <!-- Proteomes mode: cross-species completeness scoreboard -->
+      <div v-else-if="mode === 'proteomes'">
+        <div class="filter-bar">
+          <input v-model="orgFilter" class="filter-search" placeholder="Filter organisms…" aria-label="Filter organisms" />
+          <span class="cc-muted" v-if="proteomes.length">{{ filteredProteomes.length }} / {{ proteomes.length }} proteomes</span>
+        </div>
+        <table class="cc-table">
+          <thead><tr>
+            <th @click="sortBy('common_name')" class="sortable">Organism</th>
+            <th @click="sortBy('kingdom')" class="sortable">Kingdom</th>
+            <th @click="sortBy('n_swissprot')" class="sortable num">Proteins (SP / full)</th>
+            <th @click="sortBy('pct_swissprot_covered_quantms')" class="sortable num">quantms %</th>
+            <th @click="sortBy('pct_swissprot_covered_pa')" class="sortable num">PeptideAtlas %</th>
+            <th @click="sortBy('n_gpp_passing')" class="sortable num">GPP-passing</th>
+            <th>Tiers</th>
+            <th @click="sortBy('reanalysis_headroom')" class="sortable num">Headroom</th>
+          </tr></thead>
+          <tbody>
+            <tr v-for="r in filteredProteomes" :key="r.organism" class="org-row" @click="openOrganism(r)">
+              <td><strong>{{ r.common_name }}</strong><br><small class="cc-muted">{{ r.organism }}</small></td>
+              <td>{{ r.kingdom || '—' }}</td>
+              <td class="num">{{ fmt(r.n_swissprot) }} / {{ fmt(r.n_full) }}</td>
+              <td class="num">{{ pct(r.pct_swissprot_covered_quantms ?? r.pct_full_covered_quantms) }}<br><small class="cc-muted">{{ pct(r.pct_full_covered_quantms) }} full</small></td>
+              <td class="num">{{ r.pct_swissprot_covered_pa == null ? 'no build' : pct(r.pct_swissprot_covered_pa) }}</td>
+              <td class="num">{{ fmt(r.n_gpp_passing) }}</td>
+              <td><span class="tierbar"><span v-for="t in TIERS" :key="t" :class="'tseg tier-' + t" :style="tierWidth(r, t)" :title="t + ': ' + (r.by_tier[t] || 0)"></span></span></td>
+              <td class="num">{{ fmt(r.reanalysis_headroom) }}</td>
+            </tr>
+            <tr v-if="!filteredProteomes.length"><td colspan="8" class="cc-muted">No proteomes.</td></tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- Gap Finder mode -->
@@ -73,13 +107,50 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { apiGet } from '../api'
 import { COMPASS_BASE } from '../config'
 import CompassProteinCard from '../components/CompassProteinCard.vue'
 
 const mode = ref('protein')
 const organism = ref('homo-sapiens')
+
+// --- Proteomes scoreboard (cross-species completeness) ---
+const TIERS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
+const proteomes = ref([])
+const orgFilter = ref('')
+const sortKey = ref('reanalysis_headroom')
+const sortDir = ref(-1)   // default: most headroom first
+
+async function loadProteomes() {
+  if (proteomes.value.length) return
+  try { proteomes.value = (await apiGet(COMPASS_BASE, '/organisms')).organisms || [] }
+  catch (e) { proteomes.value = [] }
+}
+function sortBy(key) {
+  if (sortKey.value === key) { sortDir.value *= -1 } else { sortKey.value = key; sortDir.value = -1 }
+}
+const filteredProteomes = computed(() => {
+  const q = orgFilter.value.trim().toLowerCase()
+  let rows = proteomes.value
+  if (q) rows = rows.filter(r => `${r.common_name} ${r.organism} ${r.kingdom}`.toLowerCase().includes(q))
+  const k = sortKey.value, d = sortDir.value
+  return [...rows].sort((a, b) => {
+    const av = a[k], bv = b[k]
+    if (av == null) return 1
+    if (bv == null) return -1
+    return av > bv ? d : av < bv ? -d : 0
+  })
+})
+function tierWidth(r, t) {
+  const total = TIERS.reduce((s, x) => s + (r.by_tier[x] || 0), 0) || 1
+  return { width: ((r.by_tier[t] || 0) / total * 100) + '%' }
+}
+function openOrganism(r) {
+  organism.value = r.organism
+  mode.value = 'gaps'
+  loadGaps()
+}
 
 const acc = ref('')
 const profile = ref(null)
@@ -154,6 +225,15 @@ function links(acc) {
 .cc-table :deep(.rlink) { color: #4f46e5; text-decoration: none; font-weight: 600; }
 .cc-table :deep(.rlink):hover { text-decoration: underline; }
 .cc-metric small { color: var(--muted, #6b7280); font-weight: 400; font-size: 11px; }
+.sortable { cursor: pointer; user-select: none; }
+.sortable:hover { color: #4f46e5; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.org-row { cursor: pointer; }
+.org-row:hover { background: #f8fafc; }
+.tierbar { display: inline-flex; width: 90px; height: 10px; border-radius: 3px; overflow: hidden; }
+.tseg { display: inline-block; height: 100%; }
+.tier-T1 { background: #16a34a; } .tier-T2 { background: #65a30d; } .tier-T3 { background: #0891b2; }
+.tier-T4 { background: #d97706; } .tier-T5 { background: #a3a3a3; } .tier-T6 { background: #e5e7eb; }
 .cc-presets { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .chip { padding: 4px 12px; border: 1px solid var(--border, #e2e5ea); border-radius: 999px; background: #fff; cursor: pointer; font-size: 13px; }
 .chip.active { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; font-weight: 600; }
