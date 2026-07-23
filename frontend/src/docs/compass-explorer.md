@@ -7,6 +7,8 @@ filters across the evidence dimensions, or click a **preset** for a named set qu
 - **In quantms, not PA (T3)** — quantms-unique observations.
 - **PE-upgrade candidates (T2)** — MS-confirmed, PE below 1.
 - **Dark proteins (T6)** — no MS evidence anywhere.
+- **Unobserved reviewed (`swissprot_gap`)** — Swiss-Prot proteins quantms hasn't detected;
+  PeptideAtlas-independent, so it works for any organism.
 
 The filtered view is captured in the URL, so any set query is shareable and reproducible,
 and the result set can be exported as CSV or Parquet.

@@ -39,6 +39,8 @@ export const DOCS_NAV = [
     group: 'Proteome Compass',
     items: [
       { slug: 'compass-overview', title: 'Overview' },
+      { slug: 'compass-scoreboard', title: 'Proteomes scoreboard' },
+      { slug: 'compass-tiers', title: 'Evidence tiers & denominators' },
       { slug: 'compass-gaps', title: 'Gap Finder' },
       { slug: 'compass-explorer', title: 'Explorer & taxonomy' },
       { slug: 'compass-api', title: 'API & MCP' },
