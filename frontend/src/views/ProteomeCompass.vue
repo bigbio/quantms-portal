@@ -17,6 +17,10 @@
         <button type="button" :class="{ active: mode === 'explore' }" @click="mode = 'explore'">Explorer</button>
       </div>
 
+      <!-- Async load state: spinner while loading, retry banner on failure (never a fake-empty table) -->
+      <p v-if="loading" class="cc-loading">Loading…</p>
+      <p v-else-if="loadErr" class="cc-err">{{ loadErr }} <button type="button" class="cc-retry" @click="loadForMode">Retry</button></p>
+
       <!-- Protein mode -->
       <div v-if="mode === 'protein'">
         <div class="filter-bar">
@@ -124,7 +128,13 @@ const router = useRouter()
 let applyingRoute = false
 
 const mode = ref('protein')
-const organism = ref('homo-sapiens')
+const DEFAULT_ORGANISM = 'homo-sapiens'
+const organism = ref(DEFAULT_ORGANISM)
+
+// Loading / error state for the async views (proteomes, gaps, explorer) so an in-flight
+// load shows a spinner and a backend failure shows a retry banner — never a fake-empty table.
+const loading = ref(false)
+const loadErr = ref('')
 
 // --- Proteomes scoreboard (cross-species completeness) ---
 const TIERS = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6']
@@ -136,7 +146,7 @@ const sortDir = ref(-1)   // default: most headroom first
 async function loadProteomes() {
   if (proteomes.value.length) return
   try { proteomes.value = (await apiGet(COMPASS_BASE, '/organisms')).organisms || [] }
-  catch (e) { proteomes.value = [] }
+  catch (e) { proteomes.value = []; loadErr.value = 'Could not load the proteomes scoreboard.'; throw e }
 }
 function sortBy(key) {
   if (sortKey.value === key) { sortDir.value *= -1 } else { sortKey.value = key; sortDir.value = -1 }
@@ -180,19 +190,33 @@ const targets = ref([])
 const peUps = ref([])
 const unobserved = ref([])
 // Does this organism have a PeptideAtlas build? Drives the empty-state copy for the
-// PA-derived gap tables, which are inherently empty wherever PA has no build.
-const hasPA = computed(() => !!(summary.value && (summary.value.pct_swissprot_covered_pa || 0) > 0))
+// PA-derived gap tables. Prefers the explicit `has_peptideatlas` flag; falls back to the
+// coverage number for manifests built before that flag existed (null/0 -> no build).
+const hasPA = computed(() => {
+  const s = summary.value
+  if (!s) return false
+  if (typeof s.has_peptideatlas === 'boolean') return s.has_peptideatlas
+  return (s.pct_swissprot_covered_pa || 0) > 0
+})
 async function loadGaps() {
+  const org = organism.value
+  summary.value = null; targets.value = []; peUps.value = []; unobserved.value = []
   try {
-    summary.value = await apiGet(COMPASS_BASE, '/gaps/summary', { organism: organism.value })
-    targets.value = (await apiGet(COMPASS_BASE, '/gaps/reanalysis-targets', { organism: organism.value, limit: 100 })).rows || []
-    peUps.value = (await apiGet(COMPASS_BASE, '/gaps/pe-upgrades', { organism: organism.value, limit: 100 })).rows || []
-    // Reanalysis headroom, itemized — reviewed proteins quantms hasn't detected. This is
-    // PeptideAtlas-independent, so every organism gets an actionable gap list (the T4/T2
-    // tables above are empty wherever there is no PeptideAtlas build).
-    unobserved.value = (await apiGet(COMPASS_BASE, '/query/facet',
-      { organism: organism.value, preset: 'swissprot_gap', sort: 'uniprot_pe', limit: 100 })).rows || []
-  } catch (e) { /* degraded: leave empty */ }
+    // Four independent calls in parallel (latency = slowest, not the sum). The
+    // swissprot_gap query is the reanalysis headroom itemized (PeptideAtlas-independent),
+    // so every organism gets an actionable gap list.
+    const [s, t, p, u] = await Promise.all([
+      apiGet(COMPASS_BASE, '/gaps/summary', { organism: org }),
+      apiGet(COMPASS_BASE, '/gaps/reanalysis-targets', { organism: org, limit: 100 }),
+      apiGet(COMPASS_BASE, '/gaps/pe-upgrades', { organism: org, limit: 100 }),
+      apiGet(COMPASS_BASE, '/query/facet', { organism: org, preset: 'swissprot_gap', sort: 'uniprot_pe', limit: 100 }),
+    ])
+    if (organism.value !== org) return   // a newer organism switch won this race — drop this response
+    summary.value = s
+    targets.value = t.rows || []
+    peUps.value = p.rows || []
+    unobserved.value = u.rows || []
+  } catch (e) { loadErr.value = 'Could not load gaps for this organism.'; throw e }
 }
 
 const presets = [
@@ -204,11 +228,11 @@ const presets = [
 const preset = ref('')
 const query = ref(null)
 const facets = ref({})
-async function loadFacets() { try { facets.value = (await apiGet(COMPASS_BASE, '/facets')).facets || {} } catch (e) {} ; if (!query.value) runQuery() }
+async function loadFacets() { try { facets.value = (await apiGet(COMPASS_BASE, '/facets')).facets || {} } catch (e) { /* facets optional */ } }
 function applyPreset(id) { preset.value = id }
 async function runQuery() {
   try { query.value = await apiGet(COMPASS_BASE, '/query/facet', { preset: preset.value || undefined, limit: 200 }) }
-  catch (e) { query.value = { rows: [], count: 0 } }
+  catch (e) { query.value = { rows: [], count: 0 }; loadErr.value = 'Query failed.'; throw e }
 }
 
 function pct(v) { return v == null ? '—' : `${Number(v).toFixed(1)}%` }
@@ -238,25 +262,33 @@ function links(acc) {
 const VALID_MODES = ['protein', 'proteomes', 'gaps', 'explore']
 function currentQuery() {
   const q = { mode: mode.value }
-  if ((mode.value === 'gaps' || mode.value === 'proteomes') && organism.value) q.organism = organism.value
+  // organism is meaningful only for the Gap Finder (the scoreboard is cross-organism).
+  if (mode.value === 'gaps' && organism.value) q.organism = organism.value
   if (mode.value === 'protein') { const a = acc.value.trim(); if (a) q.acc = a.toUpperCase() }
   if (mode.value === 'explore' && preset.value) q.preset = preset.value
   return q
 }
 function applyQuery(q) {
   mode.value = VALID_MODES.includes(q.mode) ? q.mode : 'protein'
-  if (q.organism) organism.value = String(q.organism)
+  // Reset organism to the default when the URL omits it — mirrors acc/preset, so
+  // navigating (or back/forward) to a URL without organism doesn't leak the previous one.
+  organism.value = q.organism ? String(q.organism) : DEFAULT_ORGANISM
   acc.value = q.acc ? String(q.acc) : ''
   preset.value = q.preset ? String(q.preset) : ''
 }
-function loadForMode() {
-  if (mode.value === 'proteomes') loadProteomes()
-  else if (mode.value === 'gaps') loadGaps()
-  else if (mode.value === 'explore') { loadFacets(); runQuery() }
-  else if (mode.value === 'protein') {
-    if (acc.value.trim()) lookup()
-    else { profile.value = null; profileErr.value = '' }  // no acc -> don't show a stale card
-  }
+async function loadForMode() {
+  loadErr.value = ''
+  loading.value = true
+  try {
+    if (mode.value === 'proteomes') await loadProteomes()
+    else if (mode.value === 'gaps') await loadGaps()
+    else if (mode.value === 'explore') { await loadFacets(); await runQuery() }
+    else if (mode.value === 'protein') {
+      if (acc.value.trim()) await lookup()
+      else { profile.value = null; profileErr.value = '' }  // no acc -> don't show a stale card
+    }
+  } catch (e) { /* loadErr already set by the failing loader */ }
+  finally { loading.value = false }
 }
 function syncUrl() {
   if (applyingRoute) return
@@ -270,9 +302,12 @@ onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 </script>
 
 <style scoped>
-.mode-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+.mode-toggle { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .mode-toggle button { padding: 6px 14px; border: 1px solid var(--border, #e2e5ea); border-radius: 8px; background: #fff; cursor: pointer; }
 .mode-toggle button.active { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; font-weight: 600; }
+.cc-loading { color: var(--muted, #6b7280); padding: 8px 0; }
+.cc-err { color: #b91c1c; padding: 8px 0; }
+.cc-retry { margin-left: 8px; padding: 3px 12px; border: 1px solid #fca5a5; border-radius: 6px; background: #fff; color: #b91c1c; cursor: pointer; font-size: 13px; }
 .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
 .filter-search { padding: 8px 12px; border: 1px solid var(--border, #e2e5ea); border-radius: 8px; }
 .btn { padding: 8px 16px; border: none; border-radius: 8px; background: #4f46e5; color: #fff; cursor: pointer; font-weight: 600; }
@@ -300,4 +335,12 @@ onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 .chip { padding: 4px 12px; border: 1px solid var(--border, #e2e5ea); border-radius: 999px; background: #fff; cursor: pointer; font-size: 13px; }
 .chip.active { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; font-weight: 600; }
 .chip.clear { color: #9ca3af; }
+
+/* Wide tables (up to 8 columns) must not push the page body into horizontal scroll on
+   small screens — let each table scroll inside itself instead. */
+@media (max-width: 768px) {
+  .cc-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .cc-table th, .cc-table td { white-space: nowrap; }
+  .filter-bar { flex-wrap: wrap; }
+}
 </style>
