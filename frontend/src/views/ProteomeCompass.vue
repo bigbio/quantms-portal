@@ -12,9 +12,9 @@
 
       <div class="mode-toggle">
         <button type="button" :class="{ active: mode === 'protein' }" @click="mode = 'protein'">Protein</button>
-        <button type="button" :class="{ active: mode === 'proteomes' }" @click="mode = 'proteomes'; loadProteomes()">Proteomes</button>
-        <button type="button" :class="{ active: mode === 'gaps' }" @click="mode = 'gaps'; loadGaps()">Gap Finder</button>
-        <button type="button" :class="{ active: mode === 'explore' }" @click="mode = 'explore'; loadFacets()">Explorer</button>
+        <button type="button" :class="{ active: mode === 'proteomes' }" @click="mode = 'proteomes'">Proteomes</button>
+        <button type="button" :class="{ active: mode === 'gaps' }" @click="mode = 'gaps'">Gap Finder</button>
+        <button type="button" :class="{ active: mode === 'explore' }" @click="mode = 'explore'">Explorer</button>
       </div>
 
       <!-- Protein mode -->
@@ -107,10 +107,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api'
 import { COMPASS_BASE } from '../config'
 import CompassProteinCard from '../components/CompassProteinCard.vue'
+
+const route = useRoute()
+const router = useRouter()
+let applyingRoute = false
 
 const mode = ref('protein')
 const organism = ref('homo-sapiens')
@@ -149,7 +154,6 @@ function tierWidth(r, t) {
 function openOrganism(r) {
   organism.value = r.organism
   mode.value = 'gaps'
-  loadGaps()
 }
 
 const acc = ref('')
@@ -161,6 +165,7 @@ async function lookup() {
   try {
     profile.value = await apiGet(COMPASS_BASE, `/profile/${acc.value.trim().toUpperCase()}`)
     if (!profile.value || !profile.value.uniprot_acc) profileErr.value = 'No record for that accession.'
+    syncUrl()   // reflect the looked-up accession into the URL (shareable ?acc=)
   } catch (e) { profileErr.value = 'Lookup failed.' }
 }
 
@@ -185,7 +190,7 @@ const preset = ref('')
 const query = ref(null)
 const facets = ref({})
 async function loadFacets() { try { facets.value = (await apiGet(COMPASS_BASE, '/facets')).facets || {} } catch (e) {} ; if (!query.value) runQuery() }
-async function applyPreset(id) { preset.value = id; runQuery() }
+function applyPreset(id) { preset.value = id }
 async function runQuery() {
   try { query.value = await apiGet(COMPASS_BASE, '/query/facet', { preset: preset.value || undefined, limit: 200 }) }
   catch (e) { query.value = { rows: [], count: 0 } }
@@ -205,6 +210,48 @@ function links(acc) {
     + `<a href="${pa}" target="_blank" rel="noopener" class="rlink">PA</a> · `
     + `<a href="${up}" target="_blank" rel="noopener" class="rlink">UniProt</a>`
 }
+
+// --- Deep-linkable URLs -------------------------------------------------------
+// Every Compass view reflects its state in the query string so pages can be
+// shared/bookmarked and browser back/forward works. The URL is the source of
+// truth: state changes rewrite it (router.replace, no history spam), and any URL
+// change (link, bookmark, back/forward) repopulates state + loads the data.
+//   /apps/compass?mode=proteomes
+//   /apps/compass?mode=gaps&organism=homo-sapiens
+//   /apps/compass?mode=protein&acc=P04637
+//   /apps/compass?mode=explore&preset=dark
+const VALID_MODES = ['protein', 'proteomes', 'gaps', 'explore']
+function currentQuery() {
+  const q = { mode: mode.value }
+  if ((mode.value === 'gaps' || mode.value === 'proteomes') && organism.value) q.organism = organism.value
+  if (mode.value === 'protein') { const a = acc.value.trim(); if (a) q.acc = a.toUpperCase() }
+  if (mode.value === 'explore' && preset.value) q.preset = preset.value
+  return q
+}
+function applyQuery(q) {
+  mode.value = VALID_MODES.includes(q.mode) ? q.mode : 'protein'
+  if (q.organism) organism.value = String(q.organism)
+  acc.value = q.acc ? String(q.acc) : ''
+  preset.value = q.preset ? String(q.preset) : ''
+}
+function loadForMode() {
+  if (mode.value === 'proteomes') loadProteomes()
+  else if (mode.value === 'gaps') loadGaps()
+  else if (mode.value === 'explore') { loadFacets(); runQuery() }
+  else if (mode.value === 'protein') {
+    if (acc.value.trim()) lookup()
+    else { profile.value = null; profileErr.value = '' }  // no acc -> don't show a stale card
+  }
+}
+function syncUrl() {
+  if (applyingRoute) return
+  router.replace({ query: currentQuery() }).catch(() => {})
+}
+// state -> URL (acc is written by lookup(); mode/organism/preset are structural)
+watch([mode, organism, preset], syncUrl)
+// URL -> state + data (shared link, bookmark, back/forward)
+watch(() => route.query, (q) => { applyingRoute = true; applyQuery(q); loadForMode(); applyingRoute = false })
+onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 </script>
 
 <style scoped>
