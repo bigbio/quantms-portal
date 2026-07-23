@@ -79,15 +79,21 @@
           </div>
         </div>
 
+        <h3 class="cc-h3">Unobserved reviewed proteins
+          <small>— SwissProt entries quantms hasn't detected yet<template v-if="summary && summary.reanalysis_headroom != null"> · {{ fmt(summary.reanalysis_headroom) }} total (your reanalysis headroom), ranked by PE</template></small></h3>
+        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PE</th><th>Tier</th></tr></thead>
+          <tbody><tr v-for="r in unobserved" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.evidence_tier }}</td></tr>
+          <tr v-if="!unobserved.length"><td colspan="5" class="cc-muted">None — quantms already covers the full reviewed proteome for this organism.</td></tr></tbody></table>
+
         <h3 class="cc-h3">Reanalysis targets <small>— PeptideAtlas observes them, quantms doesn't (ranked)</small></h3>
         <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PA level</th><th>PA samples</th><th>Tissues</th></tr></thead>
           <tbody><tr v-for="r in targets" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>{{ r.pa_presence_level }}</td><td>{{ r.pa_n_samples }}</td><td>{{ r.pa_n_tissues }}</td></tr>
-          <tr v-if="!targets.length"><td colspan="6" class="cc-muted">None.</td></tr></tbody></table>
+          <tr v-if="!targets.length"><td colspan="6" class="cc-muted">{{ hasPA ? 'None.' : 'No PeptideAtlas build for this organism — reanalysis targets are PeptideAtlas-derived (currently human-only).' }}</td></tr></tbody></table>
 
         <h3 class="cc-h3">PE-upgrade candidates <small>— MS-confirmed, UniProt PE below 1 (HPP-framed)</small></h3>
         <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PE</th><th>Unique peptides</th><th>Datasets</th></tr></thead>
           <tbody><tr v-for="r in peUps" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.n_unique_peptides }}</td><td>{{ r.n_datasets }}</td></tr>
-          <tr v-if="!peUps.length"><td colspan="6" class="cc-muted">None.</td></tr></tbody></table>
+          <tr v-if="!peUps.length"><td colspan="6" class="cc-muted">{{ hasPA ? 'None.' : 'Needs PeptideAtlas + HPP evidence (MS-confirmed, PE-upgradeable) — currently human-only.' }}</td></tr></tbody></table>
       </div>
 
       <!-- Explorer mode -->
@@ -172,11 +178,20 @@ async function lookup() {
 const summary = ref(null)
 const targets = ref([])
 const peUps = ref([])
+const unobserved = ref([])
+// Does this organism have a PeptideAtlas build? Drives the empty-state copy for the
+// PA-derived gap tables, which are inherently empty wherever PA has no build.
+const hasPA = computed(() => !!(summary.value && (summary.value.pct_swissprot_covered_pa || 0) > 0))
 async function loadGaps() {
   try {
     summary.value = await apiGet(COMPASS_BASE, '/gaps/summary', { organism: organism.value })
     targets.value = (await apiGet(COMPASS_BASE, '/gaps/reanalysis-targets', { organism: organism.value, limit: 100 })).rows || []
     peUps.value = (await apiGet(COMPASS_BASE, '/gaps/pe-upgrades', { organism: organism.value, limit: 100 })).rows || []
+    // Reanalysis headroom, itemized — reviewed proteins quantms hasn't detected. This is
+    // PeptideAtlas-independent, so every organism gets an actionable gap list (the T4/T2
+    // tables above are empty wherever there is no PeptideAtlas build).
+    unobserved.value = (await apiGet(COMPASS_BASE, '/query/facet',
+      { organism: organism.value, preset: 'swissprot_gap', sort: 'uniprot_pe', limit: 100 })).rows || []
   } catch (e) { /* degraded: leave empty */ }
 }
 
