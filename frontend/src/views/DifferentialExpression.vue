@@ -18,7 +18,14 @@
       <div v-if="dsRef" class="de-selected">
         <p>Selected dataset: <strong>{{ dsRef }}</strong></p>
 
-        <DeDesignPanel :design="design" @change="onConfigChange" />
+        <DeDesignPanel
+          :design="design"
+          :initial-contrast="contrast"
+          :initial-method="method || 'limma'"
+          :initial-normalization="norm || 'median'"
+          :initial-level="level || 'protein'"
+          @change="onConfigChange"
+        />
 
         <p v-if="running" class="de-running">Running differential expression…</p>
         <p v-if="runErr" class="de-err">{{ runErr }} <button type="button" class="de-retry" @click="onConfigChange(lastCfg)">Retry</button></p>
@@ -128,8 +135,16 @@ function isDefaultConfig(cfg) {
   return cfg.method === 'limma' && cfg.normalization === 'median' && cfg.level === 'protein'
 }
 
+// Guards against a stale (superseded) response overwriting newer results: each
+// call captures the sequence number in effect when it started, and any
+// state-mutating step after an `await` checks it's still the latest before
+// touching `rows`/`running` — so a slow request that resolves after a newer
+// one was fired can't clobber it or flip `running` back on/off out of order.
+let reqSeq = 0
+
 async function onConfigChange(cfg) {
   if (!dsRef.value || !cfg || !cfg.contrast) return
+  const seq = ++reqSeq
   lastCfg.value = cfg
   const contrastId = (cfg.contrast && cfg.contrast.id) || cfg.contrast
   contrast.value = contrastId || ''
@@ -145,12 +160,14 @@ async function onConfigChange(cfg) {
       : await runDe(dsRef.value, {
         contrast: contrastId, method: cfg.method, normalization: cfg.normalization, level: cfg.level,
       })
+    if (seq !== reqSeq) return
     rows.value = (res && res.rows) || []
   } catch (e) {
+    if (seq !== reqSeq) return
     rows.value = []
     runErr.value = 'Could not run differential expression.'
   } finally {
-    running.value = false
+    if (seq === reqSeq) running.value = false
   }
 }
 

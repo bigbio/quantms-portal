@@ -138,4 +138,41 @@ describe('DifferentialExpression view', () => {
     })
     expect(getDefault).not.toHaveBeenCalled()
   })
+
+  it('drops a stale response when a newer config change resolves first', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: DifferentialExpression }],
+    })
+    router.push('/')
+    await router.isReady()
+
+    const w = mount(DifferentialExpression, { global: { plugins: [router] } })
+    await flushPromises()
+
+    await w.find('tr.de-row').trigger('click')
+    await flushPromises()
+    await flushPromises()
+
+    // First (slow) request: never resolves within this test.
+    let resolveSlow
+    runDe.mockImplementationOnce(() => new Promise((resolve) => { resolveSlow = resolve }))
+    // Second (fast) request: resolves immediately with distinct rows.
+    const fastResult = { rows: [{ protein: 'FAST', gene: 'GF', log2fc: 1, pvalue: 0.01, adj_pvalue: 0.02, n_peptides: 1, mean_group_a: 1, mean_group_b: 2, significant: true }], count: 1, contrast: 'DMSO__vs__Pom' }
+    runDe.mockImplementationOnce(async () => fastResult)
+
+    await w.get('#de-method').setValue('deqms')
+    await w.get('#de-normalization').setValue('quantile')
+    await flushPromises()
+
+    // The fast (second) response should win and `running` should have settled.
+    expect(w.text()).toContain('FAST')
+    expect(w.text()).not.toContain('Running differential expression')
+
+    // Now resolve the stale first request — it must NOT clobber the fast result.
+    resolveSlow(defaultResult)
+    await flushPromises()
+    expect(w.text()).toContain('FAST')
+    expect(w.text()).not.toContain('P1')
+  })
 })

@@ -47,6 +47,10 @@ import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   design: { type: Object, default: () => ({ factors: [], contrasts: [] }) },
+  initialContrast: { type: String, default: '' },
+  initialMethod: { type: String, default: 'limma' },
+  initialNormalization: { type: String, default: 'median' },
+  initialLevel: { type: String, default: 'protein' },
 })
 const emit = defineEmits(['change'])
 
@@ -56,13 +60,21 @@ const levels = ['protein', 'feature']
 
 const factors = computed(() => props.design?.factors || [])
 
-const selectedFactor = ref(factors.value[0]?.name || '')
-const availableContrasts = computed(() => contrastsForFactor(props.design, selectedFactor.value))
-const selectedContrastId = ref(availableContrasts.value[0]?.id || '')
+// Seed from a deep-linked contrast when present: find the factor that owns
+// it so the factor <select> and contrast <select> agree from the first
+// render, instead of defaulting to the first factor and losing the seed.
+function findContrastById(design, id) {
+  return (design?.contrasts || []).find((c) => c.id === id) || null
+}
 
-const method = ref('limma')
-const normalization = ref('median')
-const level = ref('protein')
+const seededContrast = findContrastById(props.design, props.initialContrast)
+const selectedFactor = ref(seededContrast?.factor || factors.value[0]?.name || '')
+const availableContrasts = computed(() => contrastsForFactor(props.design, selectedFactor.value))
+const selectedContrastId = ref(props.initialContrast || availableContrasts.value[0]?.id || '')
+
+const method = ref(props.initialMethod)
+const normalization = ref(props.initialNormalization)
+const level = ref(props.initialLevel)
 
 function onFactorChange() {
   selectedContrastId.value = availableContrasts.value[0]?.id || ''
@@ -82,10 +94,23 @@ function emitChange() {
 watch(
   () => props.design,
   () => {
-    if (!factors.value.find((f) => f.name === selectedFactor.value)) {
+    // Prefer the factor that owns the currently-selected contrast (covers both
+    // a still-valid seeded/user selection, and the case where `design` arrives
+    // asynchronously after mount and only now contains the seeded contrast).
+    // Only fall back to resetting the factor when that lookup fails.
+    const owning = findContrastById(props.design, selectedContrastId.value)
+    if (owning) {
+      selectedFactor.value = owning.factor
+    } else if (!factors.value.find((f) => f.name === selectedFactor.value)) {
       selectedFactor.value = factors.value[0]?.name || ''
     }
-    if (!availableContrasts.value.find((c) => c.id === selectedContrastId.value)) {
+    // Don't clobber a still-valid selection (seeded from the URL or chosen by
+    // the user) — only reset to the first available contrast when the current
+    // one is empty or no longer present among the (possibly new) contrasts.
+    if (
+      !selectedContrastId.value ||
+      !availableContrasts.value.find((c) => c.id === selectedContrastId.value)
+    ) {
       selectedContrastId.value = availableContrasts.value[0]?.id || ''
     }
     emitChange()

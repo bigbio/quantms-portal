@@ -42,6 +42,17 @@ describe('topByAdjP', () => {
     ]
     expect(topByAdjP(rows, 1)).toHaveLength(1)
   })
+
+  it('does not mutate the input array', () => {
+    const input = [
+      { protein: 'A', adj_pvalue: 0.5 },
+      { protein: 'B', adj_pvalue: 0.001 },
+      { protein: 'C', adj_pvalue: 0.01 },
+    ]
+    const before = JSON.stringify(input)
+    topByAdjP(input, 2)
+    expect(JSON.stringify(input)).toBe(before)
+  })
 })
 
 describe('DeHeatmap component', () => {

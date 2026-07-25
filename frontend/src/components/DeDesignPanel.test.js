@@ -76,6 +76,36 @@ describe('DeDesignPanel', () => {
     expect(last.contrast).toEqual({ id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' })
   })
 
+  it('seeds from initial* props (deep link) instead of the hardcoded defaults', () => {
+    // `0h__vs__24h` is NOT the first contrast in `design.contrasts` — picking it
+    // proves the panel doesn't just fall back to index 0. Regression test for
+    // the deep-link-clobbering bug: the panel used to hardcode
+    // method=limma/normalization=median/level=protein and reset
+    // selectedContrastId to the first contrast on mount, silently discarding
+    // a URL-provided contrast/method/normalization/level.
+    const w = mount(DeDesignPanel, {
+      props: {
+        design,
+        initialContrast: '0h__vs__24h',
+        initialMethod: 'deqms',
+        initialNormalization: 'quantile',
+        initialLevel: 'feature',
+      },
+    })
+    const events = w.emitted('change')
+    expect(events).toBeTruthy()
+    const first = events[0][0]
+    expect(first).toMatchObject({
+      contrast: { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
+      method: 'deqms',
+      normalization: 'quantile',
+      level: 'feature',
+    })
+    // The factor select should also reflect the seeded contrast's factor,
+    // not the first factor in the list.
+    expect(w.get('#de-factor').element.value).toBe('timepoint')
+  })
+
   it('exposes the advanced drawer with method/normalization/level selects', () => {
     const w = mount(DeDesignPanel, { props: { design } })
     expect(w.find('details.de-advanced').exists()).toBe(true)
