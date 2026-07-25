@@ -19,6 +19,7 @@ export const API_BASE = (env.VITE_API_BASE || 'https://api.quantms.org').replace
 export const DATASET_SEARCH_BASE = `${API_BASE}/dataset-search`
 export const PEPTIDE_SEARCH_BASE = `${API_BASE}/peptide-search`
 export const COMPASS_BASE = `${API_BASE}/compass`
+export const DE_BASE = (env.VITE_DE_BASE || `${API_BASE}/differential-expression`).replace(/\/$/, '')
 
 // S3 browse host for dataset file downloads.
 export const BROWSE_BASE = (env.VITE_BROWSE_BASE || 'https://browse.quantms.org').replace(/\/$/, '')
