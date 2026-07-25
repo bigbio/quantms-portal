@@ -91,6 +91,34 @@ function emitChange() {
   })
 }
 
+// Re-seed from `initial*` props when the PARENT pushes new values (browser
+// Back/Forward, or a programmatic URL change for the same dataset) — the
+// setup-time seed above only runs once, so without this the panel (and the
+// results it drives) go stale relative to the URL. Guarded against the echo
+// loop that happens when the panel itself is the source of the change: the
+// panel emits `change` -> the parent updates its refs -> those refs come back
+// down as `initial*` props equal to what the panel already has internally.
+// Only re-seed when at least one incoming value actually differs from the
+// current internal state; otherwise this is a no-op (no re-seed, no re-emit).
+watch(
+  () => [props.initialContrast, props.initialMethod, props.initialNormalization, props.initialLevel],
+  ([nextContrast, nextMethod, nextNormalization, nextLevel]) => {
+    const changed =
+      nextContrast !== selectedContrastId.value ||
+      nextMethod !== method.value ||
+      nextNormalization !== normalization.value ||
+      nextLevel !== level.value
+    if (!changed) return
+    const seeded = findContrastById(props.design, nextContrast)
+    selectedFactor.value = seeded?.factor || factors.value[0]?.name || ''
+    selectedContrastId.value = nextContrast || availableContrasts.value[0]?.id || ''
+    method.value = nextMethod
+    normalization.value = nextNormalization
+    level.value = nextLevel
+    emitChange()
+  },
+)
+
 watch(
   () => props.design,
   () => {

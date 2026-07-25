@@ -175,4 +175,78 @@ describe('DifferentialExpression view', () => {
     expect(w.text()).toContain('FAST')
     expect(w.text()).not.toContain('P1')
   })
+
+  it('does not refetch the datasets list on every query change (only design/qc/results)', async () => {
+    listDatasets.mockClear()
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: DifferentialExpression }],
+    })
+    router.push('/')
+    await router.isReady()
+
+    const w = mount(DifferentialExpression, { global: { plugins: [router] } })
+    await flushPromises()
+    expect(listDatasets).toHaveBeenCalledTimes(1)
+
+    // Selecting a dataset changes the URL (?ref=...) — the picker must still
+    // work, and design/qc load for the newly-selected ref...
+    await w.find('tr.de-row').trigger('click')
+    await flushPromises()
+    await flushPromises()
+    expect(getDesign).toHaveBeenCalledWith('PXD1/h')
+    expect(getQc).toHaveBeenCalledWith('PXD1/h')
+    // ...but the datasets list itself is not refetched.
+    expect(listDatasets).toHaveBeenCalledTimes(1)
+
+    // A further query-only change (contrast/method/norm/level, same ref) via
+    // a programmatic URL push (simulating browser Back/Forward) must still
+    // not refetch the datasets list.
+    getDesign.mockClear()
+    getQc.mockClear()
+    await router.push({ query: { ...router.currentRoute.value.query, method: 'deqms' } })
+    await flushPromises()
+    await flushPromises()
+    expect(listDatasets).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows a size-gate message and falls back to the default on a 413, and a config message on a 422', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: DifferentialExpression }],
+    })
+    router.push('/')
+    await router.isReady()
+
+    const w = mount(DifferentialExpression, { global: { plugins: [router] } })
+    await flushPromises()
+
+    await w.find('tr.de-row').trigger('click')
+    await flushPromises()
+    await flushPromises()
+
+    // Diverge from the default config so the next config change goes through
+    // runDe (not getDefault).
+    const err413 = new Error('too large')
+    err413.status = 413
+    runDe.mockRejectedValueOnce(err413)
+    getDefault.mockClear()
+
+    await w.get('#de-method').setValue('deqms')
+    await flushPromises()
+
+    expect(w.text()).toContain('Dataset too large for on-demand analysis')
+    // Falls back to the precomputed default for the current contrast.
+    expect(getDefault).toHaveBeenCalledWith('PXD1/h', 'DMSO__vs__Pom')
+    expect(w.text()).toContain('P1')
+
+    const err422 = new Error('bad config')
+    err422.status = 422
+    runDe.mockRejectedValueOnce(err422)
+
+    await w.get('#de-normalization').setValue('quantile')
+    await flushPromises()
+
+    expect(w.text()).toContain('Invalid analysis configuration')
+  })
 })

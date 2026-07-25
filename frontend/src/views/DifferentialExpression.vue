@@ -165,7 +165,25 @@ async function onConfigChange(cfg) {
   } catch (e) {
     if (seq !== reqSeq) return
     rows.value = []
-    runErr.value = 'Could not run differential expression.'
+    if (e && e.status === 413) {
+      runErr.value = 'Dataset too large for on-demand analysis — showing precomputed defaults where available.'
+      // Fall back to the precomputed default for this contrast when one
+      // exists, so the user still sees something instead of a blank state.
+      if (!isDefaultConfig(cfg)) {
+        try {
+          const fallback = await getDefault(dsRef.value, contrastId)
+          if (seq !== reqSeq) return
+          rows.value = (fallback && fallback.rows) || []
+        } catch (e2) {
+          // No precomputed default available either — keep the 413 message
+          // and the empty rows.
+        }
+      }
+    } else if (e && e.status === 422) {
+      runErr.value = e && e.detail ? `Invalid analysis configuration: ${e.detail}` : 'Invalid analysis configuration.'
+    } else {
+      runErr.value = 'Could not run differential expression.'
+    }
   } finally {
     if (seq === reqSeq) running.value = false
   }
@@ -207,8 +225,15 @@ function syncUrl() {
 }
 // state -> URL
 watch([dsRef, contrast, method, norm, level], syncUrl)
-// URL -> state + data (shared link, bookmark, back/forward)
-watch(() => route.query, (q) => { applyQuery(q); load() })
+// URL -> state (shared link, bookmark, back/forward). This intentionally does
+// NOT call `load()` (the `/de/datasets` list) on every query change — that
+// list doesn't depend on route state and only needs to be fetched once (see
+// onMounted below). Per-ref extras (design/qc) already reload via
+// `watch(dsRef, loadDatasetExtras)` when `applyQuery` actually changes
+// `dsRef`; a contrast/method/norm/level-only change (ref unchanged) instead
+// flows through DeDesignPanel re-seeding from its `initial*` props and
+// re-emitting `change`, which reloads results via `onConfigChange`.
+watch(() => route.query, (q) => { applyQuery(q) })
 onMounted(() => { applyQuery(route.query); load(); syncUrl() })
 </script>
 

@@ -106,6 +106,61 @@ describe('DeDesignPanel', () => {
     expect(w.get('#de-factor').element.value).toBe('timepoint')
   })
 
+  it('re-seeds from initial* props when the parent pushes new values (history nav)', async () => {
+    // Regression test for the design panel going stale on in-app history
+    // navigation: `initial*` props used to be seeded once at setup and never
+    // re-applied, so browser Back/Forward (or a programmatic URL change for
+    // the same dataset) left the selects — and the results they drive —
+    // stuck on the old values.
+    const w = mount(DeDesignPanel, {
+      props: {
+        design,
+        initialContrast: 'DMSO__vs__Pom',
+        initialMethod: 'limma',
+        initialNormalization: 'median',
+        initialLevel: 'protein',
+      },
+    })
+    const mountEvents = w.emitted('change').length
+
+    await w.setProps({
+      initialContrast: '0h__vs__24h',
+      initialMethod: 'deqms',
+      initialNormalization: 'quantile',
+      initialLevel: 'feature',
+    })
+
+    // Selects reflect the new URL-driven values.
+    expect(w.get('#de-factor').element.value).toBe('timepoint')
+    expect(w.get('#de-contrast').element.value).toBe('0h__vs__24h')
+    expect(w.get('#de-method').element.value).toBe('deqms')
+    expect(w.get('#de-normalization').element.value).toBe('quantile')
+    expect(w.get('#de-level').element.value).toBe('feature')
+
+    // And a fresh `change` was emitted with the new values.
+    const events = w.emitted('change')
+    expect(events.length).toBeGreaterThan(mountEvents)
+    const last = events[events.length - 1][0]
+    expect(last).toMatchObject({
+      contrast: { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
+      method: 'deqms',
+      normalization: 'quantile',
+      level: 'feature',
+    })
+
+    // Setting the SAME values again (the echo-loop case: panel emits -> parent
+    // updates refs -> initial* props come back down unchanged) must be a
+    // no-op — no extra re-seed, no extra `change`.
+    const countBeforeEcho = w.emitted('change').length
+    await w.setProps({
+      initialContrast: '0h__vs__24h',
+      initialMethod: 'deqms',
+      initialNormalization: 'quantile',
+      initialLevel: 'feature',
+    })
+    expect(w.emitted('change').length).toBe(countBeforeEcho)
+  })
+
   it('exposes the advanced drawer with method/normalization/level selects', () => {
     const w = mount(DeDesignPanel, { props: { design } })
     expect(w.find('details.de-advanced').exists()).toBe(true)
