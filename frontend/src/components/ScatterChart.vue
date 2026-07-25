@@ -97,19 +97,11 @@ function deepMerge(a, b) {
 function render() {
   if (!canvas.value) return
   if (chart) { chart.destroy(); chart = null }
-  try {
-    chart = new Chart(canvas.value, {
-      type: 'scatter',
-      data: props.data,
-      options: deepMerge(baseOptions(), props.options),
-    })
-  } catch {
-    // jsdom (used in unit tests) has no real canvas 2D context, so Chart.js
-    // can throw during construction. The <canvas> element itself still
-    // renders, which is what tests assert against — swallow here so a
-    // headless test environment doesn't blow up the component.
-    chart = null
-  }
+  chart = new Chart(canvas.value, {
+    type: 'scatter',
+    data: props.data,
+    options: deepMerge(baseOptions(), props.options),
+  })
 }
 
 onMounted(render)
