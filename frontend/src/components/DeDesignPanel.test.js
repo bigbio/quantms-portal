@@ -1,0 +1,98 @@
+// @vitest-environment jsdom
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import DeDesignPanel, { contrastsForFactor } from './DeDesignPanel.vue'
+
+describe('contrast enumeration', () => {
+  it('lists pairs for the chosen factor', () => {
+    const design = {
+      factors: [{ name: 'compound', levels: ['DMSO', 'Pom'] }],
+      contrasts: [{ id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' }],
+    }
+    expect(contrastsForFactor(design, 'compound')).toEqual([
+      { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
+    ])
+  })
+
+  it('filters out contrasts belonging to other factors', () => {
+    const design = {
+      factors: [{ name: 'compound', levels: ['DMSO', 'Pom'] }, { name: 'timepoint', levels: ['0h', '24h'] }],
+      contrasts: [
+        { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
+        { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
+      ],
+    }
+    expect(contrastsForFactor(design, 'timepoint')).toEqual([
+      { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
+    ])
+  })
+
+  it('returns an empty array when design or contrasts are missing', () => {
+    expect(contrastsForFactor(undefined, 'compound')).toEqual([])
+    expect(contrastsForFactor({}, 'compound')).toEqual([])
+  })
+})
+
+describe('DeDesignPanel', () => {
+  const design = {
+    factors: [
+      { name: 'compound', levels: ['DMSO', 'Pom'] },
+      { name: 'timepoint', levels: ['0h', '24h'] },
+    ],
+    contrasts: [
+      { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
+      { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
+    ],
+  }
+
+  it('renders factor and contrast selects with defaults', () => {
+    const w = mount(DeDesignPanel, { props: { design } })
+    const factorSelect = w.get('#de-factor')
+    const contrastSelect = w.get('#de-contrast')
+    expect(factorSelect.findAll('option').map((o) => o.text())).toEqual(['compound', 'timepoint'])
+    expect(contrastSelect.findAll('option').map((o) => o.text())).toEqual(['DMSO vs Pom'])
+  })
+
+  it('emits change with defaults on mount', () => {
+    const w = mount(DeDesignPanel, { props: { design } })
+    const events = w.emitted('change')
+    expect(events).toBeTruthy()
+    const last = events[events.length - 1][0]
+    expect(last).toMatchObject({
+      contrast: { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
+      method: 'limma',
+      normalization: 'median',
+      level: 'protein',
+    })
+  })
+
+  it('updates the contrast options when the factor changes', async () => {
+    const w = mount(DeDesignPanel, { props: { design } })
+    await w.get('#de-factor').setValue('timepoint')
+    const contrastSelect = w.get('#de-contrast')
+    expect(contrastSelect.findAll('option').map((o) => o.text())).toEqual(['0h vs 24h'])
+    const events = w.emitted('change')
+    const last = events[events.length - 1][0]
+    expect(last.contrast).toEqual({ id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' })
+  })
+
+  it('exposes the advanced drawer with method/normalization/level selects', () => {
+    const w = mount(DeDesignPanel, { props: { design } })
+    expect(w.find('details.de-advanced').exists()).toBe(true)
+    expect(w.get('#de-method').findAll('option').map((o) => o.text())).toEqual([
+      'limma',
+      'deqms',
+      'rots',
+      'limrots',
+      'proda',
+    ])
+    expect(w.get('#de-normalization').findAll('option').map((o) => o.text())).toEqual([
+      'median',
+      'quantile',
+      'none',
+      'loess',
+      'rlr',
+    ])
+    expect(w.get('#de-level').findAll('option').map((o) => o.text())).toEqual(['protein', 'feature'])
+  })
+})
