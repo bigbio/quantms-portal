@@ -10,11 +10,9 @@
         </p>
       </div>
 
-      <div class="mode-toggle">
-        <button type="button" :class="{ active: mode === 'protein' }" @click="mode = 'protein'">Protein</button>
-        <button type="button" :class="{ active: mode === 'proteomes' }" @click="mode = 'proteomes'">Proteomes</button>
-        <button type="button" :class="{ active: mode === 'gaps' }" @click="mode = 'gaps'">Gap Finder</button>
-        <button type="button" :class="{ active: mode === 'explore' }" @click="mode = 'explore'">Explorer</button>
+      <div class="mode-toggle" role="group" aria-label="Compass view">
+        <button v-for="m in MODES" :key="m.id" type="button" :class="{ active: mode === m.id }"
+          :aria-pressed="mode === m.id" @click="mode = m.id">{{ m.label }}</button>
       </div>
 
       <!-- Async load state: spinner while loading, retry banner on failure (never a fake-empty table) -->
@@ -40,17 +38,17 @@
         </div>
         <table class="cc-table">
           <thead><tr>
-            <th @click="sortBy('common_name')" class="sortable">Organism</th>
-            <th @click="sortBy('kingdom')" class="sortable">Kingdom</th>
-            <th @click="sortBy('n_swissprot')" class="sortable num">Proteins (SP / full)</th>
-            <th @click="sortBy('pct_swissprot_covered_quantms')" class="sortable num">quantms %</th>
-            <th @click="sortBy('pct_swissprot_covered_pa')" class="sortable num">PeptideAtlas %</th>
-            <th @click="sortBy('n_gpp_passing')" class="sortable num">GPP-passing</th>
-            <th>Tiers</th>
-            <th @click="sortBy('reanalysis_headroom')" class="sortable num">Headroom</th>
+            <th scope="col" class="sortable" tabindex="0" :aria-sort="ariaSort('common_name')" @click="sortBy('common_name')" @keyup.enter="sortBy('common_name')">Organism</th>
+            <th scope="col" class="sortable" tabindex="0" :aria-sort="ariaSort('kingdom')" @click="sortBy('kingdom')" @keyup.enter="sortBy('kingdom')">Kingdom</th>
+            <th scope="col" class="sortable num" tabindex="0" :aria-sort="ariaSort('n_swissprot')" @click="sortBy('n_swissprot')" @keyup.enter="sortBy('n_swissprot')">Proteins (SP / full)</th>
+            <th scope="col" class="sortable num" tabindex="0" :aria-sort="ariaSort('pct_swissprot_covered_quantms')" @click="sortBy('pct_swissprot_covered_quantms')" @keyup.enter="sortBy('pct_swissprot_covered_quantms')">quantms %</th>
+            <th scope="col" class="sortable num" tabindex="0" :aria-sort="ariaSort('pct_swissprot_covered_pa')" @click="sortBy('pct_swissprot_covered_pa')" @keyup.enter="sortBy('pct_swissprot_covered_pa')">PeptideAtlas %</th>
+            <th scope="col" class="sortable num" tabindex="0" :aria-sort="ariaSort('n_gpp_passing')" @click="sortBy('n_gpp_passing')" @keyup.enter="sortBy('n_gpp_passing')">GPP-passing</th>
+            <th scope="col">Tiers</th>
+            <th scope="col" class="sortable num" tabindex="0" :aria-sort="ariaSort('reanalysis_headroom')" @click="sortBy('reanalysis_headroom')" @keyup.enter="sortBy('reanalysis_headroom')">Headroom</th>
           </tr></thead>
           <tbody>
-            <tr v-for="r in filteredProteomes" :key="r.organism" class="org-row" @click="openOrganism(r)">
+            <tr v-for="r in filteredProteomes" :key="r.organism" class="org-row" tabindex="0" role="button" :aria-label="`Open gap finder for ${r.common_name}`" @click="openOrganism(r)" @keyup.enter="openOrganism(r)">
               <td><strong>{{ r.common_name }}</strong><br><small class="cc-muted">{{ r.organism }}</small></td>
               <td>{{ r.kingdom || '—' }}</td>
               <td class="num">{{ fmt(r.n_swissprot) }} / {{ fmt(r.n_full) }}</td>
@@ -85,19 +83,19 @@
 
         <h3 class="cc-h3">Unobserved reviewed proteins
           <small>— SwissProt entries quantms hasn't detected yet<template v-if="summary && summary.reanalysis_headroom != null"> · {{ fmt(summary.reanalysis_headroom) }} total (your reanalysis headroom), ranked by PE</template></small></h3>
-        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PE</th><th>Tier</th></tr></thead>
-          <tbody><tr v-for="r in unobserved" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.evidence_tier }}</td></tr>
-          <tr v-if="!unobserved.length"><td colspan="5" class="cc-muted">None — quantms already covers the full reviewed proteome for this organism.</td></tr></tbody></table>
+        <GapTable :columns="unobservedCols" :rows="unobserved" empty-message="None — quantms already covers the full reviewed proteome for this organism.">
+          <template #links="{ row }"><CompassLinks :acc="row.uniprot_acc" /></template>
+        </GapTable>
 
         <h3 class="cc-h3">Reanalysis targets <small>— PeptideAtlas observes them, quantms doesn't (ranked)</small></h3>
-        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PA level</th><th>PA samples</th><th>Tissues</th></tr></thead>
-          <tbody><tr v-for="r in targets" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>{{ r.pa_presence_level }}</td><td>{{ r.pa_n_samples }}</td><td>{{ r.pa_n_tissues }}</td></tr>
-          <tr v-if="!targets.length"><td colspan="6" class="cc-muted">{{ hasPA ? 'None.' : 'No PeptideAtlas build for this organism — reanalysis targets are PeptideAtlas-derived (currently human-only).' }}</td></tr></tbody></table>
+        <GapTable :columns="targetsCols" :rows="targets" :empty-message="targetsEmpty">
+          <template #links="{ row }"><CompassLinks :acc="row.uniprot_acc" /></template>
+        </GapTable>
 
         <h3 class="cc-h3">PE-upgrade candidates <small>— MS-confirmed, UniProt PE below 1 (HPP-framed)</small></h3>
-        <table class="cc-table"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>PE</th><th>Unique peptides</th><th>Datasets</th></tr></thead>
-          <tbody><tr v-for="r in peUps" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.n_unique_peptides }}</td><td>{{ r.n_datasets }}</td></tr>
-          <tr v-if="!peUps.length"><td colspan="6" class="cc-muted">{{ hasPA ? 'None.' : 'Needs PeptideAtlas + HPP evidence (MS-confirmed, PE-upgradeable) — currently human-only.' }}</td></tr></tbody></table>
+        <GapTable :columns="peUpsCols" :rows="peUps" :empty-message="peUpsEmpty">
+          <template #links="{ row }"><CompassLinks :acc="row.uniprot_acc" /></template>
+        </GapTable>
       </div>
 
       <!-- Explorer mode -->
@@ -108,9 +106,9 @@
           <button v-if="preset" class="chip clear" @click="applyPreset('')">clear</button>
         </div>
         <p class="cc-muted" v-if="query">{{ query.count }} protein(s)</p>
-        <table class="cc-table" v-if="query"><thead><tr><th>Accession</th><th>Links</th><th>Gene</th><th>Tier</th><th>PE</th><th>quantms</th><th>PeptideAtlas</th></tr></thead>
-          <tbody><tr v-for="r in query.rows" :key="r.uniprot_acc"><td>{{ r.uniprot_acc }}</td><td><span v-html="links(r.uniprot_acc)"></span></td><td>{{ r.gene }}</td><td>{{ r.evidence_tier }}</td><td>PE{{ r.uniprot_pe }}</td><td>{{ r.quantms_observed ? '✓' : '' }}</td><td>{{ r.pa_observed ? (r.pa_presence_level || '✓') : '' }}</td></tr>
-          <tr v-if="!query.rows.length"><td colspan="7" class="cc-muted">No matches.</td></tr></tbody></table>
+        <GapTable v-if="query" :columns="explorerCols" :rows="query.rows" empty-message="No matches.">
+          <template #links="{ row }"><CompassLinks :acc="row.uniprot_acc" /></template>
+        </GapTable>
       </div>
     </div>
   </div>
@@ -122,10 +120,21 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api'
 import { COMPASS_BASE } from '../config'
 import CompassProteinCard from '../components/CompassProteinCard.vue'
+import CompassLinks from '../components/CompassLinks.vue'
+import GapTable from '../components/GapTable.vue'
 
 const route = useRoute()
 const router = useRouter()
-let applyingRoute = false
+
+// Single source of truth for the view modes: drives the toggle buttons AND the
+// set of accepted `?mode=` values (no duplicated magic strings).
+const MODES = [
+  { id: 'protein', label: 'Protein' },
+  { id: 'proteomes', label: 'Proteomes' },
+  { id: 'gaps', label: 'Gap Finder' },
+  { id: 'explore', label: 'Explorer' },
+]
+const VALID_MODES = MODES.map((m) => m.id)
 
 const mode = ref('protein')
 const DEFAULT_ORGANISM = 'homo-sapiens'
@@ -150,6 +159,11 @@ async function loadProteomes() {
 }
 function sortBy(key) {
   if (sortKey.value === key) { sortDir.value *= -1 } else { sortKey.value = key; sortDir.value = -1 }
+}
+// aria-sort state for a sortable column header.
+function ariaSort(key) {
+  if (sortKey.value !== key) return 'none'
+  return sortDir.value === 1 ? 'ascending' : 'descending'
 }
 const filteredProteomes = computed(() => {
   const q = orgFilter.value.trim().toLowerCase()
@@ -238,17 +252,48 @@ async function runQuery() {
 function pct(v) { return v == null ? '—' : `${Number(v).toFixed(1)}%` }
 function fmt(v) { return v == null ? '—' : Number(v).toLocaleString() }
 
-// Per-accession cross-resource links (quantms peptide-search + PeptideAtlas + UniProt).
-// Rendered via v-html; the accession is URL-encoded and never injected as raw markup.
-function links(acc) {
-  const a = encodeURIComponent(acc)
-  const qms = `/apps/peptide-search?mode=protein&query=${a}`
-  const pa = `https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/Search?action=GO&search_key=${a}&search_scope=Global`
-  const up = `https://www.uniprot.org/uniprotkb/${a}/entry`
-  return `<a href="${qms}" class="rlink">quantms</a> · `
-    + `<a href="${pa}" target="_blank" rel="noopener" class="rlink">PA</a> · `
-    + `<a href="${up}" target="_blank" rel="noopener" class="rlink">UniProt</a>`
-}
+// Column configs for the gap/explorer tables (rendered by <GapTable>). The
+// `links` column is filled by a named slot that renders <CompassLinks>.
+const unobservedCols = [
+  { key: 'uniprot_acc', label: 'Accession' },
+  { key: 'links', label: 'Links' },
+  { key: 'gene', label: 'Gene' },
+  { key: 'uniprot_pe', label: 'PE', render: (r) => `PE${r.uniprot_pe}` },
+  { key: 'evidence_tier', label: 'Tier' },
+]
+const targetsCols = [
+  { key: 'uniprot_acc', label: 'Accession' },
+  { key: 'links', label: 'Links' },
+  { key: 'gene', label: 'Gene' },
+  { key: 'pa_presence_level', label: 'PA level' },
+  { key: 'pa_n_samples', label: 'PA samples' },
+  { key: 'pa_n_tissues', label: 'Tissues' },
+]
+const peUpsCols = [
+  { key: 'uniprot_acc', label: 'Accession' },
+  { key: 'links', label: 'Links' },
+  { key: 'gene', label: 'Gene' },
+  { key: 'uniprot_pe', label: 'PE', render: (r) => `PE${r.uniprot_pe}` },
+  { key: 'n_unique_peptides', label: 'Unique peptides' },
+  { key: 'n_datasets', label: 'Datasets' },
+]
+const explorerCols = [
+  { key: 'uniprot_acc', label: 'Accession' },
+  { key: 'links', label: 'Links' },
+  { key: 'gene', label: 'Gene' },
+  { key: 'evidence_tier', label: 'Tier' },
+  { key: 'uniprot_pe', label: 'PE', render: (r) => `PE${r.uniprot_pe}` },
+  { key: 'quantms_observed', label: 'quantms', render: (r) => (r.quantms_observed ? '✓' : '') },
+  { key: 'pa_observed', label: 'PeptideAtlas', render: (r) => (r.pa_observed ? (r.pa_presence_level || '✓') : '') },
+]
+// PA-derived tables get a different empty state depending on whether this
+// organism has a PeptideAtlas build.
+const targetsEmpty = computed(() => hasPA.value
+  ? 'None.'
+  : 'No PeptideAtlas build for this organism — reanalysis targets are PeptideAtlas-derived (currently human-only).')
+const peUpsEmpty = computed(() => hasPA.value
+  ? 'None.'
+  : 'Needs PeptideAtlas + HPP evidence (MS-confirmed, PE-upgradeable) — currently human-only.')
 
 // --- Deep-linkable URLs -------------------------------------------------------
 // Every Compass view reflects its state in the query string so pages can be
@@ -259,7 +304,6 @@ function links(acc) {
 //   /apps/compass?mode=gaps&organism=homo-sapiens
 //   /apps/compass?mode=protein&acc=P04637
 //   /apps/compass?mode=explore&preset=dark
-const VALID_MODES = ['protein', 'proteomes', 'gaps', 'explore']
 function currentQuery() {
   const q = { mode: mode.value }
   // organism is meaningful only for the Gap Finder (the scoreboard is cross-organism).
@@ -290,14 +334,27 @@ async function loadForMode() {
   } catch (e) { /* loadErr already set by the failing loader */ }
   finally { loading.value = false }
 }
+// Shallow equality over query objects (all values compared as strings, since
+// route.query is always string-valued).
+function sameQuery(a, b) {
+  const ak = Object.keys(a)
+  const bk = Object.keys(b)
+  if (ak.length !== bk.length) return false
+  return ak.every((k) => String(a[k]) === String(b[k]))
+}
+// Reflect state into the URL. Skip the router.replace when the computed query
+// already matches route.query — Vue watchers flush async, so a re-entrancy flag
+// would be reset before the URL-sync ran; comparing the query is what actually
+// prevents the redundant navigation + double-load.
 function syncUrl() {
-  if (applyingRoute) return
-  router.replace({ query: currentQuery() }).catch(() => {})
+  const q = currentQuery()
+  if (sameQuery(q, route.query)) return
+  router.replace({ query: q }).catch(() => {})
 }
 // state -> URL (acc is written by lookup(); mode/organism/preset are structural)
 watch([mode, organism, preset], syncUrl)
 // URL -> state + data (shared link, bookmark, back/forward)
-watch(() => route.query, (q) => { applyingRoute = true; applyQuery(q); loadForMode(); applyingRoute = false })
+watch(() => route.query, (q) => { applyQuery(q); loadForMode() })
 onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 </script>
 
@@ -319,14 +376,14 @@ onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 .cc-table th, .cc-table td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--border, #eef0f3); }
 .cc-table th { color: var(--muted, #6b7280); font-weight: 600; }
 .cc-muted { color: #9ca3af; }
-.cc-table :deep(.rlink) { color: #4f46e5; text-decoration: none; font-weight: 600; }
-.cc-table :deep(.rlink):hover { text-decoration: underline; }
 .cc-metric small { color: var(--muted, #6b7280); font-weight: 400; font-size: 11px; }
 .sortable { cursor: pointer; user-select: none; }
 .sortable:hover { color: #4f46e5; }
+.sortable:focus-visible { outline: 2px solid #4f46e5; outline-offset: -2px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .org-row { cursor: pointer; }
 .org-row:hover { background: #f8fafc; }
+.org-row:focus-visible { outline: 2px solid #4f46e5; outline-offset: -2px; }
 .tierbar { display: inline-flex; width: 90px; height: 10px; border-radius: 3px; overflow: hidden; }
 .tseg { display: inline-block; height: 100%; }
 .tier-T1 { background: #16a34a; } .tier-T2 { background: #65a30d; } .tier-T3 { background: #0891b2; }

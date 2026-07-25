@@ -15,8 +15,8 @@
 
     <!-- Cross-resource protein links -->
     <div class="cc-links">
-      <router-link :to="qmsTo(profile.uniprot_acc)" class="cc-link">quantms peptide-search ↗</router-link>
-      <a :href="paUrl(profile.uniprot_acc)" target="_blank" rel="noopener" class="cc-link">PeptideAtlas ↗</a>
+      <router-link :to="quantmsPeptideSearchPath(profile.uniprot_acc)" class="cc-link">quantms peptide-search ↗</router-link>
+      <a :href="peptideAtlasUrl(profile.uniprot_acc)" target="_blank" rel="noopener" class="cc-link">PeptideAtlas ↗</a>
       <a :href="uniprotUrl(profile.uniprot_acc)" target="_blank" rel="noopener" class="cc-link">UniProt ↗</a>
     </div>
 
@@ -94,15 +94,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { uniprotUrl, peptideAtlasUrl, quantmsPeptideSearchPath } from '../utils/links.js'
 
 const props = defineProps({ profile: { type: Object, required: true } })
-
-// Cross-resource protein links (built from the accession).
-function qmsTo(acc) { return { path: '/apps/peptide-search', query: { mode: 'protein', query: acc } } }
-function paUrl(acc) {
-  return `https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/Search?action=GO&search_key=${encodeURIComponent(acc)}&search_scope=Global`
-}
-function uniprotUrl(acc) { return `https://www.uniprot.org/uniprotkb/${encodeURIComponent(acc)}/entry` }
 
 const usis = computed(() => props.profile.usis || [])
 const subcellular = computed(() => props.profile.subcellular || [])
