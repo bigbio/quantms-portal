@@ -420,7 +420,6 @@ const gppCounts = computed(() => {
   const g = profile.value?.gpp
   return g && typeof g === 'object' ? g : null
 })
-const hasGppCounts = computed(() => !!gppCounts.value)
 // Show a high-confidence figure for a stat only when the backend supplied it.
 function gppFig(key) {
   const v = gppCounts.value?.[key]
