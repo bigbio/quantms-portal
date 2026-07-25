@@ -307,6 +307,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
+import { uniprotUrl as buildUniprotUrl } from '../utils/links.js'
 import ProteinSequenceMap from './ProteinSequenceMap.vue'
 
 // Corpus-wide observation distribution (identical for every protein): fetched
@@ -395,7 +396,7 @@ const primaryAccession = computed(() =>
   arr(profile.value?.resolved_accessions)[0] || profile.value?.query || displayQuery.value
 )
 const uniprotUrl = computed(() =>
-  profile.value?.uniprot_url || `https://www.uniprot.org/uniprotkb/${primaryAccession.value}`
+  profile.value?.uniprot_url || buildUniprotUrl(primaryAccession.value)
 )
 
 // Sequence coverage: clamp to 0..100 and round for display.
@@ -419,7 +420,6 @@ const gppCounts = computed(() => {
   const g = profile.value?.gpp
   return g && typeof g === 'object' ? g : null
 })
-const hasGppCounts = computed(() => !!gppCounts.value)
 // Show a high-confidence figure for a stat only when the backend supplied it.
 function gppFig(key) {
   const v = gppCounts.value?.[key]

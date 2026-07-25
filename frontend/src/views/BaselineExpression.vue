@@ -412,10 +412,6 @@ function getMedian(protein, tissue) {
   return protein.stats[tissue]?.median ?? null
 }
 
-function getSampleCount(protein, tissue) {
-  return protein.stats[tissue]?.count ?? 0
-}
-
 function getIqr(protein, tissue) {
   return protein.stats[tissue] ?? null
 }
@@ -440,13 +436,6 @@ const globalMax = computed(() => {
   }
   return mx === -Infinity ? 1 : mx
 })
-
-function pct(val) {
-  const mn = globalMin.value
-  const mx = globalMax.value
-  if (mx === mn) return 50
-  return ((val - mn) / (mx - mn)) * 100
-}
 
 const expressionRange = computed(() => {
   if (!proteins.value.length) return '—'
