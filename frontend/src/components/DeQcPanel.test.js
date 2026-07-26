@@ -8,8 +8,9 @@ vi.mock('chart.js', () => {
   return { Chart, ScatterController: {}, PointElement: {}, LinearScale: {}, Tooltip: {}, Legend: {} }
 })
 
-import DeQcPanel, { pcaToScatter, qcChips, fmtScore } from './DeQcPanel.vue'
+import DeQcPanel, { pcaToScatter, qcChips, fmtScore, powerReplicateSummary } from './DeQcPanel.vue'
 import ScatterChart from './ScatterChart.vue'
+import QualityBadges from './QualityBadges.vue'
 
 describe('pcaToScatter', () => {
   it('groups PCA points into per-group datasets', () => {
@@ -144,5 +145,117 @@ describe('DeQcPanel component', () => {
     expect(w.find('.de-qc-badge').exists()).toBe(false)
     // The existing scatter still renders.
     expect(w.findComponent(ScatterChart).exists()).toBe(true)
+  })
+})
+
+describe('powerReplicateSummary', () => {
+  it('states the smallest group size and the per-group counts', () => {
+    const s = powerReplicateSummary({
+      level: 'moderate',
+      min_replicates: 3,
+      per_group: { DMSO: 3, Pomalidomide: 3 },
+    })
+    expect(s).toContain('3 replicates in the smallest group')
+    expect(s).toContain('DMSO: 3')
+    expect(s).toContain('Pomalidomide: 3')
+  })
+
+  it('uses the singular for a single replicate', () => {
+    expect(powerReplicateSummary({ min_replicates: 1, per_group: { A: 1, B: 4 } })).toContain(
+      '1 replicate in the smallest group',
+    )
+  })
+
+  it('falls back to per-group counts alone when min_replicates is unavailable', () => {
+    const s = powerReplicateSummary({ level: 'limited', min_replicates: null, per_group: { A: 2 } })
+    expect(s).toBe('Replicates per group — A: 2')
+  })
+
+  it('returns an empty string for missing/empty/malformed input', () => {
+    expect(powerReplicateSummary(null)).toBe('')
+    expect(powerReplicateSummary(undefined)).toBe('')
+    expect(powerReplicateSummary({})).toBe('')
+    expect(powerReplicateSummary({ level: 'limited', reasons: ['x'] })).toBe('')
+    expect(powerReplicateSummary('moderate')).toBe('')
+  })
+})
+
+// PXD041047: pristine measurements but only n=3 per group — the case the two
+// axes exist to describe.
+const classifiedQc = {
+  ...passQuality,
+  per_contrast: {
+    DMSO__vs__Pomalidomide: {
+      ...passQuality.per_contrast.DMSO__vs__Pomalidomide,
+      classification: {
+        data_quality: { level: 'high', reasons: [] },
+        statistical_power: {
+          level: 'moderate',
+          min_replicates: 3,
+          per_group: { DMSO: 3, Pomalidomide: 3 },
+          reasons: ['only 3 replicates in the smallest group; FDR correction limits detectable changes'],
+        },
+      },
+    },
+  },
+}
+
+describe('DeQcPanel two-axis classification', () => {
+  it('renders both badges above the gate badge for a high/moderate dataset', () => {
+    const w = mount(DeQcPanel, { props: { qc: classifiedQc } })
+    const badges = w.findComponent(QualityBadges)
+    expect(badges.exists()).toBe(true)
+    expect(badges.text()).toContain('High')
+    expect(badges.text()).toContain('Moderate')
+
+    // The classification section precedes the pass/warn/fail gate section,
+    // which answers a different question and is kept.
+    const html = w.html()
+    expect(html.indexOf('de-qc-class')).toBeLessThan(html.indexOf('de-qc-quality'))
+    expect(w.find('.de-qc-badge').text()).toBe('PASS')
+  })
+
+  it('shows the replicate numbers and the reason behind a moderate power level', () => {
+    const w = mount(DeQcPanel, { props: { qc: classifiedQc } })
+    expect(w.find('.de-qc-class-detail').text()).toContain('3 replicates in the smallest group')
+    expect(w.text()).toContain('DMSO: 3')
+    expect(w.text()).toContain('FDR correction limits detectable changes')
+    // The underlying metrics stay next to the badges — the badge summarizes,
+    // it does not replace them.
+    expect(w.text()).toContain('7.9%')
+    expect(w.text()).toContain('0.977')
+  })
+
+  it('explains that the two axes are independent', () => {
+    const w = mount(DeQcPanel, { props: { qc: classifiedQc } })
+    expect(w.find('.de-qc-class-note').text()).toContain('independently')
+  })
+
+  it('falls back to a dataset-level classification block', () => {
+    const qc = {
+      ...passQuality,
+      classification: {
+        data_quality: { level: 'medium', reasons: ['missingness 0.31'] },
+        statistical_power: { level: 'strong', min_replicates: 6, per_group: { A: 6, B: 7 } },
+      },
+    }
+    const w = mount(DeQcPanel, { props: { qc } })
+    expect(w.findComponent(QualityBadges).text()).toContain('Medium')
+    expect(w.findComponent(QualityBadges).text()).toContain('Strong')
+    expect(w.text()).toContain('missingness 0.31')
+  })
+
+  it('omits the classification section entirely for older datasets without it', () => {
+    const w = mount(DeQcPanel, { props: { qc: passQuality } })
+    expect(w.find('.de-qc-class').exists()).toBe(false)
+    expect(w.findComponent(QualityBadges).exists()).toBe(false)
+    // Everything that existed before still renders.
+    expect(w.find('.de-qc-badge').text()).toBe('PASS')
+    expect(w.findComponent(ScatterChart).exists()).toBe(true)
+  })
+
+  it('does not error when the classification block is present but empty', () => {
+    const w = mount(DeQcPanel, { props: { qc: { ...passQuality, classification: {} } } })
+    expect(w.find('.de-qc-class').exists()).toBe(false)
   })
 })

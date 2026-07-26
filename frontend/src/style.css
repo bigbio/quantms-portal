@@ -37,6 +37,20 @@
   --reg-up: #e5484d;
   --reg-down: #3b82f6;
   --reg-ns: #94a3b8;
+  /* Two-axis dataset classification: data quality (is the measurement
+     trustworthy?) and statistical power (how much can this design detect?) are
+     graded independently — a dataset can be pristine yet underpowered. Kept in
+     sync with QUALITY_META / POWER_META in src/utils/quality.js. Grey is
+     reserved for "unknown" (datasets built before the classification existed),
+     so it never reads as a verdict. */
+  --qual-high: #047857;
+  --qual-medium: #b45309;
+  --qual-low: #dc2626;
+  --qual-unknown: #64748b;
+  --power-strong: #047857;
+  --power-moderate: #b45309;
+  --power-limited: #dc2626;
+  --power-unknown: #64748b;
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", "Fira Code", monospace;
   --section-pad: 64px;
