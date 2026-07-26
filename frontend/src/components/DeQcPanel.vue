@@ -1,5 +1,24 @@
 <template>
   <div class="de-qc-panel">
+    <!-- Two-axis classification: how much to trust this dataset (data quality)
+         and how much it can detect (statistical power). Deliberately shown
+         above the pass/warn/fail gate badge, which answers a different
+         question — whether the dataset should be published at all. -->
+    <section v-if="hasClassification" class="de-qc-class">
+      <QualityBadges :data-quality="dataQuality" :power="power" />
+
+      <p v-if="powerDetail" class="de-qc-class-detail">{{ powerDetail }}</p>
+
+      <ul v-if="classReasons.length" class="de-qc-reasons">
+        <li v-for="(r, i) in classReasons" :key="i">{{ r }}</li>
+      </ul>
+
+      <p class="de-qc-class-note">
+        Data quality and statistical power are graded independently: a dataset can be
+        pristine and still underpowered, so few proteins reach significance.
+      </p>
+    </section>
+
     <!-- Quality block (present only for datasets rebuilt with the QC gate). -->
     <section v-if="hasQuality" class="de-qc-quality">
       <div class="de-qc-quality-head">
@@ -60,6 +79,8 @@
 // it and the block renders nothing.
 import { computed } from 'vue'
 import ScatterChart from './ScatterChart.vue'
+import QualityBadges from './QualityBadges.vue'
+import { classificationReasons } from '../utils/quality.js'
 
 const props = defineProps({
   qc: { type: Object, default: () => ({ pca: [], norm: {} }) },
@@ -94,13 +115,34 @@ const scoreboard = computed(() =>
 
 // The per_contrast entry to summarize: prefer the one matching `contrast`,
 // otherwise the first entry.
-const currentContrastMetrics = computed(() => {
+const currentContrastEntry = computed(() => {
   const pc = props.qc?.per_contrast
   if (!pc || typeof pc !== 'object') return null
-  const entry = (props.contrast && pc[props.contrast]) || pc[Object.keys(pc)[0]]
-  return entry?.metrics || null
+  return (props.contrast && pc[props.contrast]) || pc[Object.keys(pc)[0]] || null
 })
+const currentContrastMetrics = computed(() => currentContrastEntry.value?.metrics || null)
 const chips = computed(() => qcChips(currentContrastMetrics.value))
+
+// Two-axis classification for the contrast on screen, falling back to the
+// dataset-level block. Absent for datasets built before it existed, in which
+// case the whole section is skipped rather than showing "unknown" badges next
+// to metrics that would contradict them.
+const classification = computed(
+  () => currentContrastEntry.value?.classification || props.qc?.classification || null,
+)
+const hasClassification = computed(
+  () => !!(classification.value?.data_quality || classification.value?.statistical_power),
+)
+const dataQuality = computed(() => classification.value?.data_quality || null)
+const power = computed(() => classification.value?.statistical_power || null)
+
+// Why the badges say what they say: the replicate depth behind the power level
+// plus every reason the backend attached to either axis.
+const powerDetail = computed(() => powerReplicateSummary(power.value))
+const classReasons = computed(() => [
+  ...classificationReasons(dataQuality.value),
+  ...classificationReasons(power.value),
+])
 
 function isRecommended(row) {
   const r = props.qc?.recommended_pipeline
@@ -142,6 +184,27 @@ export function fmtScore(n) {
   return Number.isFinite(n) ? n.toFixed(2) : ''
 }
 
+// Pure helper — one-line replicate summary behind a statistical_power block,
+// e.g. "3 replicates in the smallest group — DMSO: 3, Pomalidomide: 3". This
+// is the number that explains a short significant-protein list, so it is shown
+// next to the badge rather than hidden in a tooltip. Returns '' when the block
+// carries no usable replicate counts.
+export function powerReplicateSummary(power) {
+  if (!power || typeof power !== 'object') return ''
+  // `min_replicates` is null when the backend could not determine group sizes;
+  // Number(null) is 0, so only a real number counts.
+  const n = typeof power.min_replicates === 'number' ? power.min_replicates : Number.NaN
+  const perGroup = power.per_group && typeof power.per_group === 'object' ? power.per_group : {}
+  const parts = Object.entries(perGroup)
+    .filter(([, v]) => Number.isFinite(Number(v)))
+    .map(([k, v]) => `${k}: ${Number(v)}`)
+  if (!Number.isFinite(n)) {
+    return parts.length ? `Replicates per group — ${parts.join(', ')}` : ''
+  }
+  const head = `${n} replicate${n === 1 ? '' : 's'} in the smallest group`
+  return parts.length ? `${head} — ${parts.join(', ')}` : head
+}
+
 // Pure helper — maps a per-contrast metrics object into an ordered list of
 // labelled stat chips ({ label, value }). Chips whose underlying metric is
 // missing/non-finite are omitted, so it degrades gracefully on partial data.
@@ -174,6 +237,15 @@ export function qcChips(metrics) {
 <style scoped>
 .de-qc-empty { color: var(--text-muted, #6b7280); padding: 8px 0; }
 .de-qc-norm { margin: 8px 0 0; font-size: 13px; color: var(--text-muted, #6b7280); }
+
+.de-qc-class { margin: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.de-qc-class-detail {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+.de-qc-class-note { margin: 0; font-size: 12px; color: var(--text-muted, #6b7280); max-width: 64ch; }
 
 .de-qc-quality { margin: 0 0 16px; display: flex; flex-direction: column; gap: 12px; }
 .de-qc-quality-head { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
