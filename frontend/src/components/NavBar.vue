@@ -25,10 +25,7 @@
         <span class="nav-hamburger-icon" aria-hidden="true">{{ mobileOpen ? '✕' : '☰' }}</span>
       </button>
       <div id="nav-links" class="nav-links" :class="{ open: mobileOpen }">
-        <router-link to="/apps/peptide-search">Peptide Search</router-link>
-        <router-link to="/apps/compass">Proteome Compass</router-link>
-        <router-link to="/differential-expression">Differential Expression</router-link>
-        <router-link to="/statistics">Statistics</router-link>
+        <router-link to="/applications">Applications</router-link>
 
         <!-- Data dropdown -->
         <div

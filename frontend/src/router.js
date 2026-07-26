@@ -18,6 +18,7 @@ const routes = [
   { path: '/models', component: () => import('./views/Models.vue') },
   { path: '/contact', component: () => import('./views/Contact.vue') },
   { path: '/differential-expression', component: () => import('./views/DifferentialExpression.vue') },
+  { path: '/applications', component: () => import('./views/Applications.vue') },
 ]
 
 const router = createRouter({
