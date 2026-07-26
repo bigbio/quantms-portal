@@ -17,6 +17,7 @@ const routes = [
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue') },
   { path: '/models', component: () => import('./views/Models.vue') },
   { path: '/contact', component: () => import('./views/Contact.vue') },
+  { path: '/differential-expression', component: () => import('./views/DifferentialExpression.vue') },
 ]
 
 const router = createRouter({
