@@ -53,14 +53,23 @@
               >{{ row.protein }}</a>
             </td>
             <td>{{ row.gene ?? '—' }}</td>
-            <td class="td-num">{{ fmt(row.log2fc) }}</td>
+            <td class="td-center">
+              <span
+                class="reg-dot"
+                :class="`reg-dot-${reg(row).key}`"
+                role="img"
+                :title="reg(row).label"
+                :aria-label="reg(row).label"
+              ></span>
+            </td>
+            <td class="td-num" :class="`reg-text-${reg(row).key}`">{{ fmt(row.log2fc) }}</td>
             <td class="td-num">{{ fmt(row.pvalue) }}</td>
             <td class="td-num">{{ fmt(row.adj_pvalue) }}</td>
             <td class="td-num">{{ row.n_peptides ?? '—' }}</td>
             <td class="td-num">{{ fmt(row.mean_group_a) }}</td>
             <td class="td-num">{{ fmt(row.mean_group_b) }}</td>
             <td class="td-center">
-              <span v-if="row.significant" class="sig-badge">yes</span>
+              <span v-if="row.significant" class="sig-badge" :class="`reg-text-${reg(row).key}`">yes</span>
               <span v-else class="muted">no</span>
             </td>
           </tr>
@@ -87,6 +96,7 @@ const emit = defineEmits(['select'])
 const columns = [
   { key: 'protein', label: 'Protein' },
   { key: 'gene', label: 'Gene' },
+  { key: 'regulation', label: 'Reg' },
   { key: 'log2fc', label: 'log2FC' },
   { key: 'pvalue', label: 'p-value' },
   { key: 'adj_pvalue', label: 'Adj. p-value' },
@@ -128,19 +138,36 @@ function fmt(v) {
   if (v === null || v === undefined || Number.isNaN(v)) return '—'
   return typeof v === 'number' ? v.toPrecision(4).replace(/\.?0+$/, '') || '0' : v
 }
+
+// Regulation display metadata (key/label/color class) for a row — drives the
+// "Reg" dot and the log2FC / significance coloring.
+function reg(row) {
+  return regulationMeta(row)
+}
 </script>
 
 <script>
+import { regulationMeta, regulationRank } from '../utils/regulation.js'
+
 // Pure helpers — kept free of Vue reactivity so they're trivial to unit test
 // and reusable if this table's sort/filter logic is ever needed elsewhere.
 
-// Sorts a copy of `rows` by `rows[key]`, ascending or descending; rows whose
+// The value a row sorts by for a given column. Every column maps straight to
+// its row field except the derived "regulation" column, which sorts by class
+// rank (up → down → unchanged) since there is no such field on the row.
+function sortValue(row, key) {
+  if (!row) return undefined
+  if (key === 'regulation') return regulationRank(row)
+  return row[key]
+}
+
+// Sorts a copy of `rows` by column `key`, ascending or descending; rows whose
 // value is null/undefined always sort to the end regardless of `dir`.
 export function sortRows(rows, key, dir) {
   const mult = dir === 'desc' ? -1 : 1
   return [...(rows || [])].sort((a, b) => {
-    const av = a ? a[key] : undefined
-    const bv = b ? b[key] : undefined
+    const av = sortValue(a, key)
+    const bv = sortValue(b, key)
     const aNull = av === null || av === undefined
     const bNull = bv === null || bv === undefined
     if (aNull && bNull) return 0
@@ -226,8 +253,37 @@ export function filterRows(rows, query) {
   text-decoration: underline;
 }
 .sig-badge {
-  color: #ef4444;
   font-weight: 600;
+}
+/* Regulation direction — red up / blue down / grey unchanged, mirrored from
+   REGULATION_META in utils/regulation.js (which colors the volcano points). */
+.reg-text-up {
+  color: var(--reg-up, #e5484d);
+}
+.reg-text-down {
+  color: var(--reg-down, #3b82f6);
+}
+.reg-text-ns {
+  color: inherit;
+}
+.reg-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  vertical-align: middle;
+  border: 1.5px solid transparent;
+}
+.reg-dot-up {
+  background: var(--reg-up, #e5484d);
+}
+.reg-dot-down {
+  background: var(--reg-down, #3b82f6);
+}
+/* Unchanged is a hollow dot — a second, non-color cue on top of the label. */
+.reg-dot-ns {
+  background: transparent;
+  border-color: var(--reg-ns, #94a3b8);
 }
 .muted {
   color: var(--text-secondary, #6b7280);
