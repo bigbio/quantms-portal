@@ -73,7 +73,7 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
 
     expect(router.currentRoute.value.query.ref).toBe('PXD1/h')
@@ -91,7 +91,7 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
 
@@ -125,7 +125,7 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
     getDefault.mockClear()
@@ -150,7 +150,7 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
 
@@ -191,7 +191,7 @@ describe('DifferentialExpression view', () => {
 
     // Selecting a dataset changes the URL (?ref=...) — the picker must still
     // work, and design/qc load for the newly-selected ref...
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
     expect(getDesign).toHaveBeenCalledWith('PXD1/h')
@@ -221,7 +221,7 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
-    await w.find('tr.de-row').trigger('click')
+    await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
 
