@@ -6,9 +6,9 @@
 
 <script setup>
 // Volcano plot for a differential-expression contrast: log2FC on x,
-// -log10(adj p-value) on y, split into significant / non-significant
-// datasets so they can be colored and toggled independently via the
-// chart legend. Clicking a point drives the shared protein selection.
+// -log10(adj p-value) on y, split into up-regulated / down-regulated /
+// non-significant datasets so they can be colored and toggled independently
+// via the chart legend. Clicking a point drives the shared protein selection.
 import { computed } from 'vue'
 import ScatterChart from './ScatterChart.vue'
 
@@ -25,37 +25,31 @@ function onPointClick(datum) {
 </script>
 
 <script>
+import { regulationClass, REGULATION_META, REGULATION_ORDER } from '../utils/regulation.js'
+
 // Pure helper — builds a Chart.js scatter `data` object from contract rows,
-// splitting points into a "Significant" and "Not significant" dataset.
+// splitting points into three datasets by regulation direction: "Up" (red),
+// "Down" (blue) and "Not significant" (grey), the conventional volcano
+// reading. Datasets are always present (possibly empty) and always in
+// REGULATION_ORDER, so the legend is stable across contrasts.
 // Rows with a non-finite -log10(adj_pvalue) (adj_pvalue null/<=0) are skipped
 // since they cannot be plotted on a log scale.
 export function toVolcanoData(rows) {
-  const significant = []
-  const other = []
+  const byClass = { up: [], down: [], ns: [] }
   for (const row of rows || []) {
     const p = row.adj_pvalue
     if (p === null || p === undefined || !(p > 0)) continue
     const y = -Math.log10(p)
     if (!Number.isFinite(y)) continue
-    const point = { x: row.log2fc, y, protein: row.protein }
-    if (row.significant) significant.push(point)
-    else other.push(point)
+    byClass[regulationClass(row)].push({ x: row.log2fc, y, protein: row.protein })
   }
   return {
-    datasets: [
-      {
-        label: 'Significant',
-        data: significant,
-        backgroundColor: '#ef4444',
-        borderColor: '#ef4444',
-      },
-      {
-        label: 'Not significant',
-        data: other,
-        backgroundColor: '#94a3b8',
-        borderColor: '#94a3b8',
-      },
-    ],
+    datasets: REGULATION_ORDER.map((key) => ({
+      label: REGULATION_META[key].short,
+      data: byClass[key],
+      backgroundColor: REGULATION_META[key].color,
+      borderColor: REGULATION_META[key].color,
+    })),
   }
 }
 </script>

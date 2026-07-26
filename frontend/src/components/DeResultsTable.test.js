@@ -40,6 +40,16 @@ describe('table ops', () => {
   it('returns all rows for an empty query', () => {
     expect(filterRows(rows, '')).toHaveLength(2)
   })
+
+  it('sorts the derived regulation column by class (up, down, unchanged)', () => {
+    const mixed = [
+      { protein: 'NS', log2fc: 3, significant: false },
+      { protein: 'DOWN', log2fc: -1, significant: true },
+      { protein: 'UP', log2fc: 1, significant: true },
+    ]
+    expect(sortRows(mixed, 'regulation', 'asc').map((r) => r.protein)).toEqual(['UP', 'DOWN', 'NS'])
+    expect(sortRows(mixed, 'regulation', 'desc').map((r) => r.protein)).toEqual(['NS', 'DOWN', 'UP'])
+  })
 })
 
 describe('DeResultsTable component', () => {
@@ -78,6 +88,44 @@ describe('DeResultsTable component', () => {
     await w.find('input').setValue('G2')
     expect(w.findAll('tbody tr')).toHaveLength(1)
     expect(w.find('tbody tr').text()).toContain('P2')
+  })
+
+  it('renders a regulation dot per row with an accessible label', () => {
+    const w = mount(DeResultsTable, { props: { rows, selected: null } })
+    const dots = w.findAll('.reg-dot')
+    expect(dots).toHaveLength(2)
+    // P1: significant & log2fc > 0 -> up; P2: not significant -> unchanged.
+    expect(dots[0].classes()).toContain('reg-dot-up')
+    expect(dots[0].attributes('aria-label')).toBe('Up-regulated')
+    expect(dots[0].attributes('title')).toBe('Up-regulated')
+    expect(dots[1].classes()).toContain('reg-dot-ns')
+    expect(dots[1].attributes('aria-label')).toBe('Unchanged')
+  })
+
+  it('shows a down dot for a significant negative fold change', () => {
+    const down = [{ ...rows[1], protein: 'P3', log2fc: -1.4, significant: true }]
+    const w = mount(DeResultsTable, { props: { rows: down, selected: null } })
+    const dot = w.find('.reg-dot')
+    expect(dot.classes()).toContain('reg-dot-down')
+    expect(dot.attributes('aria-label')).toBe('Down-regulated')
+  })
+
+  it('colors the log2FC cell by regulation class', () => {
+    const w = mount(DeResultsTable, { props: { rows, selected: null } })
+    const trs = w.findAll('tbody tr')
+    expect(trs[0].find('.reg-text-up').exists()).toBe(true)
+    expect(trs[1].find('.reg-text-ns').exists()).toBe(true)
+    expect(trs[1].find('.reg-text-up').exists()).toBe(false)
+  })
+
+  it('has a sortable Reg header column', async () => {
+    const w = mount(DeResultsTable, { props: { rows, selected: null } })
+    const header = w.findAll('th').find((th) => th.text().startsWith('Reg'))
+    expect(header).toBeTruthy()
+    await header.trigger('click') // asc: up first
+    expect(w.findAll('tbody tr')[0].text()).toContain('P1')
+    await header.trigger('click') // desc: unchanged first
+    expect(w.findAll('tbody tr')[0].text()).toContain('P2')
   })
 
   it('toggles sort direction when clicking the same header twice', async () => {

@@ -30,6 +30,13 @@
   --text-secondary: #64748b;
   --text-muted: #6b7280;
   --success: #10b981;
+  /* Differential-expression regulation direction: red = up, blue = down,
+     grey = unchanged. Kept in sync with REGULATION_META in
+     src/utils/regulation.js, which colors the volcano points on canvas.
+     Chosen to stay legible on both a light and a dark surface. */
+  --reg-up: #e5484d;
+  --reg-down: #3b82f6;
+  --reg-ns: #94a3b8;
   --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "JetBrains Mono", "Fira Code", monospace;
   --section-pad: 64px;
