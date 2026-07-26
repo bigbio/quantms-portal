@@ -37,7 +37,7 @@
           <ProteinBoxplot :protein="selectedProtein" :row="selectedRow" />
         </div>
 
-        <DeQcPanel :qc="qc" />
+        <DeQcPanel :qc="qc" :contrast="contrast" />
       </div>
     </div>
   </div>
