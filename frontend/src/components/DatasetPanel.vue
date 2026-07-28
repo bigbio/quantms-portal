@@ -131,6 +131,9 @@
         >Open full page →</router-link>
       </div>
     </div>
+
+    <!-- Citation & credit: original data + quantms, copyable (text/BibTeX/RIS) -->
+    <CiteCredit v-if="dataset.dataset_ref" :refs="[dataset.dataset_ref]" />
   </div>
 </template>
 
@@ -138,6 +141,7 @@
 import { computed } from 'vue'
 import { formatNum, formatBytes, cleanInstrument, collectionTag } from '../utils/format.js'
 import { browseUrl } from '../config.js'
+import CiteCredit from './CiteCredit.vue'
 
 const props = defineProps({
   dataset: { type: Object, required: true },
