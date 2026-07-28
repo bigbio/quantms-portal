@@ -53,17 +53,17 @@ describe('DeDesignPanel', () => {
     expect(contrastSelect.findAll('option').map((o) => o.text())).toEqual(['DMSO vs Pom'])
   })
 
-  it('emits change with defaults on mount', () => {
+  it('emits change with the default contrast on mount (contrast only)', () => {
     const w = mount(DeDesignPanel, { props: { design } })
     const events = w.emitted('change')
     expect(events).toBeTruthy()
     const last = events[events.length - 1][0]
-    expect(last).toMatchObject({
+    // Method/normalization/level are chosen per dataset by the backend QC gate,
+    // so the panel navigates biology only — it emits just the contrast.
+    expect(last).toEqual({
       contrast: { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
-      method: 'limma',
-      normalization: 'median',
-      level: 'protein',
     })
+    expect(last).not.toHaveProperty('method')
   })
 
   it('updates the contrast options when the factor changes', async () => {
@@ -76,108 +76,58 @@ describe('DeDesignPanel', () => {
     expect(last.contrast).toEqual({ id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' })
   })
 
-  it('seeds from initial* props (deep link) instead of the hardcoded defaults', () => {
+  it('seeds from the initial-contrast prop (deep link) instead of index 0', () => {
     // `0h__vs__24h` is NOT the first contrast in `design.contrasts` — picking it
-    // proves the panel doesn't just fall back to index 0. Regression test for
-    // the deep-link-clobbering bug: the panel used to hardcode
-    // method=limma/normalization=median/level=protein and reset
-    // selectedContrastId to the first contrast on mount, silently discarding
-    // a URL-provided contrast/method/normalization/level.
+    // proves the panel honours a URL-provided contrast instead of resetting to
+    // the first one on mount.
     const w = mount(DeDesignPanel, {
-      props: {
-        design,
-        initialContrast: '0h__vs__24h',
-        initialMethod: 'deqms',
-        initialNormalization: 'quantile',
-        initialLevel: 'feature',
-      },
+      props: { design, initialContrast: '0h__vs__24h' },
     })
     const events = w.emitted('change')
     expect(events).toBeTruthy()
     const first = events[0][0]
-    expect(first).toMatchObject({
+    expect(first).toEqual({
       contrast: { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
-      method: 'deqms',
-      normalization: 'quantile',
-      level: 'feature',
     })
     // The factor select should also reflect the seeded contrast's factor,
     // not the first factor in the list.
     expect(w.get('#de-factor').element.value).toBe('timepoint')
   })
 
-  it('re-seeds from initial* props when the parent pushes new values (history nav)', async () => {
-    // Regression test for the design panel going stale on in-app history
-    // navigation: `initial*` props used to be seeded once at setup and never
-    // re-applied, so browser Back/Forward (or a programmatic URL change for
-    // the same dataset) left the selects — and the results they drive —
-    // stuck on the old values.
+  it('re-seeds from the initial-contrast prop when the parent pushes a new value (history nav)', async () => {
+    // Regression test for the panel going stale on in-app history navigation:
+    // browser Back/Forward (or a programmatic URL change for the same dataset)
+    // must re-apply the contrast, not stay stuck on the old value.
     const w = mount(DeDesignPanel, {
-      props: {
-        design,
-        initialContrast: 'DMSO__vs__Pom',
-        initialMethod: 'limma',
-        initialNormalization: 'median',
-        initialLevel: 'protein',
-      },
+      props: { design, initialContrast: 'DMSO__vs__Pom' },
     })
     const mountEvents = w.emitted('change').length
 
-    await w.setProps({
-      initialContrast: '0h__vs__24h',
-      initialMethod: 'deqms',
-      initialNormalization: 'quantile',
-      initialLevel: 'feature',
-    })
+    await w.setProps({ initialContrast: '0h__vs__24h' })
 
-    // Selects reflect the new URL-driven values.
     expect(w.get('#de-factor').element.value).toBe('timepoint')
     expect(w.get('#de-contrast').element.value).toBe('0h__vs__24h')
-    expect(w.get('#de-method').element.value).toBe('deqms')
-    expect(w.get('#de-normalization').element.value).toBe('quantile')
-    expect(w.get('#de-level').element.value).toBe('feature')
 
-    // And a fresh `change` was emitted with the new values.
     const events = w.emitted('change')
     expect(events.length).toBeGreaterThan(mountEvents)
     const last = events[events.length - 1][0]
-    expect(last).toMatchObject({
+    expect(last).toEqual({
       contrast: { id: '0h__vs__24h', group_a: '0h', group_b: '24h', factor: 'timepoint' },
-      method: 'deqms',
-      normalization: 'quantile',
-      level: 'feature',
     })
 
-    // Setting the SAME values again (the echo-loop case: panel emits -> parent
-    // updates refs -> initial* props come back down unchanged) must be a
+    // Setting the SAME value again (the echo-loop case: panel emits -> parent
+    // updates ref -> initial-contrast comes back down unchanged) must be a
     // no-op — no extra re-seed, no extra `change`.
     const countBeforeEcho = w.emitted('change').length
-    await w.setProps({
-      initialContrast: '0h__vs__24h',
-      initialMethod: 'deqms',
-      initialNormalization: 'quantile',
-      initialLevel: 'feature',
-    })
+    await w.setProps({ initialContrast: '0h__vs__24h' })
     expect(w.emitted('change').length).toBe(countBeforeEcho)
   })
 
-  it('exposes the advanced drawer with method/normalization/level selects', () => {
+  it('does NOT expose method/normalization/level selectors (analysis is fixed per dataset)', () => {
     const w = mount(DeDesignPanel, { props: { design } })
-    expect(w.find('details.de-advanced').exists()).toBe(true)
-    expect(w.get('#de-method').findAll('option').map((o) => o.text())).toEqual([
-      'limma',
-      'deqms',
-      'rots',
-      'limrots',
-      'proda',
-    ])
-    expect(w.get('#de-normalization').findAll('option').map((o) => o.text())).toEqual([
-      'median',
-      'quantile',
-      'none',
-      'loess',
-      'rlr',
-    ])
-    expect(w.get('#de-level').findAll('option').map((o) => o.text())).toEqual(['protein', 'feature'])
+    expect(w.find('details.de-advanced').exists()).toBe(false)
+    expect(w.find('#de-method').exists()).toBe(false)
+    expect(w.find('#de-normalization').exists()).toBe(false)
+    expect(w.find('#de-level').exists()).toBe(false)
   })
 })

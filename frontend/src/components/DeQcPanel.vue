@@ -23,7 +23,7 @@
     <section v-if="hasQuality" class="de-qc-quality">
       <div class="de-qc-quality-head">
         <span class="de-qc-badge" :class="`de-qc-badge--${badgeStatus}`">{{ badgeLabel }}</span>
-        <span v-if="recommendedLabel" class="de-qc-reco">Recommended: {{ recommendedLabel }}</span>
+        <span v-if="recommendedLabel" class="de-qc-reco">Analysis used: {{ recommendedLabel }}</span>
       </div>
 
       <ul v-if="reasons.length" class="de-qc-reasons">

@@ -15,8 +15,11 @@ vi.mock('chart.js', () => {
 })
 
 const design = {
-  factors: [{ name: 'compound', levels: ['DMSO', 'Pom'] }],
-  contrasts: [{ id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' }],
+  factors: [{ name: 'compound', levels: ['DMSO', 'Pom', 'Len'] }],
+  contrasts: [
+    { id: 'DMSO__vs__Pom', group_a: 'DMSO', group_b: 'Pom', factor: 'compound' },
+    { id: 'DMSO__vs__Len', group_a: 'DMSO', group_b: 'Len', factor: 'compound' },
+  ],
 }
 const defaultResult = {
   rows: [
@@ -114,7 +117,7 @@ describe('DifferentialExpression view', () => {
     expect(w.text()).not.toContain('Select a protein')
   })
 
-  it('runs on-demand (not the default) when the config diverges from limma/median/protein', async () => {
+  it('always loads the precomputed default (never an on-demand custom-method run) on a contrast change', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', component: DifferentialExpression }],
@@ -130,16 +133,16 @@ describe('DifferentialExpression view', () => {
     await flushPromises()
     getDefault.mockClear()
 
-    await w.get('#de-method').setValue('deqms')
+    // Switching contrast fetches that contrast's precomputed default; the UI
+    // never calls the on-demand custom-method endpoint (method is fixed).
+    await w.get('#de-contrast').setValue('DMSO__vs__Len')
     await flushPromises()
 
-    expect(runDe).toHaveBeenCalledWith('PXD1/h', {
-      contrast: 'DMSO__vs__Pom', method: 'deqms', normalization: 'median', level: 'protein',
-    })
-    expect(getDefault).not.toHaveBeenCalled()
+    expect(getDefault).toHaveBeenCalledWith('PXD1/h', 'DMSO__vs__Len')
+    expect(runDe).not.toHaveBeenCalled()
   })
 
-  it('drops a stale response when a newer config change resolves first', async () => {
+  it('drops a stale response when a newer contrast change resolves first', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', component: DifferentialExpression }],
@@ -154,26 +157,54 @@ describe('DifferentialExpression view', () => {
     await flushPromises()
     await flushPromises()
 
-    // First (slow) request: never resolves within this test.
+    // Key slow/fast on the contrast argument (robust against any echo re-emits):
+    // the Len fetch hangs, the Pom fetch resolves immediately with distinct rows.
     let resolveSlow
-    runDe.mockImplementationOnce(() => new Promise((resolve) => { resolveSlow = resolve }))
-    // Second (fast) request: resolves immediately with distinct rows.
     const fastResult = { rows: [{ protein: 'FAST', gene: 'GF', log2fc: 1, pvalue: 0.01, adj_pvalue: 0.02, n_peptides: 1, mean_group_a: 1, mean_group_b: 2, significant: true }], count: 1, contrast: 'DMSO__vs__Pom' }
-    runDe.mockImplementationOnce(async () => fastResult)
+    getDefault.mockImplementation((ref, contrastId) =>
+      contrastId === 'DMSO__vs__Len'
+        ? new Promise((resolve) => { resolveSlow = () => resolve(defaultResult) })
+        : Promise.resolve(fastResult))
 
-    await w.get('#de-method').setValue('deqms')
-    await w.get('#de-normalization').setValue('quantile')
+    // Switch to Len (slow, hangs); let the URL/router settle so the later
+    // switch isn't reordered by an in-flight route update.
+    await w.get('#de-contrast').setValue('DMSO__vs__Len')
+    await flushPromises()
+    // Now switch back to Pom (fast) — this is the newest request and must win
+    // even though the Len request is still in flight.
+    await w.get('#de-contrast').setValue('DMSO__vs__Pom')
     await flushPromises()
 
-    // The fast (second) response should win and `running` should have settled.
+    // The latest (Pom, fast) response is shown.
     expect(w.text()).toContain('FAST')
-    expect(w.text()).not.toContain('Running differential expression')
 
-    // Now resolve the stale first request — it must NOT clobber the fast result.
-    resolveSlow(defaultResult)
+    // Now resolve the stale first (Len) request — it must NOT clobber the fast
+    // result, because its sequence number is no longer the latest.
+    resolveSlow()
     await flushPromises()
     expect(w.text()).toContain('FAST')
     expect(w.text()).not.toContain('P1')
+  })
+
+  it('shows the "download from PRIDE" link with the dataset accession, and no method selector', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: DifferentialExpression }],
+    })
+    router.push('/')
+    await router.isReady()
+
+    const w = mount(DifferentialExpression, { global: { plugins: [router] } })
+    await flushPromises()
+    await w.find('.de-row').trigger('click')
+    await flushPromises()
+    await flushPromises()
+
+    const link = w.get('.de-note a')
+    expect(link.attributes('href')).toBe('https://www.ebi.ac.uk/pride/archive/projects/PXD1')
+    // The method/normalization/level selectors are gone from the UI.
+    expect(w.find('#de-method').exists()).toBe(false)
+    expect(runDe).not.toHaveBeenCalled()
   })
 
   it('does not refetch the datasets list on every query change (only design/qc/results)', async () => {
@@ -210,7 +241,7 @@ describe('DifferentialExpression view', () => {
     expect(listDatasets).toHaveBeenCalledTimes(1)
   })
 
-  it('shows a size-gate message and falls back to the default on a 413, and a config message on a 422', async () => {
+  it('surfaces a load error (with retry) when the default result fetch fails', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [{ path: '/', component: DifferentialExpression }],
@@ -221,32 +252,11 @@ describe('DifferentialExpression view', () => {
     const w = mount(DifferentialExpression, { global: { plugins: [router] } })
     await flushPromises()
 
+    getDefault.mockRejectedValueOnce(new Error('boom'))
     await w.find('.de-row').trigger('click')
     await flushPromises()
     await flushPromises()
 
-    // Diverge from the default config so the next config change goes through
-    // runDe (not getDefault).
-    const err413 = new Error('too large')
-    err413.status = 413
-    runDe.mockRejectedValueOnce(err413)
-    getDefault.mockClear()
-
-    await w.get('#de-method').setValue('deqms')
-    await flushPromises()
-
-    expect(w.text()).toContain('Dataset too large for on-demand analysis')
-    // Falls back to the precomputed default for the current contrast.
-    expect(getDefault).toHaveBeenCalledWith('PXD1/h', 'DMSO__vs__Pom')
-    expect(w.text()).toContain('P1')
-
-    const err422 = new Error('bad config')
-    err422.status = 422
-    runDe.mockRejectedValueOnce(err422)
-
-    await w.get('#de-normalization').setValue('quantile')
-    await flushPromises()
-
-    expect(w.text()).toContain('Invalid analysis configuration')
+    expect(w.text()).toContain('Could not load the differential expression result')
   })
 })

@@ -15,30 +15,6 @@
         </option>
       </select>
     </div>
-
-    <details class="de-advanced">
-      <summary>Advanced configuration</summary>
-      <div class="de-field">
-        <label for="de-method">Method</label>
-        <select id="de-method" v-model="method" @change="emitChange">
-          <option v-for="m in methods" :key="m" :value="m">{{ m }}</option>
-        </select>
-      </div>
-
-      <div class="de-field">
-        <label for="de-normalization">Normalization</label>
-        <select id="de-normalization" v-model="normalization" @change="emitChange">
-          <option v-for="n in normalizations" :key="n" :value="n">{{ n }}</option>
-        </select>
-      </div>
-
-      <div class="de-field">
-        <label for="de-level">Level</label>
-        <select id="de-level" v-model="level" @change="emitChange">
-          <option v-for="l in levels" :key="l" :value="l">{{ l }}</option>
-        </select>
-      </div>
-    </details>
   </div>
 </template>
 
@@ -48,16 +24,12 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
   design: { type: Object, default: () => ({ factors: [], contrasts: [] }) },
   initialContrast: { type: String, default: '' },
-  initialMethod: { type: String, default: 'limma' },
-  initialNormalization: { type: String, default: 'median' },
-  initialLevel: { type: String, default: 'protein' },
 })
 const emit = defineEmits(['change'])
 
-const methods = ['limma', 'deqms', 'rots', 'limrots', 'proda']
-const normalizations = ['median', 'quantile', 'none', 'loess', 'rlr']
-const levels = ['protein', 'feature']
-
+// Method / normalization / level are NOT user-selectable: the published result
+// uses the pipeline the QC gate picked per dataset (see DeQcPanel). This panel
+// only navigates the biology — factor + contrast.
 const factors = computed(() => props.design?.factors || [])
 
 // Seed from a deep-linked contrast when present: find the factor that owns
@@ -72,10 +44,6 @@ const selectedFactor = ref(seededContrast?.factor || factors.value[0]?.name || '
 const availableContrasts = computed(() => contrastsForFactor(props.design, selectedFactor.value))
 const selectedContrastId = ref(props.initialContrast || availableContrasts.value[0]?.id || '')
 
-const method = ref(props.initialMethod)
-const normalization = ref(props.initialNormalization)
-const level = ref(props.initialLevel)
-
 function onFactorChange() {
   selectedContrastId.value = availableContrasts.value[0]?.id || ''
   emitChange()
@@ -83,12 +51,7 @@ function onFactorChange() {
 
 function emitChange() {
   const contrast = availableContrasts.value.find((c) => c.id === selectedContrastId.value) || null
-  emit('change', {
-    contrast,
-    method: method.value,
-    normalization: normalization.value,
-    level: level.value,
-  })
+  emit('change', { contrast })
 }
 
 // Re-seed from `initial*` props when the PARENT pushes new values (browser
@@ -101,20 +64,12 @@ function emitChange() {
 // Only re-seed when at least one incoming value actually differs from the
 // current internal state; otherwise this is a no-op (no re-seed, no re-emit).
 watch(
-  () => [props.initialContrast, props.initialMethod, props.initialNormalization, props.initialLevel],
-  ([nextContrast, nextMethod, nextNormalization, nextLevel]) => {
-    const changed =
-      nextContrast !== selectedContrastId.value ||
-      nextMethod !== method.value ||
-      nextNormalization !== normalization.value ||
-      nextLevel !== level.value
-    if (!changed) return
+  () => props.initialContrast,
+  (nextContrast) => {
+    if (nextContrast === selectedContrastId.value) return
     const seeded = findContrastById(props.design, nextContrast)
     selectedFactor.value = seeded?.factor || factors.value[0]?.name || ''
     selectedContrastId.value = nextContrast || availableContrasts.value[0]?.id || ''
-    method.value = nextMethod
-    normalization.value = nextNormalization
-    level.value = nextLevel
     emitChange()
   },
 )
@@ -165,7 +120,4 @@ export function contrastsForFactor(design, factorName) {
   border-radius: 6px;
   font-size: 14px;
 }
-.de-advanced { border: 1px solid var(--border, #eef0f3); border-radius: 6px; padding: 8px 10px; }
-.de-advanced summary { cursor: pointer; font-weight: 600; color: var(--muted, #6b7280); }
-.de-advanced .de-field { margin-top: 8px; }
 </style>
