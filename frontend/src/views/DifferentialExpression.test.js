@@ -186,10 +186,13 @@ describe('DifferentialExpression view', () => {
     expect(w.text()).not.toContain('P1')
   })
 
-  it('shows the "download from PRIDE" link with the dataset accession, and no method selector', async () => {
+  it('links to the dataset page in the portal (not PRIDE), and shows no method selector', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{ path: '/', component: DifferentialExpression }],
+      routes: [
+        { path: '/', component: DifferentialExpression },
+        { path: '/collections/:name/:pxd', component: { template: '<div/>' } },
+      ],
     })
     router.push('/')
     await router.isReady()
@@ -201,7 +204,7 @@ describe('DifferentialExpression view', () => {
     await flushPromises()
 
     const link = w.get('.de-note a')
-    expect(link.attributes('href')).toBe('https://www.ebi.ac.uk/pride/archive/projects/PXD1')
+    expect(link.attributes('href')).toBe('/collections/differential-expression/PXD1')
     // The method/normalization/level selectors are gone from the UI.
     expect(w.find('#de-method').exists()).toBe(false)
     expect(runDe).not.toHaveBeenCalled()

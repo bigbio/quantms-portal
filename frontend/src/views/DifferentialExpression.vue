@@ -28,8 +28,9 @@
         <p class="de-note">
           The method, normalization and pipeline shown are fixed per dataset (see the
           analysis rationale below). To try a different algorithm, download the quantms
-          output from the source project<template v-if="projectUrl"> —
-          <a :href="projectUrl" target="_blank" rel="noopener">open {{ accession }} on PRIDE</a></template>.
+          output from<template v-if="datasetPageTo"> its
+          <router-link :to="datasetPageTo">{{ accession }} dataset page</router-link></template>
+          and run your own analysis.
         </p>
 
         <p v-if="running" class="de-running">Loading differential expression result…</p>
@@ -94,14 +95,17 @@ const selectedRow = computed(
 const selectedDataset = computed(
   () => datasets.value.find((d) => d.ref === dsRef.value) || null,
 )
-// PRIDE accession for the "download / re-analyse yourself" link. Prefer the
-// dataset entry's accession; fall back to the first path segment of the ref
-// (refs are `{accession}/{hash}`), so the link works before the list loads.
+// Accession for the "download / re-analyse yourself" link. Prefer the dataset
+// entry's accession; fall back to the first path segment of the ref (refs are
+// `{accession}/{hash}`), so the link works before the list loads.
 const accession = computed(
   () => selectedDataset.value?.accession || (dsRef.value ? dsRef.value.split('/')[0] : ''),
 )
-const projectUrl = computed(
-  () => (accession.value ? `https://www.ebi.ac.uk/pride/archive/projects/${accession.value}` : ''),
+// Link to this dataset's page in the portal (which carries the quantms output
+// to download), NOT to PRIDE — the DE app serves the differential-expression
+// collection, so that is the collection name.
+const datasetPageTo = computed(
+  () => (accession.value ? `/collections/differential-expression/${accession.value}` : ''),
 )
 
 async function load() {
