@@ -23,7 +23,14 @@
               <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_proteins) }}</div>
               <div class="stat-label">Proteins</div>
             </div>
-            <div v-if="summary.stats && summary.stats.total_psms" class="col-stat">
+            <!-- Quantification collections report Features (quantified precursors);
+                 identification-only collections (e.g. msnet) have no feature table,
+                 so they fall back to the PSM count. -->
+            <div v-if="summary.stats && summary.stats.total_features" class="col-stat">
+              <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_features) }}</div>
+              <div class="stat-label">Features</div>
+            </div>
+            <div v-else-if="summary.stats && summary.stats.total_psms" class="col-stat">
               <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_psms) }}</div>
               <div class="stat-label">PSMs</div>
             </div>

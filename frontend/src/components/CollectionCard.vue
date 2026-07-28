@@ -19,7 +19,11 @@
         <div class="collection-stat-val">{{ collection.dataset_count }}</div>
         <div class="collection-stat-label">Datasets</div>
       </div>
-      <div v-if="collection.stats?.total_psms" class="collection-stat">
+      <div v-if="collection.stats?.total_features" class="collection-stat">
+        <div class="collection-stat-val">{{ formatNumber(collection.stats.total_features) }}</div>
+        <div class="collection-stat-label">Features</div>
+      </div>
+      <div v-else-if="collection.stats?.total_psms" class="collection-stat">
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_psms) }}</div>
         <div class="collection-stat-label">PSMs</div>
       </div>

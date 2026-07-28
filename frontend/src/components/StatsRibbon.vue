@@ -35,6 +35,7 @@ const visibleStats = computed(() => {
   const items = []
   if (s.total_collections != null) items.push({ label: 'Collections', display: s.total_collections })
   if (s.total_datasets != null) items.push({ label: 'Datasets', display: fmt(s.total_datasets) })
+  if (s.total_features) items.push({ label: 'Features', display: fmt(s.total_features) })
   if (s.total_psms) items.push({ label: 'PSMs', display: fmt(s.total_psms) })
   if (s.total_proteins) items.push({ label: 'Proteins', display: fmt(s.total_proteins) })
   if (s.total_peptides) items.push({ label: 'Peptides', display: fmt(s.total_peptides) })

@@ -26,6 +26,10 @@
         <div class="ds-stat-val">{{ formatNum(dataset.samples) }}</div>
         <div class="ds-stat-label">Samples</div>
       </div>
+      <div v-if="hasNum(dataset.feature_count)" class="ds-stat">
+        <div class="ds-stat-val">{{ formatNum(dataset.feature_count) }}</div>
+        <div class="ds-stat-label">Features</div>
+      </div>
       <div v-if="hasNum(dataset.psm_count)" class="ds-stat">
         <div class="ds-stat-val">{{ formatNum(dataset.psm_count) }}</div>
         <div class="ds-stat-label">PSMs</div>

@@ -143,6 +143,17 @@
                 class="sortable num"
                 role="button"
                 tabindex="0"
+                :aria-sort="ariaSort('feature_count')"
+                @click="clickSort('feature_count')"
+                @keydown.enter.prevent="clickSort('feature_count')"
+                @keydown.space.prevent="clickSort('feature_count')"
+              >
+                Features {{ icon("feature_count") }}
+              </th>
+              <th
+                class="sortable num"
+                role="button"
+                tabindex="0"
                 :aria-sort="ariaSort('proteins')"
                 @click="clickSort('proteins')"
                 @keydown.enter.prevent="clickSort('proteins')"
@@ -209,7 +220,7 @@
         <tbody>
           <tr v-if="rows.length === 0">
             <td
-              :colspan="isMsnet ? 8 : 6"
+              :colspan="isMsnet ? 8 : 7"
               style="
                 text-align: center;
                 padding: 32px;
@@ -287,6 +298,7 @@
             <template v-else>
               <td class="td-num">{{ fmtNum(ds.samples) }}</td>
               <td class="td-num">{{ fmtNum(ds.runs) }}</td>
+              <td class="td-num">{{ fmtNum(ds.feature_count) }}</td>
               <td class="td-num">{{ fmtNum(ds.proteins) }}</td>
               <td class="td-num">{{ fmtNum(ds.peptides) }}</td>
             </template>
@@ -323,7 +335,7 @@ const sKey = ref("");
 const sAsc = ref(true);
 
 const isMsnet = computed(() => props.collectionName === "msnet");
-const NUM = new Set(["psm_count", "runs", "samples", "proteins", "peptides"]);
+const NUM = new Set(["psm_count", "feature_count", "runs", "samples", "proteins", "peptides"]);
 
 watch(
   () => props.collectionName,
