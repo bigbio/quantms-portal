@@ -15,12 +15,15 @@
               <div class="stat-value" style="font-size: 24px">{{ formatBig(datasetCount) }}</div>
               <div class="stat-label">Datasets</div>
             </div>
-            <div v-if="summary.stats && summary.stats.total_peptides" class="col-stat">
-              <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_peptides) }}</div>
+            <!-- Peptides/Proteins are collection-wide UNIQUE (deduped genes + peptide
+                 sequences across members); fall back to the summed totals for collections
+                 not yet restatted. Features/PSMs/Samples remain sums (data volume). -->
+            <div v-if="summary.stats && (summary.stats.total_unique_peptides || summary.stats.total_peptides)" class="col-stat">
+              <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_unique_peptides || summary.stats.total_peptides) }}</div>
               <div class="stat-label">Peptides</div>
             </div>
-            <div v-if="summary.stats && summary.stats.total_proteins" class="col-stat">
-              <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_proteins) }}</div>
+            <div v-if="summary.stats && (summary.stats.total_genes || summary.stats.total_proteins)" class="col-stat">
+              <div class="stat-value" style="font-size: 24px">{{ formatBig(summary.stats.total_genes || summary.stats.total_proteins) }}</div>
               <div class="stat-label">Proteins</div>
             </div>
             <!-- Quantification collections report Features (quantified precursors);

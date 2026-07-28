@@ -27,8 +27,8 @@
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_psms) }}</div>
         <div class="collection-stat-label">PSMs</div>
       </div>
-      <div v-if="collection.stats?.total_proteins" class="collection-stat">
-        <div class="collection-stat-val">{{ formatNumber(collection.stats.total_proteins) }}</div>
+      <div v-if="collection.stats?.total_genes || collection.stats?.total_proteins" class="collection-stat">
+        <div class="collection-stat-val">{{ formatNumber(collection.stats.total_genes || collection.stats.total_proteins) }}</div>
         <div class="collection-stat-label">Proteins</div>
       </div>
       <div v-if="collection.stats?.total_species" class="collection-stat">
