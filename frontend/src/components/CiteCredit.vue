@@ -18,6 +18,14 @@
           </a>
         </span>
       </li>
+      <li v-for="cc in collectionCitations" :key="`col-${cc.collection}`" class="cite-item cite-col">
+        <span class="cite-ds-title">{{ cc.title || `${cc.collection} collection` }}</span>
+        <span class="cite-meta"> — collection reference</span>
+        <span class="cite-links">
+          <a v-if="cc.doi" :href="`https://doi.org/${cc.doi}`" target="_blank" rel="noopener">doi:{{ cc.doi }} &#8599;</a>
+          <a v-else-if="cc.url" :href="cc.url" target="_blank" rel="noopener">{{ cc.journal || 'link' }} &#8599;</a>
+        </span>
+      </li>
     </ul>
 
     <div class="cite-actions">
@@ -37,6 +45,7 @@ import { getCredits } from '../citation.js'
 const props = defineProps({ refs: { type: Array, default: () => [] } })
 
 const credits = ref([])
+const collectionCitations = ref([])
 const citations = ref({})
 const copied = ref('')
 
@@ -50,13 +59,15 @@ const hasCredits = computed(() => credits.value.length > 0)
 
 async function load() {
   const refs = (props.refs || []).filter(Boolean)
-  if (!refs.length) { credits.value = []; citations.value = {}; return }
+  if (!refs.length) { credits.value = []; collectionCitations.value = []; citations.value = {}; return }
   try {
     const res = await getCredits(refs)
     credits.value = (res && res.credits) || []
+    collectionCitations.value = (res && res.collection_citations) || []
     citations.value = (res && res.citations) || {}
   } catch (e) {
     credits.value = []
+    collectionCitations.value = []
     citations.value = {}
   }
 }
