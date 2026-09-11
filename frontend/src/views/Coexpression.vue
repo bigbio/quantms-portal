@@ -84,7 +84,7 @@
           — its partners should be the rest of the proteasome.
         </div>
 
-        <div v-else-if="shardLoading" class="loading-block">Loading the network for {{ selectedGene }}…</div>
+        <div v-else-if="networkLoading" class="loading-block">Loading the network for {{ selectedGene }}…</div>
 
         <div v-else-if="!partners.length" class="notice">
           No partners pass the current filters for {{ selectedGene }} in this scope. Lower the minimum |r|
@@ -174,7 +174,7 @@ import { apiGet } from '../api.js'
 import { BROWSE_BASE, COEXP_PATH } from '../config.js'
 import { formatNum } from '../utils/format.js'
 import {
-  shardOf, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth, PARTNER_COLUMNS,
+  networkFile, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth, PARTNER_COLUMNS,
 } from '../utils/coexpression.js'
 
 const W = 640
@@ -192,8 +192,8 @@ const router = useRouter()
 const index = ref(null)
 const loading = ref(true)
 const error = ref(false)
-const shards = ref({})
-const shardLoading = ref(false)
+const networks = ref({})
+const networkLoading = ref(false)
 
 const query = ref('')
 const showSuggestions = ref(false)
@@ -211,11 +211,11 @@ const geneOf = computed(() => {
 })
 const selectedGene = computed(() => geneOf.value[selected.value] || selected.value)
 const suggestions = computed(() => findProteins(index.value?.proteins, query.value))
-const shard = computed(() => shards.value[shardOf(selected.value)])
-const availableScopes = computed(() => scopesWithData(shard.value, selected.value, index.value?.scopes))
+const network = computed(() => networks.value[selected.value])
+const availableScopes = computed(() => scopesWithData(network.value, index.value?.scopes))
 const scopeInfo = computed(() => (index.value?.scopes || []).find((s) => s.id === scope.value))
 const scopeLabel = computed(() => scopeInfo.value?.label || scope.value)
-const partners = computed(() => partnersFor(shard.value, selected.value, scope.value, {
+const partners = computed(() => partnersFor(network.value, scope.value, {
   minAbsR: minAbsR.value, topN: topN.value, sign: sign.value, columns: columns.value,
 }))
 const nodes = computed(() => radialLayout(partners.value, { cx: W / 2, cy: H / 2, radius: 240 }))
@@ -232,17 +232,16 @@ async function loadIndex() {
   }
 }
 
-async function loadShard(accession) {
-  const key = shardOf(accession)
-  if (shards.value[key]) return
-  shardLoading.value = true
+async function loadNetwork(accession) {
+  if (networks.value[accession]) return
+  networkLoading.value = true
   try {
-    const data = await apiGet(BROWSE_BASE, `${COEXP_PATH}/network/${key}.json`, null, { retries: 1 })
-    shards.value = { ...shards.value, [key]: data }
+    const data = await apiGet(BROWSE_BASE, `${COEXP_PATH}/network/${networkFile(accession)}.json`, null, { retries: 1 })
+    networks.value = { ...networks.value, [accession]: data }
   } catch (e) {
-    shards.value = { ...shards.value, [key]: {} }
+    networks.value = { ...networks.value, [accession]: {} }
   } finally {
-    shardLoading.value = false
+    networkLoading.value = false
   }
 }
 
@@ -251,7 +250,7 @@ async function select(accession) {
   showSuggestions.value = false
   query.value = geneOf.value[accession] || accession
   selected.value = accession
-  await loadShard(accession)
+  await loadNetwork(accession)
   if (!availableScopes.value.some((s) => s.id === scope.value)) {
     scope.value = availableScopes.value[0]?.id || 'all'
   }

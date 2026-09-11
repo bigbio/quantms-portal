@@ -1,14 +1,14 @@
 // Pure helpers for the Protein Co-expression view. The data is precomputed by the
 // backend builder (quantms_portal_backend/apps/coexpression/builder.py) into
 //   quantms/apps/coexpression/index.json
-//   quantms/apps/coexpression/network/<shard>.json
-// and read through browse.quantms.org. Keep shardOf() in sync with builder.shard_of().
+//   quantms/apps/coexpression/network/<accession>.json   (one file per protein)
+// and read through browse.quantms.org. Keep networkFile() in sync with builder.network_file().
 
 export const PARTNER_COLUMNS = ['protein', 'gene', 'r', 'n_datasets', 'n_lines', 'sign_agree']
 
-/** Shard key of a protein accession: first two characters, upper-cased. */
-export function shardOf(accession) {
-  return (String(accession || '').slice(0, 2) || '__').toUpperCase()
+/** File stem of network/<stem>.json for an accession: anything outside [A-Za-z0-9._-] -> "_". */
+export function networkFile(accession) {
+  return String(accession || '').replace(/[^A-Za-z0-9._-]/g, '_') || '_'
 }
 
 /** Turn a positional partner row into an object, honouring index.json's column order. */
@@ -40,11 +40,11 @@ export function findProteins(proteins, query, limit = 12) {
 }
 
 /**
- * Partners of `accession` in `scope`, filtered by |r|, sign, and capped at topN.
- * Rows arrive strongest-first from the builder; that order is preserved.
+ * Partners in `scope` from one protein's network file ({scope: rows}), filtered by |r|,
+ * sign, and capped at topN. Rows arrive best-supported first; that order is preserved.
  */
-export function partnersFor(shard, accession, scope, { minAbsR = 0, topN = 25, sign = 'both', columns } = {}) {
-  const rows = shard?.[accession]?.[scope] || []
+export function partnersFor(network, scope, { minAbsR = 0, topN = 25, sign = 'both', columns } = {}) {
+  const rows = network?.[scope] || []
   return rows
     .map((r) => partnerRow(r, columns))
     .filter((p) => Math.abs(p.r) >= minAbsR)
@@ -53,8 +53,8 @@ export function partnersFor(shard, accession, scope, { minAbsR = 0, topN = 25, s
 }
 
 /** Scopes this protein actually has partners in (so the picker never offers an empty one). */
-export function scopesWithData(shard, accession, scopes) {
-  const have = shard?.[accession] || {}
+export function scopesWithData(network, scopes) {
+  const have = network || {}
   return (scopes || []).filter((s) => (have[s.id] || []).length > 0)
 }
 

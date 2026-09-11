@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  shardOf, partnerRow, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth,
+  networkFile, partnerRow, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth,
 } from './coexpression.js'
 
 const proteins = [
@@ -10,8 +10,7 @@ const proteins = [
   ['P00533', 'EGFR', 6, 1200],
 ]
 
-const shard = {
-  P25786: {
+const network = {
     all: [
       ['P25787', 'PSMA2', 0.91, 7, 1500, 1],
       ['P20618', 'PSMB1', 0.88, 7, 1500, 1],
@@ -19,14 +18,14 @@ const shard = {
       ['P12345', 'XYZ', 0.2, 2, 100, 0.5],
     ],
     breast: [['P25787', 'PSMA2', 0.8, 2, 60, 1]],
-  },
 }
 
 describe('coexpression helpers', () => {
-  it('shards by the first two accession characters, matching builder.shard_of', () => {
-    expect(shardOf('P25786')).toBe('P2')
-    expect(shardOf('a0a024rbg1')).toBe('A0')
-    expect(shardOf('')).toBe('__')
+  it('names network files like builder.network_file', () => {
+    expect(networkFile('P25786')).toBe('P25786')
+    expect(networkFile('P12345-2')).toBe('P12345-2')
+    expect(networkFile('sp|X/Y')).toBe('sp_X_Y')
+    expect(networkFile('')).toBe('_')
   })
 
   it('maps positional rows through the published column order', () => {
@@ -43,20 +42,20 @@ describe('coexpression helpers', () => {
   })
 
   it('filters partners by |r|, sign and topN, keeping strongest-first order', () => {
-    expect(partnersFor(shard, 'P25786', 'all', { minAbsR: 0.3 }).map((p) => p.gene))
+    expect(partnersFor(network, 'all', { minAbsR: 0.3 }).map((p) => p.gene))
       .toEqual(['PSMA2', 'PSMB1', 'PSMB7'])
-    expect(partnersFor(shard, 'P25786', 'all', { sign: 'negative' }).map((p) => p.gene)).toEqual(['PSMB7'])
-    expect(partnersFor(shard, 'P25786', 'all', { topN: 1 })).toHaveLength(1)
-    expect(partnersFor(shard, 'NOPE', 'all')).toEqual([])
+    expect(partnersFor(network, 'all', { sign: 'negative' }).map((p) => p.gene)).toEqual(['PSMB7'])
+    expect(partnersFor(network, 'all', { topN: 1 })).toHaveLength(1)
+    expect(partnersFor(null, 'all')).toEqual([])
   })
 
   it('only offers scopes the protein has partners in', () => {
     const scopes = [{ id: 'all' }, { id: 'breast' }, { id: 'lung' }]
-    expect(scopesWithData(shard, 'P25786', scopes).map((s) => s.id)).toEqual(['all', 'breast'])
+    expect(scopesWithData(network, scopes).map((s) => s.id)).toEqual(['all', 'breast'])
   })
 
   it('lays strongest partners closer to the centre, first at 12 o\'clock', () => {
-    const nodes = radialLayout(partnersFor(shard, 'P25786', 'all'), { cx: 0, cy: 0, radius: 100 })
+    const nodes = radialLayout(partnersFor(network, 'all'), { cx: 0, cy: 0, radius: 100 })
     expect(nodes[0].x).toBeCloseTo(0, 5)
     expect(nodes[0].y).toBeLessThan(0)
     const dist = (n) => Math.hypot(n.x, n.y)
