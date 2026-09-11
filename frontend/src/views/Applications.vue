@@ -59,6 +59,13 @@ const apps = [
     description: 'Pick a dataset, contrast conditions, and explore differential expression — volcano, table, heatmap, and QC.',
   },
   {
+    id: 'coexpression',
+    title: 'Protein Co-expression',
+    to: '/apps/coexpression',
+    tier: 1,
+    description: 'Pick a protein and see its co-expression network across the published cell-line proteomes, or within one lineage.',
+  },
+  {
     id: 'statistics',
     title: 'Statistics',
     to: '/statistics',

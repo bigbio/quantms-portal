@@ -9,6 +9,7 @@ const routes = [
   { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue') },
   { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue') },
   { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue') },
+  { path: '/apps/coexpression', component: () => import('./views/Coexpression.vue') },
   { path: '/search', component: () => import('./views/Search.vue') },
   { path: '/statistics', component: () => import('./views/Statistics.vue') },
   { path: '/api', component: () => import('./views/ApiDocs.vue') },
