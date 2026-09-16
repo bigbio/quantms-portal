@@ -5,8 +5,8 @@
       <div>
         <h4 class="ds-panel-title">{{ displayTitle }}</h4>
         <div class="ds-panel-sub">
-          <span v-if="organism" class="ds-organism">🧬 {{ organism }}</span>
-          <span v-if="instrument" class="ds-instrument">🔬 {{ instrument }}</span>
+          <span v-if="organism" class="ds-organism"><span class="chip-icon" aria-hidden="true">🧬</span>{{ organism }}</span>
+          <span v-if="instrument" class="ds-instrument"><span class="chip-icon" aria-hidden="true">🔬</span>{{ instrument }}</span>
           <span v-if="dataset.source" class="ds-source-tag">{{ dataset.source }}</span>
         </div>
       </div>

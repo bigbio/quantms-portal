@@ -447,6 +447,15 @@ body {
   gap: 6px;
   flex-wrap: wrap;
 }
+/* Emoji icon in front of a label (organism, instrument chips). A separate box
+   keeps a fixed gap: a literal space after the emoji is stripped by Vue's
+   template whitespace handling, which glued the icon to the text. */
+.chip-icon {
+  display: inline-block;
+  margin-right: 0.35em;
+  line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
 .tag {
   font-size: 11px;
   font-weight: 500;

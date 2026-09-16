@@ -83,7 +83,7 @@
       <div class="pp-chips">
         <span v-for="c in shownContext" :key="c.key" class="tag pp-count-chip" :class="c.tagClass"
               :title="`${formatNum(c.n_datasets)} datasets · ${formatNum(c.n_observations)} observations`">
-          <template v-if="c.icon">{{ c.icon }} </template>{{ c.value }}
+          <span v-if="c.icon" class="chip-icon" aria-hidden="true">{{ c.icon }}</span>{{ c.value }}
           <span class="pp-count">{{ formatNum(c.n_datasets) }}</span>
         </span>
         <button v-if="hiddenContextCount > 0" type="button" class="tag pp-ptm-more"
