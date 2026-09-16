@@ -262,4 +262,59 @@ describe('DifferentialExpression view', () => {
 
     expect(w.text()).toContain('Could not load the differential expression result')
   })
+
+  it('never shows a previous dataset\'s results after switching datasets mid-load', async () => {
+    const rowsFor = (tag) => ({ rows: [{ protein: tag, gene: `G_${tag}`, log2fc: 1, pvalue: 0.01, adj_pvalue: 0.02, n_peptides: 1, mean_group_a: 1, mean_group_b: 2, significant: true }], count: 1 })
+    listDatasets.mockResolvedValueOnce({
+      datasets: [
+        { ref: 'PXDA/h', accession: 'PXDA', title: 'Dataset A', organism: 'Homo sapiens', n_samples: 4, factors: ['compound'] },
+        { ref: 'PXDB/h', accession: 'PXDB', title: 'Dataset B', organism: 'Homo sapiens', n_samples: 4, factors: ['compound'] },
+      ],
+      count: 2,
+    })
+    let resolveA
+    let resolveDesignB
+    getDefault.mockImplementation((ref) =>
+      ref === 'PXDA/h'
+        ? new Promise((resolve) => { resolveA = () => resolve(rowsFor('ROW_A')) })
+        : Promise.resolve(rowsFor('ROW_B')))
+    getDesign.mockImplementation((ref) =>
+      ref === 'PXDB/h'
+        ? new Promise((resolve) => { resolveDesignB = () => resolve(design) })
+        : Promise.resolve(design))
+
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/', component: DifferentialExpression }],
+    })
+    router.push('/')
+    await router.isReady()
+    const w = mount(DifferentialExpression, { global: { plugins: [router] } })
+    await flushPromises()
+
+    const rowsEls = w.findAll('.de-row')
+    await rowsEls[0].trigger('click')
+    await flushPromises()
+    await flushPromises()
+    expect(getDefault).toHaveBeenCalledWith('PXDA/h', 'DMSO__vs__Pom')
+
+    // Switch to B while A's result is still pending.
+    await w.findAll('.de-row')[1].trigger('click')
+    await flushPromises()
+
+    // A's late response must be dropped.
+    resolveA()
+    await flushPromises()
+    expect(w.text()).not.toContain('ROW_A')
+
+    // B's design arrives and B's own result is shown.
+    resolveDesignB()
+    await flushPromises()
+    await flushPromises()
+    expect(w.text()).toContain('ROW_B')
+    expect(w.text()).not.toContain('ROW_A')
+
+    getDefault.mockImplementation(async () => defaultResult)
+    getDesign.mockImplementation(async () => design)
+  })
 })

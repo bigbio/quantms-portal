@@ -134,20 +134,29 @@ function onSelectProtein(p) {
 // dataset. Errors are swallowed to defaults — DeDesignPanel/DeQcPanel render
 // their own empty states rather than needing a second error banner here.
 async function loadDatasetExtras(r) {
+  // Invalidate any in-flight result request for the previous dataset so its
+  // late response can't render under the newly selected one.
+  ++reqSeq
+  const seq = ++extrasSeq
+  running.value = false
   design.value = { factors: [], contrasts: [] }
   qc.value = { pca: [], norm: {} }
   rows.value = []
   selectedProtein.value = ''
   runErr.value = ''
   if (!r) return
+  let d = null
+  let q = null
   try {
-    const [d, q] = await Promise.all([getDesign(r), getQc(r)])
-    design.value = d || { factors: [], contrasts: [] }
-    qc.value = q || { pca: [], norm: {} }
+    ;[d, q] = await Promise.all([getDesign(r), getQc(r)])
   } catch (e) {
-    design.value = { factors: [], contrasts: [] }
-    qc.value = { pca: [], norm: {} }
+    d = null
+    q = null
   }
+  // A newer dataset was selected while this design/QC was loading: drop it.
+  if (seq !== extrasSeq || dsRef.value !== r) return
+  design.value = d || { factors: [], contrasts: [] }
+  qc.value = q || { pca: [], norm: {} }
 }
 watch(dsRef, loadDatasetExtras)
 
@@ -157,6 +166,8 @@ watch(dsRef, loadDatasetExtras)
 // touching `rows`/`running` — so a slow request that resolves after a newer
 // one was fired can't clobber it or flip `running` back on/off out of order.
 let reqSeq = 0
+// Same idea for the per-dataset design/QC load.
+let extrasSeq = 0
 
 // Contrast is the only thing the user navigates; the analysis itself is the
 // published default the QC gate chose, so this always loads the precomputed
@@ -164,6 +175,7 @@ let reqSeq = 0
 async function onConfigChange(cfg) {
   if (!dsRef.value || !cfg || !cfg.contrast) return
   const seq = ++reqSeq
+  const ref = dsRef.value
   lastCfg.value = cfg
   const contrastId = (cfg.contrast && cfg.contrast.id) || cfg.contrast
   contrast.value = contrastId || ''
@@ -171,8 +183,8 @@ async function onConfigChange(cfg) {
   running.value = true
   runErr.value = ''
   try {
-    const res = await getDefault(dsRef.value, contrastId)
-    if (seq !== reqSeq) return
+    const res = await getDefault(ref, contrastId)
+    if (seq !== reqSeq || ref !== dsRef.value) return
     rows.value = (res && res.rows) || []
   } catch (e) {
     if (seq !== reqSeq) return
