@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './views/Home.vue'
 
-const routes = [
+export const routes = [
   { path: '/', component: Home },
   { path: '/collections', component: () => import('./views/Collections.vue') },
   { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue') },
@@ -20,6 +20,8 @@ const routes = [
   { path: '/contact', component: () => import('./views/Contact.vue') },
   { path: '/differential-expression', component: () => import('./views/DifferentialExpression.vue') },
   { path: '/applications', component: () => import('./views/Applications.vue') },
+  // Catch-all: unknown URLs render a real "not found" page instead of a blank one.
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue') },
 ]
 
 const router = createRouter({
