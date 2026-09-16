@@ -32,6 +32,7 @@
               autocomplete="off"
               @keydown.enter.prevent="pickFirst"
             />
+            <p v-if="noMatch" class="no-match" role="status">No protein in the co-expression index matches “{{ query.trim() }}”.</p>
             <ul v-if="suggestions.length && showSuggestions" class="suggestions" role="listbox">
               <li v-for="p in suggestions" :key="p[0]">
                 <button type="button" @click="select(p[0])">
@@ -85,6 +86,11 @@
         </div>
 
         <div v-else-if="networkLoading" class="loading-block">Loading the network for {{ selectedGene }}…</div>
+
+        <div v-else-if="networkError" class="notice">
+          Could not load the co-expression network for {{ selectedGene }}.
+          <button class="page-btn" style="margin-left: 12px" @click="select(selected)">Retry</button>
+        </div>
 
         <div v-else-if="!partners.length" class="notice">
           No partners pass the current filters for {{ selectedGene }} in this scope. Lower the minimum |r|
@@ -174,7 +180,7 @@ import { apiGet } from '../api.js'
 import { BROWSE_BASE, COEXP_PATH } from '../config.js'
 import { formatNum } from '../utils/format.js'
 import {
-  networkFile, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth, PARTNER_COLUMNS,
+  networkFile, findProteins, partnersFor, scopeOptions, radialLayout, edgeWidth, PARTNER_COLUMNS,
 } from '../utils/coexpression.js'
 
 const W = 640
@@ -193,7 +199,10 @@ const index = ref(null)
 const loading = ref(true)
 const error = ref(false)
 const networks = ref({})
-const networkLoading = ref(false)
+// Accessions whose network file is currently being fetched / failed to load.
+const pending = ref({})
+const failed = ref({})
+const noMatch = ref(false)
 
 const query = ref('')
 const showSuggestions = ref(false)
@@ -212,7 +221,9 @@ const geneOf = computed(() => {
 const selectedGene = computed(() => geneOf.value[selected.value] || selected.value)
 const suggestions = computed(() => findProteins(index.value?.proteins, query.value))
 const network = computed(() => networks.value[selected.value])
-const availableScopes = computed(() => scopesWithData(network.value, index.value?.scopes))
+const networkLoading = computed(() => !!pending.value[selected.value])
+const networkError = computed(() => !!failed.value[selected.value])
+const availableScopes = computed(() => scopeOptions(network.value, index.value?.scopes))
 const scopeInfo = computed(() => (index.value?.scopes || []).find((s) => s.id === scope.value))
 const scopeLabel = computed(() => scopeInfo.value?.label || scope.value)
 const partners = computed(() => partnersFor(network.value, scope.value, {
@@ -232,25 +243,39 @@ async function loadIndex() {
   }
 }
 
+function without(obj, key) {
+  const copy = { ...obj }
+  delete copy[key]
+  return copy
+}
+
+// Fetch one protein's network file. Successful responses are cached; failures
+// are NOT cached, so a transient error can be retried instead of showing
+// "no partners" for the rest of the session.
 async function loadNetwork(accession) {
-  if (networks.value[accession]) return
-  networkLoading.value = true
+  if (networks.value[accession] || pending.value[accession]) return
+  pending.value = { ...pending.value, [accession]: true }
+  failed.value = without(failed.value, accession)
   try {
     const data = await apiGet(BROWSE_BASE, `${COEXP_PATH}/network/${networkFile(accession)}.json`, null, { retries: 1 })
-    networks.value = { ...networks.value, [accession]: data }
+    networks.value = { ...networks.value, [accession]: data || {} }
   } catch (e) {
-    networks.value = { ...networks.value, [accession]: {} }
+    failed.value = { ...failed.value, [accession]: true }
   } finally {
-    networkLoading.value = false
+    pending.value = without(pending.value, accession)
   }
 }
 
 async function select(accession) {
   if (!accession) return
   showSuggestions.value = false
+  noMatch.value = false
   query.value = geneOf.value[accession] || accession
   selected.value = accession
   await loadNetwork(accession)
+  // Another protein was picked while this network was loading: leave the
+  // scope and URL to that newer selection.
+  if (selected.value !== accession || !networks.value[accession]) return
   if (!availableScopes.value.some((s) => s.id === scope.value)) {
     scope.value = availableScopes.value[0]?.id || 'all'
   }
@@ -259,9 +284,10 @@ async function select(accession) {
 
 function pickFirst() {
   if (suggestions.value.length) select(suggestions.value[0][0])
+  else noMatch.value = !!query.value.trim()
 }
 
-watch(query, (q) => { showSuggestions.value = !!q && (geneOf.value[selected.value] || selected.value) !== q })
+watch(query, (q) => { noMatch.value = false; showSuggestions.value = !!q && (geneOf.value[selected.value] || selected.value) !== q })
 watch(scope, (s) => { if (selected.value) router.replace({ query: { ...route.query, scope: s } }) })
 
 onMounted(async () => {
@@ -337,6 +363,7 @@ onMounted(async () => {
 .neg-text { color: #b45309; }
 .linkish { background: none; border: 0; padding: 0; color: var(--indigo); cursor: pointer; font: inherit; text-decoration: underline; }
 .muted { color: var(--text-muted); font-weight: 400; font-size: 0.85em; }
+.no-match { margin: 2px 0 0; font-size: 0.85rem; color: #b45309; }
 .method { font-size: 0.85rem; color: var(--text-secondary); margin-top: 20px; max-width: 72ch; line-height: 1.55; }
 @media (max-width: 900px) {
   .query-card, .result-grid { grid-template-columns: 1fr; }

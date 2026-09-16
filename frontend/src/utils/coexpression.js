@@ -52,6 +52,16 @@ export function partnersFor(network, scope, { minAbsR = 0, topN = 25, sign = 'bo
     .slice(0, topN)
 }
 
+/**
+ * Options for the scope picker. Before a protein's network is loaded, offer every
+ * published scope (so the picker is never an empty, disabled control); once it is
+ * loaded, only the scopes that protein has partners in.
+ */
+export function scopeOptions(network, scopes) {
+  if (!network) return scopes || []
+  return scopesWithData(network, scopes)
+}
+
 /** Scopes this protein actually has partners in (so the picker never offers an empty one). */
 export function scopesWithData(network, scopes) {
   const have = network || {}

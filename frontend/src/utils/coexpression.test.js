@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  networkFile, partnerRow, findProteins, partnersFor, scopesWithData, radialLayout, edgeWidth,
+  networkFile, partnerRow, findProteins, partnersFor, scopesWithData, scopeOptions, radialLayout, edgeWidth,
 } from './coexpression.js'
 
 const proteins = [
@@ -52,6 +52,13 @@ describe('coexpression helpers', () => {
   it('only offers scopes the protein has partners in', () => {
     const scopes = [{ id: 'all' }, { id: 'breast' }, { id: 'lung' }]
     expect(scopesWithData(network, scopes).map((s) => s.id)).toEqual(['all', 'breast'])
+  })
+
+  it('offers every scope before a network is loaded, then only populated ones', () => {
+    const scopes = [{ id: 'all' }, { id: 'breast' }, { id: 'lung' }]
+    expect(scopeOptions(undefined, scopes).map((s) => s.id)).toEqual(['all', 'breast', 'lung'])
+    expect(scopeOptions(network, scopes).map((s) => s.id)).toEqual(['all', 'breast'])
+    expect(scopeOptions(undefined, undefined)).toEqual([])
   })
 
   it('lays strongest partners closer to the centre, first at 12 o\'clock', () => {
