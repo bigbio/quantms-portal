@@ -354,9 +354,16 @@ onMounted(load)
 <style scoped>
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  /* Fixed column counts keep the KPI tiles in even rows (auto-fit left the
+     8th tile alone on a second row at desktop widths). */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 28px;
+}
+@media (max-width: 720px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .kpi-card {
   background: var(--surface);
