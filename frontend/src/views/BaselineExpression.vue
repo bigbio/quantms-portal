@@ -219,6 +219,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { BASELINE_SOURCES, createDbLoader, isAlreadyAdded, loadGzipJson } from '../utils/baseline.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -232,8 +233,6 @@ const searching = ref(false)
 const errorMsg = ref('')
 const proteins = ref([])   // Array of { name, gene_name, tags, data, stats }
 
-const tissueDb = ref(null)
-const cellDb = ref(null)
 
 // Sync proteins to URL: /baseline?proteins=P50851,Q96HS1
 function updateUrl() {
@@ -268,55 +267,16 @@ const sourceLabel = computed(() =>
   sourceType.value === 'tissue' ? 'Human Tissues' : 'Human Cell Lines'
 )
 
-// ── Load gzip JSON ──
-async function loadGzipJson(url) {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`)
-  const clone = response.clone()
+// ── Expression databases (downloaded once per source, shared by concurrent adds) ──
+const dbLoader = createDbLoader((source) =>
+  loadGzipJson(`${import.meta.env.BASE_URL}${BASELINE_SOURCES[source]}`))
+
+async function getDb(source) {
+  if (!dbLoader.isLoaded(source)) loadingData.value = true
   try {
-    return await response.json()
-  } catch {
-    const ds = new DecompressionStream('gzip')
-    const stream = clone.body.pipeThrough(ds)
-    const text = await new Response(stream).text()
-    return JSON.parse(text)
-  }
-}
-
-function buildIndex(entries) {
-  const idx = {}
-  for (const entry of entries) {
-    if (entry.name) idx[entry.name.toUpperCase()] = entry
-    if (entry.gene_name) idx[entry.gene_name.toUpperCase()] = entry
-  }
-  return idx
-}
-
-async function getDb() {
-  if (sourceType.value === 'tissue') {
-    if (!tissueDb.value) {
-      loadingData.value = true
-      try {
-        const base = import.meta.env.BASE_URL
-        const raw = await loadGzipJson(`${base}data/tissueJson.json.gz`)
-        tissueDb.value = buildIndex(Array.isArray(raw) ? raw : Object.values(raw))
-      } finally {
-        loadingData.value = false
-      }
-    }
-    return tissueDb.value
-  } else {
-    if (!cellDb.value) {
-      loadingData.value = true
-      try {
-        const base = import.meta.env.BASE_URL
-        const raw = await loadGzipJson(`${base}data/cellJson.json.gz`)
-        cellDb.value = buildIndex(Array.isArray(raw) ? raw : Object.values(raw))
-      } finally {
-        loadingData.value = false
-      }
-    }
-    return cellDb.value
+    return await dbLoader.get(source)
+  } finally {
+    loadingData.value = false
   }
 }
 
@@ -343,24 +303,33 @@ function computeStats(entry) {
 
 // ── Add protein ──
 async function addProtein() {
-  const q = query.value.trim().toUpperCase()
+  // One add at a time: Enter and the example links bypass the disabled button.
+  if (searching.value) return
+  const raw = query.value.trim()
+  const q = raw.toUpperCase()
   if (!q) return
   if (proteins.value.length >= 5) return
   if (proteins.value.some(p => p.name.toUpperCase() === q || (p.gene_name && p.gene_name.toUpperCase() === q))) {
-    errorMsg.value = `"${query.value.trim()}" is already added.`
+    errorMsg.value = `"${raw}" is already added.`
     query.value = ''
     return
   }
 
   errorMsg.value = ''
   searching.value = true
+  const source = sourceType.value
 
   try {
-    const db = await getDb()
+    const db = await getDb(source)
+    // The source was switched while the database was loading: drop this add.
+    if (source !== sourceType.value) return
     const entry = db[q]
     if (!entry) {
-      errorMsg.value = `No expression data found for "${query.value.trim()}".`
-    } else {
+      errorMsg.value = `No expression data found for "${raw}".`
+    } else if (isAlreadyAdded(proteins.value, entry)) {
+      errorMsg.value = `"${raw}" is already added.`
+      query.value = ''
+    } else if (proteins.value.length < 5) {
       proteins.value.push({
         name: entry.name,
         gene_name: entry.gene_name || '',
@@ -388,6 +357,7 @@ function clearResults() {
 }
 
 function useExample(ex) {
+  if (searching.value) return
   query.value = ex
   addProtein()
 }
