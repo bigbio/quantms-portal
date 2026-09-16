@@ -105,7 +105,12 @@
     </div>
 
     <div ref="scrollEl" class="sm-scroll">
-      <div class="sm-grid" :style="{ '--sm-cols': String(cols) }">
+      <div
+        class="sm-grid"
+        role="group"
+        aria-label="Sequence residues. Use the arrow keys to move between residues."
+        :style="{ '--sm-cols': String(cols) }"
+      >
         <div v-for="row in rows" :key="row.start" class="sm-row">
           <span class="sm-ruler sm-ruler-l">{{ row.start }}</span>
           <span class="sm-cells">
@@ -122,13 +127,15 @@
                   'sm-has-term': !!cell.terminal,
                 }"
                 :style="cell.intensity > 0 ? { background: greenAt(cell.intensity) } : null"
-                tabindex="0"
+                :data-pos="cell.pos"
+                :tabindex="cell.pos === activePos ? 0 : -1"
                 role="img"
                 :aria-label="cellLabel(cell)"
                 @mouseenter="showTip(cell, $event)"
                 @mousemove="moveTip($event)"
                 @mouseleave="hideTip"
-                @focus="showTipAtEl(cell, $event)"
+                @focus="onCellFocus(cell, $event)"
+                @keydown="onCellKey(cell, $event)"
                 @blur="hideTip"
               >
                 <span class="sm-res">{{ cell.ch }}</span>
@@ -476,6 +483,35 @@ function showTip(cell, ev) {
 // Keyboard focus mirror of showTip: anchor the tooltip to the focused cell's
 // box (there is no cursor position on focus) so Tab-navigation surfaces the same
 // popover as hovering.
+// Roving tabindex: the residue grid is a single Tab stop (it used to add one
+// stop per residue, up to thousands); arrow keys move between residues.
+const focusPos = ref(null)
+const activePos = computed(() => {
+  const lo = windowStart.value + 1
+  const hi = Math.min(windowEnd.value, (map.value?.sequence || '').length)
+  if (focusPos.value && focusPos.value >= lo && focusPos.value <= hi) return focusPos.value
+  return lo
+})
+function onCellFocus(cell, ev) {
+  focusPos.value = cell.pos
+  showTipAtEl(cell, ev)
+}
+function onCellKey(cell, ev) {
+  const next = nextResiduePos(cell.pos, ev.key, {
+    min: windowStart.value + 1,
+    max: Math.min(windowEnd.value, (map.value?.sequence || '').length),
+    cols: cols.value,
+    offset: windowStart.value,
+  })
+  if (next == null) return
+  ev.preventDefault()
+  focusPos.value = next
+  nextTick(() => {
+    const el = scrollEl.value?.querySelector(`[data-pos="${next}"]`)
+    if (el) el.focus()
+  })
+}
+
 function showTipAtEl(cell, ev) {
   tip.value = {
     pos: cell.pos,
@@ -547,6 +583,28 @@ async function load(q) {
 }
 
 watch(() => props.accession, (q) => load(q), { immediate: true })
+</script>
+
+<script>
+/**
+ * Next residue position for a navigation key in a grid of `cols` residues per
+ * row, starting at 0-based `offset`, clamped to [min, max]. Returns null for
+ * keys that don't navigate.
+ */
+export function nextResiduePos(pos, key, { min, max, cols, offset = 0 }) {
+  const rowStart = offset + Math.floor((pos - 1 - offset) / cols) * cols + 1
+  let next
+  switch (key) {
+    case 'ArrowRight': next = pos + 1; break
+    case 'ArrowLeft': next = pos - 1; break
+    case 'ArrowDown': next = pos + cols; break
+    case 'ArrowUp': next = pos - cols; break
+    case 'Home': next = rowStart; break
+    case 'End': next = rowStart + cols - 1; break
+    default: return null
+  }
+  return Math.max(min, Math.min(max, next))
+}
 </script>
 
 <style scoped>
