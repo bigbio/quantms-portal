@@ -126,3 +126,19 @@ describe('scrollBehavior', () => {
     expect(scrollBehavior(at('/models'), { path: '/', matched: [] }, null)).toEqual({ top: 0 })
   })
 })
+
+describe('legacy routes', () => {
+  it('redirects /search to Dataset Search, keeping the query text', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    await router.push('/search?q=liver')
+    expect(router.currentRoute.value.fullPath).toBe('/apps/dataset-search?q=liver')
+    await router.push('/search')
+    expect(router.currentRoute.value.fullPath).toBe('/apps/dataset-search')
+  })
+
+  it('redirects /api to the API & MCP docs', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes })
+    await router.push('/api')
+    expect(router.currentRoute.value.fullPath).toBe('/docs/ai-mcp')
+  })
+})

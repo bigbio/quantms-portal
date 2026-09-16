@@ -16,9 +16,11 @@ export const routes = [
   { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue'), meta: { title: 'Peptide & Protein Search' } },
   { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue'), meta: { title: 'Proteome Compass' } },
   { path: '/apps/coexpression', component: () => import('./views/Coexpression.vue'), meta: { title: 'Protein Co-expression' } },
-  { path: '/search', component: () => import('./views/Search.vue'), meta: { title: 'Search' } },
+  // Legacy placeholder: full-text search lives in Dataset Search.
+  { path: '/search', redirect: (to) => ({ path: '/apps/dataset-search', query: to.query.q ? { q: to.query.q } : {} }) },
   { path: '/statistics', component: () => import('./views/Statistics.vue'), meta: { title: 'Statistics' } },
-  { path: '/api', component: () => import('./views/ApiDocs.vue'), meta: { title: 'API' } },
+  // The API & MCP are live; the old "Coming soon" page now points at their docs.
+  { path: '/api', redirect: '/docs/ai-mcp' },
   { path: '/docs', redirect: '/docs/introduction' },
   { path: '/docs/:page', component: () => import('./views/DocsPage.vue'), meta: { title: (r) => `${docTitles[r.params.page] || 'Documentation'} · Docs` } },
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue'), meta: { title: 'Baseline Expression' } },
