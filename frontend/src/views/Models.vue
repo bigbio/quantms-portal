@@ -129,6 +129,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { safeHref } from '../utils/links.js'
+import { apiGet } from '../api.js'
 
 const loading = ref(true)
 const loadError = ref(false)
@@ -158,10 +159,8 @@ async function load() {
   loading.value = true
   loadError.value = false
   try {
-    const base = import.meta.env.BASE_URL
-    const res = await fetch(`${base}data/models.json`)
-    if (!res.ok) throw new Error(`models.json: ${res.status}`)
-    const data = await res.json()
+    const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+    const data = await apiGet(base, '/data/models.json')
     models.value = Array.isArray(data) ? data : []
   } catch (e) {
     models.value = []

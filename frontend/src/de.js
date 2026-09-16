@@ -1,9 +1,9 @@
-import { apiGet } from './api.js'
+import { apiGet, encodePath } from './api.js'
 import { DE_BASE } from './config.js'
 export const listDatasets = () => apiGet(DE_BASE, '/de/datasets')
-export const getDesign = (ref) => apiGet(DE_BASE, `/de/${ref}/design`)
-export const getDefault = (ref, contrast) => apiGet(DE_BASE, `/de/${ref}/default`, { contrast })
-export const getQc = (ref) => apiGet(DE_BASE, `/de/${ref}/qc`)
+export const getDesign = (ref) => apiGet(DE_BASE, `/de/${encodePath(ref)}/design`)
+export const getDefault = (ref, contrast) => apiGet(DE_BASE, `/de/${encodePath(ref)}/default`, { contrast })
+export const getQc = (ref) => apiGet(DE_BASE, `/de/${encodePath(ref)}/qc`)
 
 // On-demand runs can take much longer than a plain GET, but they still need a
 // ceiling — mirrors apiGet's timeout convention (an aborted/timed-out request

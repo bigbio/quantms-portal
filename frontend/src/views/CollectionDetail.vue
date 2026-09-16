@@ -140,7 +140,7 @@ async function loadSummary() {
   summaryError.value = false
   summary.value = null
   try {
-    const data = await apiGet(GATEWAY_BASE, `/collections/${name.value}`)
+    const data = await apiGet(GATEWAY_BASE, `/collections/${encodeURIComponent(name.value)}`)
     if (isCurrent()) summary.value = data
   } catch (e) {
     if (isCurrent()) summaryError.value = true

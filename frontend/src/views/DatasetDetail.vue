@@ -68,7 +68,7 @@ async function load() {
   notFound.value = false
   dataset.value = null
   try {
-    const data = await apiGet(DATASET_SEARCH_BASE, `/datasets/${accession.value}`)
+    const data = await apiGet(DATASET_SEARCH_BASE, `/datasets/${encodeURIComponent(accession.value)}`)
     if (isCurrent()) dataset.value = data
   } catch (e) {
     if (!isCurrent()) return

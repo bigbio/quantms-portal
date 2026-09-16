@@ -199,7 +199,7 @@ async function lookup() {
   loadKey = stateKey()
   profileErr.value = ''
   try {
-    const data = await apiGet(COMPASS_BASE, `/profile/${a}`)
+    const data = await apiGet(COMPASS_BASE, `/profile/${encodeURIComponent(a)}`)
     if (seq !== lookupSeq) return   // a newer lookup superseded this one
     profile.value = data
     if (!data || !data.uniprot_acc) profileErr.value = 'No record for that accession.'

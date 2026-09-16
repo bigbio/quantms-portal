@@ -27,7 +27,7 @@ describe('Models helpers', () => {
 describe('Models view', () => {
   it('shows a retryable error instead of "no models" when the catalogue fails to load', async () => {
     const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response('nope', { status: 500 }))
+      .mockResolvedValueOnce(new Response('nope', { status: 404 }))
       .mockResolvedValueOnce(new Response(JSON.stringify(catalogue), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
     const w = mount(Models)
