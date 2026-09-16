@@ -109,6 +109,7 @@ import DatasetResultsTable from '../components/DatasetResultsTable.vue'
 import { apiGet } from '../api.js'
 import { GATEWAY_BASE, DATASET_SEARCH_BASE } from '../config.js'
 import { formatBig, formatBytes } from '../utils/format.js'
+import { createRequestGuard } from '../utils/requestGuard.js'
 
 const route = useRoute()
 const name = ref(route.params.name)
@@ -130,17 +131,24 @@ const datasetCount = computed(() => {
   return (summary.value && summary.value.stats && summary.value.stats.datasets) || 0
 })
 
+// Drop responses from superseded requests (collection switch, fast paging/sorting).
+const summaryGuard = createRequestGuard()
+const rowsGuard = createRequestGuard()
+
 async function loadSummary() {
+  const isCurrent = summaryGuard.next()
   summaryError.value = false
   summary.value = null
   try {
-    summary.value = await apiGet(GATEWAY_BASE, `/collections/${name.value}`)
+    const data = await apiGet(GATEWAY_BASE, `/collections/${name.value}`)
+    if (isCurrent()) summary.value = data
   } catch (e) {
-    summaryError.value = true
+    if (isCurrent()) summaryError.value = true
   }
 }
 
 async function loadRows() {
+  const isCurrent = rowsGuard.next()
   loadingRows.value = true
   rowsError.value = false
   try {
@@ -149,13 +157,14 @@ async function loadRows() {
       sort: sort.value,
       page: page.value,
     })
-    rows.value = data.datasets || []
-    total.value = data.total ?? rows.value.length
-    totalPages.value = data.total_pages || 1
+    if (!isCurrent()) return
+    rows.value = data?.datasets || []
+    total.value = data?.total ?? rows.value.length
+    totalPages.value = data?.total_pages || 1
   } catch (e) {
-    rowsError.value = true
+    if (isCurrent()) rowsError.value = true
   } finally {
-    loadingRows.value = false
+    if (isCurrent()) loadingRows.value = false
   }
 }
 

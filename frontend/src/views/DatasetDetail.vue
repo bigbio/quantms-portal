@@ -16,7 +16,7 @@
       <!-- Error -->
       <div v-else-if="error" class="notice">
         This dataset is temporarily unavailable.
-        <button class="page-btn" style="margin-left: 12px" @click="load">Retry</button>
+        <button class="page-btn" style="margin-left: 12px" @click="load()">Retry</button>
       </div>
 
       <!-- Not found -->
@@ -48,6 +48,7 @@ import DatasetPanel from '../components/DatasetPanel.vue'
 import { apiGet } from '../api.js'
 import { DATASET_SEARCH_BASE } from '../config.js'
 import { collectionTag } from '../utils/format.js'
+import { createRequestGuard } from '../utils/requestGuard.js'
 
 const route = useRoute()
 const accession = computed(() => route.params.pxd)
@@ -58,18 +59,23 @@ const loading = ref(true)
 const error = ref(false)
 const notFound = ref(false)
 
+const guard = createRequestGuard()
+
 async function load() {
+  const isCurrent = guard.next()
   loading.value = true
   error.value = false
   notFound.value = false
   dataset.value = null
   try {
-    dataset.value = await apiGet(DATASET_SEARCH_BASE, `/datasets/${accession.value}`)
+    const data = await apiGet(DATASET_SEARCH_BASE, `/datasets/${accession.value}`)
+    if (isCurrent()) dataset.value = data
   } catch (e) {
+    if (!isCurrent()) return
     if (e && e.status === 404) notFound.value = true
     else error.value = true
   } finally {
-    loading.value = false
+    if (isCurrent()) loading.value = false
   }
 }
 

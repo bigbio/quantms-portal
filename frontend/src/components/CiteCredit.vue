@@ -39,6 +39,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { getCredits } from '../citation.js'
+import { createRequestGuard } from '../utils/requestGuard.js'
 
 // `refs` is the list of contributing dataset refs ("ACC/hash"). For a single
 // dataset page it's one ref; for a claim it will be the top contributors.
@@ -57,15 +58,20 @@ const styles = [
 
 const hasCredits = computed(() => credits.value.length > 0)
 
+const guard = createRequestGuard()
+
 async function load() {
+  const isCurrent = guard.next()
   const refs = (props.refs || []).filter(Boolean)
   if (!refs.length) { credits.value = []; collectionCitations.value = []; citations.value = {}; return }
   try {
     const res = await getCredits(refs)
+    if (!isCurrent()) return
     credits.value = (res && res.credits) || []
     collectionCitations.value = (res && res.collection_citations) || []
     citations.value = (res && res.citations) || {}
   } catch (e) {
+    if (!isCurrent()) return
     credits.value = []
     collectionCitations.value = []
     citations.value = {}
