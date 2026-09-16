@@ -309,31 +309,20 @@ import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
 import { uniprotUrl as buildUniprotUrl } from '../utils/links.js'
 import ProteinSequenceMap from './ProteinSequenceMap.vue'
+import { getPeptideStats } from '../utils/peptideStats.js'
 
-// Corpus-wide observation distribution (identical for every protein): fetched
-// ONCE from /stats and cached at module scope, so switching proteins never
-// refetches. Stays null when unavailable (index not ready / old backend) — the
+// Corpus-wide observation distribution (identical for every protein), read
+// from the shared /stats cache so it is fetched once per page, not per mount.
+// Stays null when unavailable (index not ready / old backend) — the
 // observation-level chip then degrades to a plain, non-interactive chip.
 const obsDistribution = ref(null)
-let obsDistSettled = false
-let obsDistPromise = null
 async function ensureObsDistribution() {
-  if (obsDistSettled) return
-  if (obsDistPromise) return obsDistPromise
-  obsDistPromise = (async () => {
-    try {
-      const data = await apiGet(PEPTIDE_SEARCH_BASE, '/stats')
-      const dist = data?.obs_distribution
-      if (dist && Array.isArray(dist.bins) && dist.bins.length) {
-        obsDistribution.value = dist
-      }
-    } catch (e) {
-      // Best-effort: no distribution → the chip stays a plain chip. Never throw.
-    } finally {
-      obsDistSettled = true
-    }
-  })()
-  return obsDistPromise
+  try {
+    const dist = (await getPeptideStats())?.obs_distribution
+    if (dist && Array.isArray(dist.bins) && dist.bins.length) obsDistribution.value = dist
+  } catch (e) {
+    // Best-effort: no distribution → the chip stays a plain chip. Never throw.
+  }
 }
 
 const props = defineProps({
@@ -633,19 +622,28 @@ function pct(v, max) {
 }
 
 let reqId = 0
+let shownQuery = ''
 async function load(q) {
   const query = (q || '').trim()
   if (!query) {
+    ++reqId
+    shownQuery = ''
     profile.value = null
     loading.value = false
     return
   }
   const myReq = ++reqId
-  loading.value = true
-  profile.value = null
-  ptmsExpanded.value = false
-  contextExpanded.value = false
-  open.value = false // close the distribution popover when the protein changes
+  // Same protein, new GPP cutoff: keep the current panel (and its sequence map)
+  // on screen and swap the data in place, instead of blanking and remounting.
+  const refresh = query === shownQuery && profile.value
+  if (!refresh) {
+    loading.value = true
+    profile.value = null
+    ptmsExpanded.value = false
+    contextExpanded.value = false
+    open.value = false // close the distribution popover when the protein changes
+  }
+  shownQuery = query
   try {
     const data = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', {
       accession: query,

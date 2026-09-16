@@ -6,8 +6,9 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 vi.mock('../api.js', () => ({ apiGet: vi.fn() }))
 import { apiGet } from '../api.js'
 import PeptideSearch from './PeptideSearch.vue'
+import { resetPeptideStatsCache } from '../utils/peptideStats.js'
 
-const stubs = { PeptideProfile: true, ProteinProfile: true }
+const stubs = { PeptideProfile: true, ProteinProfile: { props: ['accession', 'gppMin'], template: '<div class="pprof">{{ accession }}|{{ gppMin }}</div>' } }
 
 // Default backend: best-effort endpoints answer, searches answer via `search`.
 function backend(search) {
@@ -37,7 +38,11 @@ const searchCalls = () => apiGet.mock.calls.filter((c) => c[1].startsWith('/sear
 const ok = (tag) => Promise.resolve({ total_datasets: 1, datasets: [{ dataset_ref: tag, dataset_accession: tag, collection: 'msnet' }] })
 
 describe('PeptideSearch view', () => {
-  beforeEach(() => { apiGet.mockReset() })
+  beforeEach(() => {
+    apiGet.mockReset()
+    resetPeptideStatsCache()
+    vi.useRealTimers()
+  })
 
   it('renders an empty result instead of crashing when the response has no datasets', async () => {
     backend(() => Promise.resolve({ total_datasets: 0 }))
@@ -86,5 +91,21 @@ describe('PeptideSearch view', () => {
     await flushPromises()
     expect(w.text()).toContain('PXDNEW')
     expect(w.text()).not.toContain('PXDOLD')
+  })
+
+  it('passes the GPP cutoff to the protein profile only after the slider settles', async () => {
+    backend(() => ok('PXD1'))
+    const { w } = await mountAt('/apps/peptide-search?mode=protein&query=P04637&gpp_min=0.3')
+    expect(w.find('.pprof').text()).toBe('P04637|0.3')
+
+    vi.useFakeTimers()
+    const slider = w.find('input[type="range"]')
+    expect(slider.exists()).toBe(true)
+    for (const v of ['0.31', '0.32', '0.33']) await slider.setValue(v)
+    expect(w.find('.pprof').text()).toBe('P04637|0.3')
+    vi.advanceTimersByTime(250)
+    await w.vm.$nextTick()
+    expect(w.find('.pprof').text()).toBe('P04637|0.33')
+    vi.useRealTimers()
   })
 })

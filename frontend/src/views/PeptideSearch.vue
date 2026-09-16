@@ -156,7 +156,7 @@
         <!-- Biological profile for the searched bare peptide, above the rows -->
         <PeptideProfile v-if="mode === 'peptide' && profileSequence" :sequence="profileSequence" />
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
-        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :gpp-min="highConfidenceOnly ? gppMin : null" @pick="pickProtein" />
+        <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :gpp-min="profileGppMin" @pick="pickProtein" />
 
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
@@ -253,10 +253,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
 import { normalizeSearchResult } from '../utils/search.js'
+import { getPeptideStats } from '../utils/peptideStats.js'
 import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
@@ -494,7 +495,7 @@ async function init() {
     // filter dropdowns stay empty; search still works
   }
   try {
-    stats.value = await apiGet(PEPTIDE_SEARCH_BASE, '/stats')
+    stats.value = await getPeptideStats()
     // Dynamic, per-build GPP default cutoff lives at /stats → gpp.default_min.
     // Absent (backend has no GPP data) → keep the GPP_FALLBACK_MIN constant.
     const d = Number(stats.value?.gpp?.default_min)
@@ -543,6 +544,22 @@ watch(gppMin, () => {
   if (!highConfidenceOnly.value || !gppAdvanced.value) return
   if (gppSliderTimer) clearTimeout(gppSliderTimer)
   gppSliderTimer = setTimeout(rerunIfSearched, 200)
+})
+
+// Cutoff handed to ProteinProfile. Follows the toggle immediately but the
+// slider only after it settles (same debounce as the results table), so a drag
+// doesn't refetch the profile on every 0.01 step.
+const profileGppMin = ref(highConfidenceOnly.value ? gppMin.value : null)
+let profileGppTimer = null
+watch([highConfidenceOnly, gppMin], ([on], [wasOn]) => {
+  if (profileGppTimer) clearTimeout(profileGppTimer)
+  const next = on ? gppMin.value : null
+  if (on !== wasOn) profileGppMin.value = next
+  else profileGppTimer = setTimeout(() => { profileGppMin.value = next }, 200)
+})
+onBeforeUnmount(() => {
+  if (profileGppTimer) clearTimeout(profileGppTimer)
+  if (gppSliderTimer) clearTimeout(gppSliderTimer)
 })
 
 // Retry from the "unavailable" banner: re-probe facets/stats and re-run the
