@@ -33,6 +33,9 @@ async function mountAt(url) {
 }
 
 
+const searchCalls = () => apiGet.mock.calls.filter((c) => c[1].startsWith('/search/'))
+const ok = (tag) => Promise.resolve({ total_datasets: 1, datasets: [{ dataset_ref: tag, dataset_accession: tag, collection: 'msnet' }] })
+
 describe('PeptideSearch view', () => {
   beforeEach(() => { apiGet.mockReset() })
 
@@ -41,5 +44,47 @@ describe('PeptideSearch view', () => {
     const { w } = await mountAt('/apps/peptide-search?sequence=PEPTIDEK')
     expect(w.text()).toContain('No datasets match.')
     expect(w.text()).not.toContain('temporarily unavailable')
+  })
+
+  it('sends a deep-linked search exactly once, including the GPP filter', async () => {
+    backend(() => ok('PXD1'))
+    await mountAt('/apps/peptide-search?sequence=PEPTIDEK&gpp_min=0.4')
+    await flushPromises()
+    expect(searchCalls()).toHaveLength(1)
+    expect(searchCalls()[0][2]).toMatchObject({ sequence: 'PEPTIDEK', gpp_min: 0.4 })
+  })
+
+  it('does not re-send a search when its own URL update fires the route watcher', async () => {
+    backend(() => ok('PXD1'))
+    const { w, router } = await mountAt('/apps/peptide-search')
+    await w.find('input.search-input, input[type="text"], input').setValue('PEPTIDEK')
+    const btn = w.findAll('button').find((b) => b.text() === 'Search')
+    await btn.trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query.sequence).toBe('PEPTIDEK')
+    expect(searchCalls()).toHaveLength(1)
+
+    // An explicit second click still re-runs the search.
+    await btn.trigger('click')
+    await flushPromises()
+    expect(searchCalls()).toHaveLength(2)
+  })
+
+  it('keeps the newest results when an older search resolves last', async () => {
+    let releaseOld
+    backend((path, params) => params.sequence === 'OLDPEPK'
+      ? new Promise((r) => { releaseOld = () => r({ total_datasets: 1, datasets: [{ dataset_ref: 'OLD', dataset_accession: 'PXDOLD', collection: 'msnet' }] }) })
+      : ok('PXDNEW'))
+    const { w } = await mountAt('/apps/peptide-search?sequence=OLDPEPK')
+    const input = w.find('input')
+    await input.setValue('NEWPEPK')
+    await w.findAll('button').find((b) => b.text() === 'Search').trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('PXDNEW')
+
+    releaseOld()
+    await flushPromises()
+    expect(w.text()).toContain('PXDNEW')
+    expect(w.text()).not.toContain('PXDOLD')
   })
 })

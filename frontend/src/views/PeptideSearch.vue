@@ -35,7 +35,7 @@
             style="width: 280px; text-transform: uppercase"
             placeholder="Peptide sequence (required), e.g. ADSRDPASDQMQHWK"
             aria-label="Peptide sequence"
-            @keyup.enter="run"
+            @keyup.enter="search"
           />
           <input
             v-else
@@ -45,7 +45,7 @@
             style="width: 280px"
             placeholder="UniProt / gene (required), e.g. P04040 / CAT"
             aria-label="Protein accession or gene"
-            @keyup.enter="run"
+            @keyup.enter="search"
           />
 
           <select v-if="mode === 'peptide'" v-model="matchMode" class="facet-select" title="Match mode" aria-label="Match mode">
@@ -96,7 +96,7 @@
             <option v-for="c in facets.collection" :key="c.value" :value="c.value">{{ c.value }}</option>
           </select>
 
-          <button class="page-btn primary" style="padding: 8px 18px" :disabled="!canSearch" @click="run">Search</button>
+          <button class="page-btn primary" style="padding: 8px 18px" :disabled="!canSearch" @click="search">Search</button>
           <button v-if="hasFilters" class="page-btn" style="padding: 8px 14px" @click="clearFilters">Clear</button>
         </div>
       </div>
@@ -549,43 +549,67 @@ watch(gppMin, () => {
 // current search.
 function retry() {
   init()
-  run()
+  search()
 }
 
-async function run() {
+// Request bookkeeping: `runSeq` lets a superseded search drop its late
+// response; `lastRunKey` identifies the search currently shown/in flight so
+// watcher-driven re-runs (URL sync, GPP toggle on a deep link) don't send the
+// same request twice.
+let runSeq = 0
+let lastRunKey = ''
+
+// Explicit user search (button / Enter / demos): always runs.
+function search() {
+  return run({ force: true })
+}
+
+async function run({ force = false } = {}) {
   if (!canSearch.value) return
   // Reflect the search into the URL so it can be shared/bookmarked. Use
   // replace() so repeated searches don't spam browser history.
   if (!applyingRoute) router.replace({ query: currentQuery() }).catch(() => {})
+  const params = buildParams()
+  let path
+  if (mode.value === 'peptide') {
+    params.sequence = sequence.value.trim().toUpperCase()
+    params.match = matchMode.value
+    path = '/search/peptide'
+  } else {
+    params.query = proteinQuery.value.trim()
+    path = '/search/protein'
+  }
+  const key = `${path}?${JSON.stringify(params)}`
+  if (!force && key === lastRunKey) return
+  lastRunKey = key
+  const seq = ++runSeq
+
   loading.value = true
   result.value = null
   visibleCount.value = PAGE_SIZE // reset the row cap for each new search
+  if (mode.value === 'peptide') {
+    query.value = params.sequence
+    // Drive the biological profile from the searched bare peptide. A specific
+    // peptidoform query still profiles its bare backbone (mods stripped).
+    profileSequence.value = bareOf(params.sequence)
+    profileProtein.value = ''
+  } else {
+    query.value = params.query
+    profileSequence.value = ''
+    // Drive the protein biological profile from the searched accession/gene.
+    profileProtein.value = params.query
+  }
   try {
-    const params = buildParams()
-    let path
-    if (mode.value === 'peptide') {
-      params.sequence = sequence.value.trim().toUpperCase()
-      params.match = matchMode.value
-      query.value = params.sequence
-      // Drive the biological profile from the searched bare peptide. A specific
-      // peptidoform query still profiles its bare backbone (mods stripped).
-      profileSequence.value = bareOf(params.sequence)
-      profileProtein.value = ''
-      path = '/search/peptide'
-    } else {
-      params.query = proteinQuery.value.trim()
-      query.value = params.query
-      profileSequence.value = ''
-      // Drive the protein biological profile from the searched accession/gene.
-      profileProtein.value = params.query
-      path = '/search/protein'
-    }
-    result.value = normalizeSearchResult(await apiGet(PEPTIDE_SEARCH_BASE, path, params))
+    const data = await apiGet(PEPTIDE_SEARCH_BASE, path, params)
+    if (seq !== runSeq) return
+    result.value = normalizeSearchResult(data)
     backendDown.value = false
   } catch (e) {
+    if (seq !== runSeq) return
+    lastRunKey = '' // allow the same search to be retried
     backendDown.value = true
   } finally {
-    loading.value = false
+    if (seq === runSeq) loading.value = false
   }
 }
 
@@ -595,7 +619,7 @@ function demo(seq, mod, res) {
   sequence.value = seq
   modification.value = mod
   residue.value = res
-  run()
+  search()
 }
 // Demo a specific peptidoform search (match mode = peptidoform): the sequence is
 // the full OpenMS peptidoform, so the modification/residue filters are cleared.
@@ -605,12 +629,12 @@ function demoPeptidoform(peptidoform) {
   modification.value = ''
   residue.value = ''
   sequence.value = peptidoform
-  run()
+  search()
 }
 function demoProtein(q) {
   mode.value = 'protein'
   proteinQuery.value = q
-  run()
+  search()
 }
 // A "did you mean" candidate was chosen in ProteinProfile: re-run the protein
 // search/profile for that exact accession. Reuses the normal protein-search
@@ -620,7 +644,7 @@ function pickProtein(accession) {
   if (!acc) return
   mode.value = 'protein'
   proteinQuery.value = acc
-  run()
+  search()
 }
 function clearFilters() {
   modification.value = ''
@@ -634,6 +658,10 @@ function clearFilters() {
 // Drop the results table + profiles. Used when the route becomes empty (e.g. clicking the navbar
 // "Peptide Search" while a search is open) so the previous results don't linger under a blank form.
 function clearResults() {
+  // Invalidate any in-flight search so it can't repopulate the cleared view.
+  runSeq++
+  lastRunKey = ''
+  loading.value = false
   result.value = null
   query.value = ''
   profileSequence.value = ''
