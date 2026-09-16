@@ -42,13 +42,13 @@ vi.mock('../de.js', () => ({
   getDesign: vi.fn(async () => design),
   getDefault: vi.fn(async () => defaultResult),
   getQc: vi.fn(async () => qcResult),
-  runDe: vi.fn(async () => defaultResult),
 }))
 
 import DifferentialExpression from './DifferentialExpression.vue'
-import { listDatasets, getDesign, getDefault, getQc, runDe } from '../de.js'
+import { listDatasets, getDesign, getDefault, getQc } from '../de.js'
 
 describe('DifferentialExpression view', () => {
+
   it('loads datasets and renders the picker', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
@@ -102,7 +102,6 @@ describe('DifferentialExpression view', () => {
     expect(getQc).toHaveBeenCalledWith('PXD1/h')
     // Default config (limma/median/protein) -> the precomputed default, not an on-demand run.
     expect(getDefault).toHaveBeenCalledWith('PXD1/h', 'DMSO__vs__Pom')
-    expect(runDe).not.toHaveBeenCalled()
 
     expect(w.text()).toContain('P1')
     expect(w.text()).toContain('P2')
@@ -139,7 +138,6 @@ describe('DifferentialExpression view', () => {
     await flushPromises()
 
     expect(getDefault).toHaveBeenCalledWith('PXD1/h', 'DMSO__vs__Len')
-    expect(runDe).not.toHaveBeenCalled()
   })
 
   it('drops a stale response when a newer contrast change resolves first', async () => {
@@ -207,7 +205,6 @@ describe('DifferentialExpression view', () => {
     expect(link.attributes('href')).toBe('/collections/differential-expression/PXD1')
     // The method/normalization/level selectors are gone from the UI.
     expect(w.find('#de-method').exists()).toBe(false)
-    expect(runDe).not.toHaveBeenCalled()
   })
 
   it('does not refetch the datasets list on every query change (only design/qc/results)', async () => {
