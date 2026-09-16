@@ -101,17 +101,30 @@ const aboutPaths = ['/docs', '/contact']
 const isDataActive = computed(() => dataPaths.some((p) => route.path.startsWith(p)))
 const isAboutActive = computed(() => aboutPaths.some((p) => route.path.startsWith(p)))
 
+// Which menu was opened by hovering. A click right after the hover (and a tap
+// on touch devices, which fires mouseenter first) must keep that menu open
+// rather than toggling it shut again.
+const hoverOpened = ref(null)
+
 function open(menu) {
+  if (openMenu.value !== menu) hoverOpened.value = menu
   openMenu.value = menu
 }
 function close(menu) {
   if (openMenu.value === menu) openMenu.value = null
+  if (hoverOpened.value === menu) hoverOpened.value = null
 }
 function toggle(menu) {
+  if (openMenu.value === menu && hoverOpened.value === menu) {
+    hoverOpened.value = null
+    return
+  }
+  hoverOpened.value = null
   openMenu.value = openMenu.value === menu ? null : menu
 }
 function closeAll() {
   openMenu.value = null
+  hoverOpened.value = null
 }
 
 // Close a dropdown when keyboard focus leaves it entirely (Tab-out).
