@@ -256,6 +256,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
+import { normalizeSearchResult } from '../utils/search.js'
 import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
@@ -579,7 +580,7 @@ async function run() {
       profileProtein.value = params.query
       path = '/search/protein'
     }
-    result.value = await apiGet(PEPTIDE_SEARCH_BASE, path, params)
+    result.value = normalizeSearchResult(await apiGet(PEPTIDE_SEARCH_BASE, path, params))
     backendDown.value = false
   } catch (e) {
     backendDown.value = true
