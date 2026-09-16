@@ -77,7 +77,8 @@ const apps = [
 
 <style scoped>
 .section {
-  padding: 3rem 0 4rem;
+  /* Clear the fixed navbar, matching the other portal pages. */
+  padding: 100px 0 4rem;
 }
 .section-header {
   margin-bottom: 2rem;
@@ -88,7 +89,7 @@ const apps = [
 }
 .section-header p {
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0 auto;
   max-width: 48rem;
 }
 .app-grid {
