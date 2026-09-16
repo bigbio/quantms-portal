@@ -108,4 +108,12 @@ describe('PeptideSearch view', () => {
     expect(w.find('.pprof').text()).toBe('P04637|0.33')
     vi.useRealTimers()
   })
+
+  it('upper-cases the typed sequence via a class, not the placeholder', async () => {
+    backend(() => ok('PXD1'))
+    const { w } = await mountAt('/apps/peptide-search')
+    const input = w.find('input[aria-label="Peptide sequence"]')
+    expect(input.classes()).toEqual(expect.arrayContaining(['ps-query', 'ps-seq']))
+    expect(input.attributes('style') || '').not.toContain('text-transform')
+  })
 })

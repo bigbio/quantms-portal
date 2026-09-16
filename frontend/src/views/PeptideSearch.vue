@@ -26,14 +26,13 @@
 
       <!-- Query bar -->
       <div class="filter-bar" style="align-items: flex-start; flex-wrap: wrap; gap: 10px">
-        <div class="filter-group" style="flex-wrap: wrap">
+        <div class="filter-group" style="flex-wrap: wrap; width: 100%">
           <input
             v-if="mode === 'peptide'"
             v-model="sequence"
             type="text"
-            class="filter-search"
-            style="width: 280px; text-transform: uppercase"
-            placeholder="Peptide sequence (required), e.g. ADSRDPASDQMQHWK"
+            class="filter-search ps-query ps-seq"
+            placeholder="Peptide sequence, e.g. ADSRDPASDQMQHWK"
             aria-label="Peptide sequence"
             @keyup.enter="search"
           />
@@ -41,9 +40,8 @@
             v-else
             v-model="proteinQuery"
             type="text"
-            class="filter-search"
-            style="width: 280px"
-            placeholder="UniProt / gene (required), e.g. P04040 / CAT"
+            class="filter-search ps-query"
+            placeholder="UniProt accession or gene, e.g. P04040 / CAT"
             aria-label="Protein accession or gene"
             @keyup.enter="search"
           />
@@ -86,7 +84,7 @@
             <option value="">All organisms</option>
             <option v-for="o in organismOptions" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
-          <input v-model="tissue" type="text" class="filter-search" style="width: 150px" placeholder="Tissue / organism part" aria-label="Tissue or organism part" />
+          <input v-model="tissue" type="text" class="filter-search ps-tissue" placeholder="Tissue / organism part" aria-label="Tissue or organism part" />
           <select v-model="instrument" class="facet-select" aria-label="Instrument" title="Instrument">
             <option value="">All instruments</option>
             <option v-for="i in facets.instrument" :key="i.value" :value="i.value">{{ cleanInstrument(i.value) }}</option>
@@ -707,6 +705,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Main query box takes the free space so its placeholder is never clipped. */
+.ps-query {
+  flex: 1 1 340px;
+  min-width: 240px;
+  max-width: 460px;
+}
+/* Upper-case what the user types, not the hint text (which then overflowed). */
+.ps-seq {
+  text-transform: uppercase;
+}
+.ps-seq::placeholder {
+  text-transform: none;
+}
+.ps-tissue {
+  width: 190px;
+}
 .ps-stats {
   display: flex;
   gap: 32px;
