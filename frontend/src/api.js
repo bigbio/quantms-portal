@@ -50,29 +50,36 @@ export async function apiGet(base, path, params, opts = {}) {
   while (true) {
     const controller = new AbortController()
     let timedOut = false
+    // The timeout covers the whole request, including reading the body: a
+    // stalled response body must not hang the caller forever.
     const timer = setTimeout(() => { timedOut = true; controller.abort() }, timeout)
     // Allow an external signal to also abort this request.
+    const onExternalAbort = () => controller.abort()
     if (opts.signal) {
       if (opts.signal.aborted) controller.abort()
-      else opts.signal.addEventListener('abort', () => controller.abort(), { once: true })
+      else opts.signal.addEventListener('abort', onExternalAbort, { once: true })
+    }
+    const cleanup = () => {
+      clearTimeout(timer)
+      if (opts.signal) opts.signal.removeEventListener('abort', onExternalAbort)
     }
 
     let res
     try {
       res = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } })
     } catch (e) {
-      clearTimeout(timer)
+      cleanup()
       const externalAbort = opts.signal && opts.signal.aborted
       if (!timedOut && !externalAbort && attempt < retries) {
         attempt++
         await sleep(400 * attempt)
         continue
       }
-      throw new ApiError(`Network error contacting ${url}`, 0)
+      throw new ApiError(timedOut ? `Request to ${url} timed out` : `Network error contacting ${url}`, 0)
     }
-    clearTimeout(timer)
 
     if (!res.ok) {
+      cleanup()
       if (res.status >= 500 && attempt < retries) {
         attempt++
         await sleep(400 * attempt)
@@ -84,7 +91,16 @@ export async function apiGet(base, path, params, opts = {}) {
     try {
       return await res.json()
     } catch (e) {
+      if (timedOut) throw new ApiError(`Request to ${url} timed out`, 0)
+      if (opts.signal && opts.signal.aborted) throw new ApiError(`Request to ${url} was aborted`, 0)
       throw new ApiError(`Invalid JSON from ${url}`, res.status)
+    } finally {
+      cleanup()
     }
   }
+}
+
+/** Encode each segment of a path value (e.g. a dataset ref "PXD1/abc"). */
+export function encodePath(value) {
+  return String(value ?? '').split('/').map(encodeURIComponent).join('/')
 }
