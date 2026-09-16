@@ -17,7 +17,7 @@
       <div class="search-card">
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
           <div style="position: relative; flex: 1; min-width: 180px;">
-            <select v-model="sourceType" class="source-select" @change="clearResults">
+            <select v-model="sourceType" class="source-select" aria-label="Expression source" @change="clearResults">
               <option value="tissue">Tissue (Human)</option>
               <option value="cell">Cell Line (Human)</option>
             </select>
@@ -27,6 +27,7 @@
               v-model="query"
               class="search-input"
               :placeholder="proteins.length ? 'Add another protein…' : 'Protein accession (e.g. P50851)'"
+              aria-label="Protein accession or gene name"
               @keyup.enter="addProtein"
               autocomplete="off"
               spellcheck="false"
@@ -42,7 +43,7 @@
           <span v-for="(p, i) in proteins" :key="p.name" class="protein-tag" :style="{ background: tagColors[i], color: '#fff' }">
             {{ p.name }}
             <span v-if="p.gene_name" style="opacity: 0.8; margin-left: 2px; font-weight: 400;">({{ p.gene_name }})</span>
-            <button class="tag-close" @click="removeProtein(i)">&times;</button>
+            <button type="button" class="tag-close" :aria-label="`Remove ${p.name}`" @click="removeProtein(i)">&times;</button>
           </span>
         </div>
 

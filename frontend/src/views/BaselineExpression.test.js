@@ -53,4 +53,15 @@ describe('BaselineExpression view', () => {
     expect(w.text()).toContain('is already added')
     expect(loadGzipJson).toHaveBeenCalledTimes(1)
   })
+
+  it('labels its controls', async () => {
+    const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/baseline', component: BaselineExpression }] })
+    router.push('/baseline')
+    await router.isReady()
+    const w = mount(BaselineExpression, { global: { plugins: [router] } })
+    await flushPromises()
+    expect(w.find('select.source-select').attributes('aria-label')).toBeTruthy()
+    expect(w.find('input.search-input').attributes('aria-label')).toBeTruthy()
+    expect(w.findAll('.tag-close').every((b) => b.attributes('aria-label'))).toBe(true)
+  })
 })

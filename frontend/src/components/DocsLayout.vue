@@ -2,14 +2,20 @@
   <div class="docs-shell">
     <!-- Mobile top bar: toggles the sidebar -->
     <div class="docs-mobilebar">
-      <button class="docs-menu-btn" type="button" @click="sidebarOpen = !sidebarOpen">
-        <span class="docs-menu-icon">☰</span> Documentation
+      <button
+        class="docs-menu-btn"
+        type="button"
+        aria-controls="docs-sidebar"
+        :aria-expanded="sidebarOpen"
+        @click="sidebarOpen = !sidebarOpen"
+      >
+        <span class="docs-menu-icon" aria-hidden="true">☰</span> Documentation
       </button>
     </div>
 
     <div class="docs-grid">
       <!-- Left sidebar -->
-      <aside class="docs-sidebar" :class="{ open: sidebarOpen }">
+      <aside id="docs-sidebar" class="docs-sidebar" :class="{ open: sidebarOpen }">
         <nav class="docs-nav" aria-label="Documentation">
           <router-link to="/docs" class="docs-nav-home" @click="sidebarOpen = false">
             quantms Portal Docs
@@ -33,10 +39,10 @@
       <!-- Scrim behind the mobile drawer -->
       <div v-if="sidebarOpen" class="docs-scrim" @click="sidebarOpen = false"></div>
 
-      <!-- Content column -->
-      <main class="docs-content">
+      <!-- Content column (App.vue already provides the page's <main> landmark) -->
+      <article class="docs-content">
         <slot />
-      </main>
+      </article>
 
       <!-- Right in-page table of contents -->
       <aside class="docs-toc" v-if="toc && toc.length">

@@ -67,8 +67,8 @@
       <!-- Sort control -->
       <div class="filter-bar">
         <div class="filter-group">
-          <label class="sort-label">Sort by</label>
-          <select v-model="sort" class="facet-select" @change="reload">
+          <label class="sort-label" for="collection-sort">Sort by</label>
+          <select id="collection-sort" v-model="sort" class="facet-select" @change="reload">
             <option value="peptides">Peptides</option>
             <option value="proteins">Proteins</option>
             <option value="samples">Samples</option>
