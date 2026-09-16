@@ -90,7 +90,7 @@
 
       <!-- Datasets table -->
       <template v-else>
-        <DatasetResultsTable :datasets="rows" :sort="sort" @sort="onSort" />
+        <DatasetResultsTable :datasets="rows" :sort="sort" :show-collection="false" @sort="onSort" />
 
         <div v-if="totalPages > 1" class="pagination">
           <button class="page-btn" :class="{ disabled: page === 1 }" :disabled="page === 1" @click="goPage(page - 1)">← Prev</button>

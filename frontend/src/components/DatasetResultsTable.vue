@@ -15,7 +15,7 @@
           >
             Accession<span class="sort-ind">{{ ind('accession') }}</span>
           </th>
-          <th>Collection</th>
+          <th v-if="showCollection">Collection</th>
           <th>Organism</th>
           <th>Instrument</th>
           <th
@@ -66,7 +66,7 @@
       </thead>
       <tbody>
         <tr v-if="datasets.length === 0">
-          <td colspan="9" class="empty-cell">No datasets match.</td>
+          <td :colspan="colCount" class="empty-cell">No datasets match.</td>
         </tr>
         <template v-for="(ds, idx) in datasets" :key="rowKey(ds, idx)">
           <tr
@@ -84,7 +84,7 @@
               <span class="caret" :class="{ open: isOpen(ds, idx) }">▸</span>
             </td>
             <td><span class="accession-link">{{ ds.accession }}</span></td>
-            <td><span class="tag" :class="collectionTag(ds.collection)">{{ ds.collection_title || ds.collection }}</span></td>
+            <td v-if="showCollection"><span class="tag" :class="collectionTag(ds.collection)">{{ ds.collection_title || ds.collection }}</span></td>
             <td class="cell-sm">{{ ds.organism || '—' }}</td>
             <td class="cell-sm muted">{{ cleanInstrument(ds.instrument) || '—' }}</td>
             <td class="td-num">{{ formatNum(ds.peptides) }}</td>
@@ -93,7 +93,7 @@
             <td class="td-num">{{ ds.total_size ? formatBytes(ds.total_size) : '—' }}</td>
           </tr>
           <tr v-if="isOpen(ds, idx)" class="panel-row">
-            <td colspan="9" style="padding: 0">
+            <td :colspan="colCount" style="padding: 0">
               <DatasetPanel :dataset="ds" variant="inline" />
             </td>
           </tr>
@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import DatasetPanel from './DatasetPanel.vue'
 import { formatNum, formatBytes, cleanInstrument, collectionTag } from '../utils/format.js'
 
@@ -112,7 +112,10 @@ const props = defineProps({
   datasets: { type: Array, default: () => [] },
   // current backend sort key (peptides|proteins|samples|size|accession)
   sort: { type: String, default: '' },
+  // Hide the Collection column where every row belongs to the same collection.
+  showCollection: { type: Boolean, default: true },
 })
+const colCount = computed(() => (props.showCollection ? 9 : 8))
 const emit = defineEmits(['sort'])
 
 const openKey = ref(null)
