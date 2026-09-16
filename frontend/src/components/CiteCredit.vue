@@ -30,8 +30,9 @@
 
     <div class="cite-actions">
       <button v-for="s in styles" :key="s.key" type="button" class="cite-btn" @click="copy(s.key)">
-        {{ copied === s.key ? 'Copied!' : s.label }}
+        {{ copied === s.key ? 'Copied!' : copied === `failed:${s.key}` ? 'Copy failed' : s.label }}
       </button>
+      <span class="sr-only" role="status" aria-live="polite">{{ copied.startsWith('failed:') ? 'Copy failed' : copied ? 'Copied to clipboard' : '' }}</span>
     </div>
   </div>
 </template>
@@ -41,6 +42,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { getCredits } from '../citation.js'
 import { createRequestGuard } from '../utils/requestGuard.js'
 import { safeHref } from '../utils/links.js'
+import { copyText } from '../utils/clipboard.js'
 
 // `refs` is the list of contributing dataset refs ("ACC/hash"). For a single
 // dataset page it's one ref; for a claim it will be the top contributors.
@@ -82,13 +84,9 @@ async function load() {
 async function copy(styleKey) {
   const text = citations.value[styleKey]
   if (!text) return
-  try {
-    await navigator.clipboard.writeText(text)
-    copied.value = styleKey
-    setTimeout(() => { if (copied.value === styleKey) copied.value = '' }, 1500)
-  } catch (e) {
-    // clipboard blocked — no-op; the links above remain usable
-  }
+  const ok = await copyText(text)
+  copied.value = ok ? styleKey : `failed:${styleKey}`
+  setTimeout(() => { if (copied.value.endsWith(styleKey)) copied.value = '' }, ok ? 1500 : 3000)
 }
 
 watch(() => props.refs, load)
@@ -96,6 +94,7 @@ onMounted(load)
 </script>
 
 <style scoped>
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .cite { border: 1px solid var(--border, #e2e5ea); border-radius: 10px; padding: 12px 14px; margin-top: 12px; background: var(--surface, #fafbfc); }
 .cite-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .cite-title { font-weight: 600; font-size: 14px; }

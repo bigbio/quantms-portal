@@ -42,3 +42,24 @@ describe('CiteCredit link safety', () => {
     expect(w.findAll('a').some((a) => (a.attributes('href') || '').startsWith('javascript:'))).toBe(false)
   })
 })
+
+describe('CiteCredit copy buttons', () => {
+  it('shows feedback for a successful and a failed copy', async () => {
+    getCredits.mockResolvedValue({ credits: [{ ref: 'A/h', accession: 'A', title: 'TA' }], collection_citations: [], citations: { text: 'Cite A' } })
+    const w = mount(CiteCredit, { props: { refs: ['A/h'] } })
+    await flushPromises()
+    const btn = w.find('.cite-btn')
+
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockResolvedValue() }, configurable: true })
+    await btn.trigger('click')
+    await flushPromises()
+    expect(btn.text()).toBe('Copied!')
+
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+    document.execCommand = vi.fn(() => false)
+    await btn.trigger('click')
+    await flushPromises()
+    expect(btn.text()).toBe('Copy failed')
+    delete document.execCommand
+  })
+})
