@@ -134,10 +134,7 @@ function ariaSort(key) {
   return sortDir.value === 'asc' ? 'ascending' : 'descending'
 }
 
-function fmt(v) {
-  if (v === null || v === undefined || Number.isNaN(v)) return '—'
-  return typeof v === 'number' ? v.toPrecision(4).replace(/\.?0+$/, '') || '0' : v
-}
+const fmt = formatValue
 
 // Regulation display metadata (key/label/color class) for a row — drives the
 // "Reg" dot and the log2FC / significance coloring.
@@ -177,6 +174,18 @@ export function sortRows(rows, key, dir) {
     if (av > bv) return 1 * mult
     return 0
   })
+}
+
+// Formats a numeric cell to 4 significant digits, trimming only redundant
+// fractional zeros (1.500 -> 1.5, 1.000e+5 -> 1e+5) so integers such as 1000
+// keep their magnitude. Non-numbers pass through; missing values render as a dash.
+export function formatValue(v) {
+  if (v === null || v === undefined || Number.isNaN(v)) return '—'
+  if (typeof v !== 'number') return v
+  const s = v.toPrecision(4)
+  const [mantissa, exp] = s.split('e')
+  const trimmed = mantissa.includes('.') ? mantissa.replace(/\.?0+$/, '') : mantissa
+  return exp !== undefined ? `${trimmed}e${exp}` : trimmed
 }
 
 // Case-insensitive substring filter on `protein` and `gene`.

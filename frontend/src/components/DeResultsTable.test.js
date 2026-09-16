@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import DeResultsTable, { sortRows, filterRows } from './DeResultsTable.vue'
+import DeResultsTable, { sortRows, filterRows, formatValue } from './DeResultsTable.vue'
 
 describe('table ops', () => {
   const rows = [
@@ -136,5 +136,30 @@ describe('DeResultsTable component', () => {
     await header.trigger('click')
     let firstAfter = w.findAll('tbody tr')[0].text()
     expect(first).not.toBe(firstAfter)
+  })
+})
+
+describe('formatValue', () => {
+  it('keeps the magnitude of round integers', () => {
+    expect(formatValue(1000)).toBe('1000')
+    expect(formatValue(1500)).toBe('1500')
+    expect(formatValue(9990)).toBe('9990')
+  })
+  it('trims redundant fractional zeros', () => {
+    expect(formatValue(1.5)).toBe('1.5')
+    expect(formatValue(2)).toBe('2')
+    expect(formatValue(0)).toBe('0')
+    expect(formatValue(-0.25)).toBe('-0.25')
+  })
+  it('trims zeros in the mantissa of exponential notation', () => {
+    expect(formatValue(100000)).toBe('1e+5')
+    expect(formatValue(0.00001234)).toBe('0.00001234')
+    expect(formatValue(1.23456e-12)).toBe('1.235e-12')
+  })
+  it('renders missing values as a dash and passes strings through', () => {
+    expect(formatValue(null)).toBe('—')
+    expect(formatValue(undefined)).toBe('—')
+    expect(formatValue(NaN)).toBe('—')
+    expect(formatValue('n/a')).toBe('n/a')
   })
 })
