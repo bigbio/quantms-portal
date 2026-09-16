@@ -27,21 +27,21 @@
             style="width: 280px"
             placeholder="Search title, summary, keywords…"
             aria-label="Search datasets by title, summary or keywords"
-            @keyup.enter="reload"
+            @keyup.enter="reload()"
           />
-          <select v-model="collection" class="facet-select" aria-label="Filter by collection" @change="reload">
+          <select v-model="collection" class="facet-select" aria-label="Filter by collection" @change="reload()">
             <option value="">All collections</option>
             <option v-for="c in facetCollections" :key="c.name" :value="c.name">{{ c.title }}</option>
           </select>
-          <select v-model="organism" class="facet-select" aria-label="Filter by organism" @change="reload">
+          <select v-model="organism" class="facet-select" aria-label="Filter by organism" @change="reload()">
             <option value="">All organisms</option>
             <option v-for="o in facetOrganisms" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
-          <select v-model="instrument" class="facet-select" aria-label="Filter by instrument" @change="reload">
+          <select v-model="instrument" class="facet-select" aria-label="Filter by instrument" @change="reload()">
             <option value="">All instruments</option>
             <option v-for="i in facetInstruments" :key="i.value" :value="i.value">{{ cleanInstrument(i.value) }}</option>
           </select>
-          <button class="page-btn primary" style="padding: 8px 16px" @click="reload">Search</button>
+          <button class="page-btn primary" style="padding: 8px 16px" @click="reload()">Search</button>
           <button v-if="hasFilters" class="page-btn" style="padding: 8px 14px" @click="clearFilters">Clear</button>
         </div>
         <span v-if="total != null" class="result-count">{{ total.toLocaleString() }} results</span>
@@ -53,7 +53,7 @@
       <!-- Error -->
       <div v-else-if="error" class="notice">
         Dataset search is temporarily unavailable.
-        <button class="page-btn" style="margin-left: 12px" @click="reload">Retry</button>
+        <button class="page-btn" style="margin-left: 12px" @click="reload()">Retry</button>
       </div>
 
       <!-- Results -->
@@ -158,27 +158,41 @@ function applyQuery(qy) {
   page.value = qy.page ? Math.max(1, parseInt(qy.page, 10) || 1) : 1
 }
 
-async function load() {
+// `loadSeq` drops responses from superseded requests; `lastLoadKey` lets the
+// route watcher skip the request that load() itself just made (its URL update
+// fires the watcher).
+let loadSeq = 0
+let lastLoadKey = ''
+
+async function load({ force = true } = {}) {
   // Reflect current state into the URL (replace() to avoid history spam).
   if (!applyingRoute) router.replace({ query: currentQuery() }).catch(() => {})
+  const params = {
+    q: q.value || undefined,
+    collection: collection.value || undefined,
+    organism: organism.value || undefined,
+    instrument: instrument.value || undefined,
+    sort: sort.value,
+    page: page.value,
+  }
+  const key = JSON.stringify(params)
+  if (!force && key === lastLoadKey) return
+  lastLoadKey = key
+  const seq = ++loadSeq
   loading.value = true
   error.value = false
   try {
-    const data = await apiGet(DATASET_SEARCH_BASE, '/datasets', {
-      q: q.value || undefined,
-      collection: collection.value || undefined,
-      organism: organism.value || undefined,
-      instrument: instrument.value || undefined,
-      sort: sort.value,
-      page: page.value,
-    })
-    rows.value = data.datasets || []
-    total.value = data.total ?? rows.value.length
-    totalPages.value = data.total_pages || 1
+    const data = await apiGet(DATASET_SEARCH_BASE, '/datasets', params)
+    if (seq !== loadSeq) return
+    rows.value = data?.datasets || []
+    total.value = data?.total ?? rows.value.length
+    totalPages.value = data?.total_pages || 1
   } catch (e) {
+    if (seq !== loadSeq) return
+    lastLoadKey = ''
     error.value = true
   } finally {
-    loading.value = false
+    if (seq === loadSeq) loading.value = false
   }
 }
 
@@ -210,7 +224,7 @@ watch(
   (qy) => {
     applyingRoute = true
     applyQuery(qy)
-    load()
+    load({ force: false })
     applyingRoute = false
   }
 )
