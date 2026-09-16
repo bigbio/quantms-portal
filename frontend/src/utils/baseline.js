@@ -65,3 +65,33 @@ export function createDbLoader(fetchSource) {
 export function isAlreadyAdded(proteins, entry) {
   return (proteins || []).some((p) => p.name === entry.name)
 }
+
+/** Quantile of an ascending-sorted array with linear interpolation (R type 7). */
+export function quantile(sorted, q) {
+  const n = sorted.length
+  if (!n) return null
+  const pos = (n - 1) * q
+  const lo = Math.floor(pos)
+  const hi = Math.ceil(pos)
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo)
+}
+
+/** Five-number summary + count per tag (tissue / cell line) for one entry. */
+export function computeStats(entry) {
+  const statsMap = {}
+  if (!entry || !entry.tags || !entry.data) return statsMap
+  for (let i = 0; i < entry.tags.length; i++) {
+    const vals = (entry.data[i] || []).filter((v) => Number.isFinite(v))
+    if (vals.length === 0) continue
+    const sorted = [...vals].sort((a, b) => a - b)
+    statsMap[entry.tags[i]] = {
+      min: sorted[0],
+      q1: quantile(sorted, 0.25),
+      median: quantile(sorted, 0.5),
+      q3: quantile(sorted, 0.75),
+      max: sorted[sorted.length - 1],
+      count: sorted.length,
+    }
+  }
+  return statsMap
+}

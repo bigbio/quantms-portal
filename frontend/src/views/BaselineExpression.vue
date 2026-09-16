@@ -219,7 +219,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { isAlreadyAdded } from '../utils/baseline.js'
+import { computeStats, isAlreadyAdded } from '../utils/baseline.js'
 import { createBaselineClient } from '../utils/baselineClient.js'
 
 const router = useRouter()
@@ -283,26 +283,7 @@ async function lookupEntry(source, q) {
   }
 }
 
-// ── Box stats per tissue ──
-function computeStats(entry) {
-  const statsMap = {}
-  if (!entry.tags || !entry.data) return statsMap
-  for (let i = 0; i < entry.tags.length; i++) {
-    const vals = entry.data[i]
-    if (!vals || vals.length === 0) continue
-    const sorted = [...vals].sort((a, b) => a - b)
-    const n = sorted.length
-    statsMap[entry.tags[i]] = {
-      min: sorted[0],
-      q1: sorted[Math.floor(n * 0.25)],
-      median: sorted[Math.floor(n * 0.5)],
-      q3: sorted[Math.floor(n * 0.75)],
-      max: sorted[n - 1],
-      count: n,
-    }
-  }
-  return statsMap
-}
+// ── Box stats per tissue: see computeStats in utils/baseline.js ──
 
 // ── Add protein ──
 async function addProtein() {

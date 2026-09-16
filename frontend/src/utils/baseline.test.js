@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { gzipSync } from 'node:zlib'
-import { buildIndex, createDbLoader, isAlreadyAdded, loadGzipJson } from './baseline.js'
+import { buildIndex, computeStats, createDbLoader, isAlreadyAdded, loadGzipJson, quantile } from './baseline.js'
 
 const entries = [
   { name: 'P04637', gene_name: 'TP53', tags: ['liver'], data: [[1, 2]] },
@@ -65,5 +65,21 @@ describe('baseline helpers', () => {
     } finally {
       vi.unstubAllGlobals()
     }
+  })
+
+  it('interpolates quantiles (the median of an even count is the midpoint)', () => {
+    expect(quantile([1, 2, 3, 4], 0.5)).toBe(2.5)
+    expect(quantile([1, 2, 3, 4, 5], 0.5)).toBe(3)
+    expect(quantile([1, 2, 3, 4], 0.25)).toBe(1.75)
+    expect(quantile([7], 0.75)).toBe(7)
+    expect(quantile([], 0.5)).toBeNull()
+  })
+
+  it('summarises each tag and skips empty or non-numeric values', () => {
+    const stats = computeStats({ tags: ['liver', 'lung', 'brain'], data: [[4, 1, 3, 2], [], [5, null, NaN]] })
+    expect(stats.liver).toEqual({ min: 1, q1: 1.75, median: 2.5, q3: 3.25, max: 4, count: 4 })
+    expect(stats.lung).toBeUndefined()
+    expect(stats.brain).toEqual({ min: 5, q1: 5, median: 5, q3: 5, max: 5, count: 1 })
+    expect(computeStats(null)).toEqual({})
   })
 })
