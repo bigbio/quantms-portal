@@ -1,27 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './views/Home.vue'
+import { DOCS_NAV } from './docs/nav.js'
+
+export const SITE_TITLE = 'quantms Portal'
+const HOME_TITLE = 'quantms Portal — Quantitative Proteomics Data'
+
+const docTitles = Object.fromEntries(DOCS_NAV.flatMap((g) => g.items.map((i) => [i.slug, i.title])))
 
 export const routes = [
-  { path: '/', component: Home },
-  { path: '/collections', component: () => import('./views/Collections.vue') },
-  { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue') },
-  { path: '/collections/:name/:pxd', component: () => import('./views/DatasetDetail.vue') },
-  { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue') },
-  { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue') },
-  { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue') },
-  { path: '/apps/coexpression', component: () => import('./views/Coexpression.vue') },
-  { path: '/search', component: () => import('./views/Search.vue') },
-  { path: '/statistics', component: () => import('./views/Statistics.vue') },
-  { path: '/api', component: () => import('./views/ApiDocs.vue') },
+  { path: '/', component: Home, meta: { title: null } },
+  { path: '/collections', component: () => import('./views/Collections.vue'), meta: { title: 'Collections' } },
+  { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue'), meta: { title: (r) => `${r.params.name} collection` } },
+  { path: '/collections/:name/:pxd', component: () => import('./views/DatasetDetail.vue'), meta: { title: (r) => `${r.params.pxd} dataset` } },
+  { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue'), meta: { title: 'Dataset Search' } },
+  { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue'), meta: { title: 'Peptide & Protein Search' } },
+  { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue'), meta: { title: 'Proteome Compass' } },
+  { path: '/apps/coexpression', component: () => import('./views/Coexpression.vue'), meta: { title: 'Protein Co-expression' } },
+  { path: '/search', component: () => import('./views/Search.vue'), meta: { title: 'Search' } },
+  { path: '/statistics', component: () => import('./views/Statistics.vue'), meta: { title: 'Statistics' } },
+  { path: '/api', component: () => import('./views/ApiDocs.vue'), meta: { title: 'API' } },
   { path: '/docs', redirect: '/docs/introduction' },
-  { path: '/docs/:page', component: () => import('./views/DocsPage.vue') },
-  { path: '/baseline', component: () => import('./views/BaselineExpression.vue') },
-  { path: '/models', component: () => import('./views/Models.vue') },
-  { path: '/contact', component: () => import('./views/Contact.vue') },
-  { path: '/differential-expression', component: () => import('./views/DifferentialExpression.vue') },
-  { path: '/applications', component: () => import('./views/Applications.vue') },
+  { path: '/docs/:page', component: () => import('./views/DocsPage.vue'), meta: { title: (r) => `${docTitles[r.params.page] || 'Documentation'} · Docs` } },
+  { path: '/baseline', component: () => import('./views/BaselineExpression.vue'), meta: { title: 'Baseline Expression' } },
+  { path: '/models', component: () => import('./views/Models.vue'), meta: { title: 'Models' } },
+  { path: '/contact', component: () => import('./views/Contact.vue'), meta: { title: 'Contact' } },
+  { path: '/differential-expression', component: () => import('./views/DifferentialExpression.vue'), meta: { title: 'Differential Expression' } },
+  { path: '/applications', component: () => import('./views/Applications.vue'), meta: { title: 'Applications' } },
   // Catch-all: unknown URLs render a real "not found" page instead of a blank one.
-  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue') },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: 'Page not found' } },
 ]
 
 const router = createRouter({
@@ -30,9 +36,21 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// SPA page views: gtag('config') in index.html only fires on the initial load,
-// so client-side navigations must report a page_view themselves. Guarded so it
-// is a no-op when analytics is absent (e.g. blocked or local dev).
+// Document title for a resolved route: "<page> — quantms Portal".
+export function resolveTitle(to) {
+  const t = to && to.meta ? to.meta.title : undefined
+  const page = typeof t === 'function' ? t(to) : t
+  return page ? `${page} — ${SITE_TITLE}` : HOME_TITLE
+}
+
+router.afterEach((to) => {
+  if (typeof document !== 'undefined') document.title = resolveTitle(to)
+})
+
+// SPA page views. index.html configures gtag with send_page_view: false, so
+// this hook is the single source of page_view events — including the initial
+// load — and each view is reported exactly once with its own title. Guarded so
+// it is a no-op when analytics is absent (e.g. blocked or local dev).
 router.afterEach((to) => {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', 'page_view', {

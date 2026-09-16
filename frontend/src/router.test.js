@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { routes, isChunkLoadError, handleChunkError } from './router.js'
+import { routes, isChunkLoadError, handleChunkError, resolveTitle } from './router.js'
 import NotFound from './views/NotFound.vue'
 
 function makeRouter() {
@@ -61,5 +61,46 @@ describe('chunk load recovery', () => {
     const location = { assign: vi.fn() }
     expect(handleChunkError(new Error('boom'), { fullPath: '/' }, { storage: memoryStorage(), location })).toBe(false)
     expect(location.assign).not.toHaveBeenCalled()
+  })
+})
+
+describe('page titles', () => {
+  const router = createRouter({ history: createMemoryHistory(), routes })
+  const title = (path) => resolveTitle(router.resolve(path))
+
+  it('gives every page its own title', () => {
+    expect(title('/')).toBe('quantms Portal — Quantitative Proteomics Data')
+    expect(title('/apps/peptide-search')).toBe('Peptide & Protein Search — quantms Portal')
+    expect(title('/statistics')).toBe('Statistics — quantms Portal')
+    expect(title('/nope')).toBe('Page not found — quantms Portal')
+  })
+
+  it('includes route parameters for detail and docs pages', () => {
+    expect(title('/collections/msnet')).toBe('msnet collection — quantms Portal')
+    expect(title('/collections/msnet/PXD000561')).toBe('PXD000561 dataset — quantms Portal')
+    expect(title('/docs/ps-gpp')).toBe('Evidence quality (GPP) · Docs — quantms Portal')
+    expect(title('/docs/unknown')).toBe('Documentation · Docs — quantms Portal')
+  })
+
+  it('has a title for every route', () => {
+    for (const r of routes) {
+      if (r.redirect) continue
+      expect(r.meta && 'title' in r.meta, r.path).toBe(true)
+    }
+  })
+
+  it('sends exactly one page_view per navigation, with the new title', async () => {
+    const { default: appRouter } = await import('./router.js')
+    const gtag = vi.fn()
+    window.gtag = gtag
+    try {
+      await appRouter.push('/statistics')
+      await appRouter.push('/models')
+      const views = gtag.mock.calls.filter((c) => c[1] === 'page_view')
+      expect(views).toHaveLength(2)
+      expect(views[1][2]).toMatchObject({ page_path: '/models', page_title: 'Models — quantms Portal' })
+    } finally {
+      delete window.gtag
+    }
   })
 })
