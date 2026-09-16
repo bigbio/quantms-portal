@@ -17,14 +17,14 @@
 
       <!-- Async load state: spinner while loading, retry banner on failure (never a fake-empty table) -->
       <p v-if="loading" class="cc-loading">Loading…</p>
-      <p v-else-if="loadErr" class="cc-err">{{ loadErr }} <button type="button" class="cc-retry" @click="loadForMode">Retry</button></p>
+      <p v-else-if="loadErr" class="cc-err">{{ loadErr }} <button type="button" class="cc-retry" @click="loadForMode({ force: true })">Retry</button></p>
 
       <!-- Protein mode -->
       <div v-if="mode === 'protein'">
         <div class="filter-bar">
           <input v-model="acc" class="filter-search" style="width: 260px; text-transform: uppercase"
-            placeholder="UniProt accession, e.g. P04637" @keyup.enter="lookup" aria-label="UniProt accession" />
-          <button class="btn" @click="lookup">Look up</button>
+            placeholder="UniProt accession, e.g. P04637" @keyup.enter="lookup()" aria-label="UniProt accession" />
+          <button class="btn" @click="lookup()">Look up</button>
         </div>
         <p v-if="profileErr" class="cc-muted">{{ profileErr }}</p>
         <CompassProteinCard v-if="profile && profile.uniprot_acc" :profile="profile" />
@@ -189,14 +189,26 @@ function openOrganism(r) {
 const acc = ref('')
 const profile = ref(null)
 const profileErr = ref('')
+let lookupSeq = 0
 async function lookup() {
-  if (!acc.value.trim()) return
+  const a = acc.value.trim().toUpperCase()
+  if (!a) return
+  const seq = ++lookupSeq
+  // Mark this state as loaded so the URL update below doesn't trigger a second
+  // identical request through the route watcher.
+  loadKey = stateKey()
   profileErr.value = ''
   try {
-    profile.value = await apiGet(COMPASS_BASE, `/profile/${acc.value.trim().toUpperCase()}`)
-    if (!profile.value || !profile.value.uniprot_acc) profileErr.value = 'No record for that accession.'
+    const data = await apiGet(COMPASS_BASE, `/profile/${a}`)
+    if (seq !== lookupSeq) return   // a newer lookup superseded this one
+    profile.value = data
+    if (!data || !data.uniprot_acc) profileErr.value = 'No record for that accession.'
     syncUrl()   // reflect the looked-up accession into the URL (shareable ?acc=)
-  } catch (e) { profileErr.value = 'Lookup failed.' }
+  } catch (e) {
+    if (seq !== lookupSeq) return
+    loadKey = ''
+    profileErr.value = 'Lookup failed.'
+  }
 }
 
 const summary = ref(null)
@@ -241,12 +253,16 @@ const presets = [
 ]
 const preset = ref('')
 const query = ref(null)
-const facets = ref({})
-async function loadFacets() { try { facets.value = (await apiGet(COMPASS_BASE, '/facets')).facets || {} } catch (e) { /* facets optional */ } }
 function applyPreset(id) { preset.value = id }
 async function runQuery() {
-  try { query.value = await apiGet(COMPASS_BASE, '/query/facet', { preset: preset.value || undefined, limit: 200 }) }
-  catch (e) { query.value = { rows: [], count: 0 }; loadErr.value = 'Query failed.'; throw e }
+  const p = preset.value
+  try {
+    const data = await apiGet(COMPASS_BASE, '/query/facet', { preset: p || undefined, limit: 200 })
+    if (preset.value === p) query.value = data   // drop a response for a superseded preset
+  } catch (e) {
+    if (preset.value !== p) return
+    query.value = { rows: [], count: 0 }; loadErr.value = 'Query failed.'; throw e
+  }
 }
 
 function pct(v) { return v == null ? '—' : `${Number(v).toFixed(1)}%` }
@@ -320,19 +336,32 @@ function applyQuery(q) {
   acc.value = q.acc ? String(q.acc) : ''
   preset.value = q.preset ? String(q.preset) : ''
 }
-async function loadForMode() {
+// Key of the view state whose data is currently shown or loading. The URL is
+// rewritten after state changes, which fires the route watcher again; comparing
+// keys stops that echo from sending every request twice.
+let loadKey = ''
+let loadSeq = 0
+function stateKey() { return JSON.stringify(currentQuery()) }
+async function loadForMode({ force = false } = {}) {
+  const key = stateKey()
+  if (!force && key === loadKey) return
+  loadKey = key
+  const seq = ++loadSeq
   loadErr.value = ''
   loading.value = true
   try {
     if (mode.value === 'proteomes') await loadProteomes()
     else if (mode.value === 'gaps') await loadGaps()
-    else if (mode.value === 'explore') { await loadFacets(); await runQuery() }
+    else if (mode.value === 'explore') await runQuery()
     else if (mode.value === 'protein') {
       if (acc.value.trim()) await lookup()
       else { profile.value = null; profileErr.value = '' }  // no acc -> don't show a stale card
     }
-  } catch (e) { /* loadErr already set by the failing loader */ }
-  finally { loading.value = false }
+  } catch (e) {
+    /* loadErr already set by the failing loader */
+    if (seq === loadSeq) loadKey = ''   // let the same view be retried
+  }
+  finally { if (seq === loadSeq) loading.value = false }
 }
 // Shallow equality over query objects (all values compared as strings, since
 // route.query is always string-valued).
