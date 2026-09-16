@@ -217,9 +217,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { BASELINE_SOURCES, createDbLoader, isAlreadyAdded, loadGzipJson } from '../utils/baseline.js'
+import { isAlreadyAdded } from '../utils/baseline.js'
+import { createBaselineClient } from '../utils/baselineClient.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -267,14 +268,16 @@ const sourceLabel = computed(() =>
   sourceType.value === 'tissue' ? 'Human Tissues' : 'Human Cell Lines'
 )
 
-// ── Expression databases (downloaded once per source, shared by concurrent adds) ──
-const dbLoader = createDbLoader((source) =>
-  loadGzipJson(`${import.meta.env.BASE_URL}${BASELINE_SOURCES[source]}`))
+// ── Expression databases ──
+// Downloaded and parsed once per source inside a Web Worker (the cell-line file
+// is ~120 MB of JSON once decompressed); only the requested entries come back.
+const baseline = createBaselineClient({ base: import.meta.env.BASE_URL })
+onBeforeUnmount(() => baseline.terminate())
 
-async function getDb(source) {
-  if (!dbLoader.isLoaded(source)) loadingData.value = true
+async function lookupEntry(source, q) {
+  if (!baseline.isLoaded(source)) loadingData.value = true
   try {
-    return await dbLoader.get(source)
+    return await baseline.lookup(source, q)
   } finally {
     loadingData.value = false
   }
@@ -320,10 +323,9 @@ async function addProtein() {
   const source = sourceType.value
 
   try {
-    const db = await getDb(source)
+    const entry = await lookupEntry(source, q)
     // The source was switched while the database was loading: drop this add.
     if (source !== sourceType.value) return
-    const entry = db[q]
     if (!entry) {
       errorMsg.value = `No expression data found for "${raw}".`
     } else if (isAlreadyAdded(proteins.value, entry)) {
