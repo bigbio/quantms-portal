@@ -123,7 +123,12 @@ function load() {
   toc.value = out.toc
   activeHeading.value = out.toc.length ? out.toc[0].id : ''
   nextTick(() => {
-    window.scrollTo({ top: 0 })
+    // Scroll position is owned by the router's scrollBehavior (top of page, or
+    // the #anchor in the URL); only resolve the active heading here.
+    if (route.hash) {
+      const el = document.getElementById(decodeURIComponent(route.hash.slice(1)))
+      if (el) activeHeading.value = el.id
+    }
     updateActiveHeading()
   })
 }

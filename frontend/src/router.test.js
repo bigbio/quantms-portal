@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { routes, isChunkLoadError, handleChunkError, resolveTitle } from './router.js'
+import { routes, isChunkLoadError, handleChunkError, resolveTitle, scrollBehavior } from './router.js'
 import NotFound from './views/NotFound.vue'
 
 function makeRouter() {
@@ -102,5 +102,27 @@ describe('page titles', () => {
     } finally {
       delete window.gtag
     }
+  })
+})
+
+describe('scrollBehavior', () => {
+  const at = (path, extra = {}) => ({ path, hash: '', matched: [{}], ...extra })
+
+  it('restores the saved position on back/forward', () => {
+    expect(scrollBehavior(at('/a'), at('/b'), { left: 0, top: 420 })).toEqual({ left: 0, top: 420 })
+  })
+
+  it('scrolls to an anchor below the fixed navbar', async () => {
+    await expect(scrollBehavior(at('/docs/ps-gpp', { hash: '#cutoff' }), at('/docs/intro'), null))
+      .resolves.toEqual({ el: '#cutoff', top: 80 })
+  })
+
+  it('keeps the position for query-only changes on the same page', () => {
+    expect(scrollBehavior(at('/apps/dataset-search'), at('/apps/dataset-search'), null)).toBe(false)
+  })
+
+  it('starts other navigations at the top, including the first load', () => {
+    expect(scrollBehavior(at('/models'), at('/statistics'), null)).toEqual({ top: 0 })
+    expect(scrollBehavior(at('/models'), { path: '/', matched: [] }, null)).toEqual({ top: 0 })
   })
 })

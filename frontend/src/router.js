@@ -30,10 +30,28 @@ export const routes = [
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: 'Page not found' } },
 ]
 
+// Height of the fixed navbar, so anchored headings aren't hidden under it.
+const NAV_OFFSET = 80
+
+// Back/forward restores the previous position; `#anchor` links land on their
+// target; a query-only change on the same page (search filters synced to the
+// URL) keeps the current position; any other navigation starts at the top.
+export function scrollBehavior(to, from, savedPosition) {
+  if (savedPosition) return savedPosition
+  if (to.hash) {
+    // Wait a tick so content rendered after the route resolves (docs) exists.
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({ el: to.hash, top: NAV_OFFSET }), 0)
+    })
+  }
+  if (from && from.matched && from.matched.length && to.path === from.path) return false
+  return { top: 0 }
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior() { return { top: 0 } }
+  scrollBehavior,
 })
 
 // Document title for a resolved route: "<page> — quantms Portal".
