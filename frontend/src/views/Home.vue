@@ -90,11 +90,10 @@ const APP_ROUTES = {
   statistics: '/statistics',
 }
 
-// In-portal route for an app: the manifest's own `route` wins when it is a
-// portal path, then the known id mapping.
+// In-portal route for an app. Only the id mapping above is used: the gateway
+// manifest's `route` field is not a portal path (it lists /dataset-search while
+// the page lives at /apps/dataset-search), so it must not drive links.
 export function appRoute(app) {
-  const r = app && typeof app.route === 'string' ? app.route : ''
-  if (r.startsWith('/') && !r.startsWith('//')) return r
   return APP_ROUTES[app?.id] || ''
 }
 </script>
