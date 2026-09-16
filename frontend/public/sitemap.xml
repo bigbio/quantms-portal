@@ -3,8 +3,36 @@
   <url><loc>https://portal.quantms.org/</loc><priority>1.0</priority></url>
   <url><loc>https://portal.quantms.org/collections</loc><priority>0.9</priority></url>
   <url><loc>https://portal.quantms.org/baseline</loc><priority>0.8</priority></url>
-  <url><loc>https://portal.quantms.org/api</loc><priority>0.5</priority></url>
   <url><loc>https://portal.quantms.org/statistics</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/applications</loc><priority>0.9</priority></url>
+  <url><loc>https://portal.quantms.org/apps/dataset-search</loc><priority>0.9</priority></url>
+  <url><loc>https://portal.quantms.org/apps/peptide-search</loc><priority>0.9</priority></url>
+  <url><loc>https://portal.quantms.org/apps/compass</loc><priority>0.8</priority></url>
+  <url><loc>https://portal.quantms.org/apps/coexpression</loc><priority>0.8</priority></url>
+  <url><loc>https://portal.quantms.org/differential-expression</loc><priority>0.8</priority></url>
+  <url><loc>https://portal.quantms.org/models</loc><priority>0.6</priority></url>
+  <url><loc>https://portal.quantms.org/contact</loc><priority>0.3</priority></url>
+  <url><loc>https://portal.quantms.org/docs/introduction</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/concepts</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/data</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/collections</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/infrastructure</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/applications</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ps-overview</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ps-how-search-works</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ps-gpp</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ps-api</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-overview</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-scoreboard</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-tiers</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-gaps</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-explorer</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/compass-api</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ds-overview</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/stats-overview</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/download</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/ai-mcp</loc><priority>0.5</priority></url>
+  <url><loc>https://portal.quantms.org/docs/contribute</loc><priority>0.5</priority></url>
   <url><loc>https://portal.quantms.org/collections/absolute-expression</loc><priority>0.8</priority></url>
   <url><loc>https://portal.quantms.org/collections/absolute-expression/MSV000079033</loc><priority>0.6</priority></url>
   <url><loc>https://portal.quantms.org/collections/absolute-expression/MSV000087095</loc><priority>0.6</priority></url>
