@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import { routes, isChunkLoadError, handleChunkError, resolveTitle, scrollBehavior } from './router.js'
@@ -89,19 +91,39 @@ describe('page titles', () => {
     }
   })
 
-  it('sends exactly one page_view per navigation, with the new title', async () => {
+  it('does not send its own page_view (GA history tracking reports navigations)', async () => {
     const { default: appRouter } = await import('./router.js')
     const gtag = vi.fn()
     window.gtag = gtag
     try {
       await appRouter.push('/statistics')
       await appRouter.push('/models')
-      const views = gtag.mock.calls.filter((c) => c[1] === 'page_view')
-      expect(views).toHaveLength(2)
-      expect(views[1][2]).toMatchObject({ page_path: '/models', page_title: 'Models — quantms Portal' })
+      expect(gtag.mock.calls.filter((c) => c[1] === 'page_view')).toHaveLength(0)
     } finally {
       delete window.gtag
     }
+  })
+
+  it('updates document.title before the history entry is written', async () => {
+    const { default: appRouter } = await import('./router.js')
+    const titles = []
+    const orig = window.history.pushState
+    window.history.pushState = function (...args) {
+      titles.push(document.title)
+      return orig.apply(this, args)
+    }
+    try {
+      await appRouter.push('/contact')
+      expect(titles.at(-1)).toBe('Contact — quantms Portal')
+    } finally {
+      window.history.pushState = orig
+    }
+  })
+
+  it('lets gtag send the initial page_view', () => {
+    const html = readFileSync(resolve(process.cwd(), 'index.html'), 'utf8')
+    expect(html).toContain("gtag('config', 'G-6PL70G5VC1')")
+    expect(html).not.toContain('send_page_view')
   })
 })
 

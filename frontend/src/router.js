@@ -63,23 +63,17 @@ export function resolveTitle(to) {
   return page ? `${page} — ${SITE_TITLE}` : HOME_TITLE
 }
 
-router.afterEach((to) => {
+// Set the title before the URL changes (beforeResolve is the last guard before
+// the history entry is written), so analytics that listen for history changes
+// record the new page's title.
+router.beforeResolve((to) => {
   if (typeof document !== 'undefined') document.title = resolveTitle(to)
 })
 
-// SPA page views. index.html configures gtag with send_page_view: false, so
-// this hook is the single source of page_view events — including the initial
-// load — and each view is reported exactly once with its own title. Guarded so
-// it is a no-op when analytics is absent (e.g. blocked or local dev).
-router.afterEach((to) => {
-  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('event', 'page_view', {
-      page_path: to.fullPath,
-      page_location: window.location.href,
-      page_title: document.title,
-    })
-  }
-})
+// Page views: gtag('config') in index.html reports the initial load, and the
+// GA4 property's enhanced measurement ("page changes based on browser history
+// events") reports client-side navigations. Sending page_view from the router
+// as well counted every in-app navigation twice, so the router doesn't.
 
 // A lazy route chunk can fail to load, most often right after a deploy (the
 // open page still references old hashed assets) or on a flaky connection.
