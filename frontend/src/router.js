@@ -43,4 +43,38 @@ router.afterEach((to) => {
   }
 })
 
+// A lazy route chunk can fail to load, most often right after a deploy (the
+// open page still references old hashed assets) or on a flaky connection.
+// Reload once onto the target URL so the browser fetches the current build;
+// the sessionStorage flag prevents a reload loop if the failure persists.
+const CHUNK_RELOAD_KEY = 'quantms-chunk-reload'
+
+export function isChunkLoadError(err) {
+  const msg = String((err && err.message) || err || '')
+  return /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Unable to preload CSS|Loading (CSS )?chunk .* failed/i.test(msg)
+}
+
+export function handleChunkError(err, to, { storage, location } = {}) {
+  if (!isChunkLoadError(err)) return false
+  const target = (to && to.fullPath) || '/'
+  let last = null
+  try { last = storage && storage.getItem(CHUNK_RELOAD_KEY) } catch { /* storage unavailable */ }
+  if (last === target) return false
+  try { storage && storage.setItem(CHUNK_RELOAD_KEY, target) } catch { /* storage unavailable */ }
+  location.assign(target)
+  return true
+}
+
+router.onError((err, to) => {
+  if (typeof window === 'undefined') return
+  let storage = null
+  try { storage = window.sessionStorage } catch { /* blocked */ }
+  handleChunkError(err, to, { storage, location: window.location })
+})
+
+// A successful navigation clears the guard so a later deploy can reload again.
+router.afterEach(() => {
+  try { window.sessionStorage.removeItem(CHUNK_RELOAD_KEY) } catch { /* blocked */ }
+})
+
 export default router
