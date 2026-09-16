@@ -38,7 +38,7 @@ curl "https://api.quantms.org/peptide-search/search/peptide?sequence=ADSRDPASDQM
         </div>
 
         <div style="margin-top: 28px;">
-          <a href="https://github.com/bigbio/quantms-portal" target="_blank"
+          <a href="https://github.com/bigbio/quantms-portal" target="_blank" rel="noopener"
              style="font-size: 14px; color: var(--indigo); font-weight: 600; text-decoration: none;">
             Follow development on GitHub →
           </a>

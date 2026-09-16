@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { uniprotUrl, peptideAtlasUrl, quantmsPeptideSearchPath } from './links.js'
+import { uniprotUrl, peptideAtlasUrl, quantmsPeptideSearchPath, safeHref } from './links.js'
 
 describe('cross-resource link builders', () => {
   it('builds a UniProt entry URL and encodes the accession', () => {
@@ -19,5 +19,21 @@ describe('cross-resource link builders', () => {
       '/apps/peptide-search?mode=protein&query=P04637',
     )
     expect(quantmsPeptideSearchPath('P0/2')).toContain('query=P0%2F2')
+  })
+})
+
+describe('safeHref', () => {
+  it('keeps absolute http(s) URLs', () => {
+    expect(safeHref('https://www.ebi.ac.uk/pride/archive/projects/PXD000561')).toBe('https://www.ebi.ac.uk/pride/archive/projects/PXD000561')
+    expect(safeHref(' http://example.org/a ')).toBe('http://example.org/a')
+  })
+  it('drops script, data, relative and malformed values', () => {
+    expect(safeHref('javascript:alert(1)')).toBe('')
+    expect(safeHref('JavaScript:alert(1)')).toBe('')
+    expect(safeHref('data:text/html,hi')).toBe('')
+    expect(safeHref('/relative/path')).toBe('')
+    expect(safeHref('not a url')).toBe('')
+    expect(safeHref(null)).toBe('')
+    expect(safeHref(42)).toBe('')
   })
 })

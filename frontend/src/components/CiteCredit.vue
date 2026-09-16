@@ -10,7 +10,7 @@
         <span class="cite-ds-title">{{ c.title || c.accession }}</span>
         <span v-if="c.submitter" class="cite-meta"> — {{ c.submitter.name }}</span>
         <span class="cite-links">
-          <a v-if="c.repository && c.repository.url" :href="c.repository.url" target="_blank" rel="noopener">
+          <a v-if="safeHref(c.repository && c.repository.url)" :href="safeHref(c.repository.url)" target="_blank" rel="noopener">
             {{ c.repository.name }} {{ c.accession }} &#8599;
           </a>
           <a v-if="c.publication && c.publication.doi" :href="`https://doi.org/${c.publication.doi}`" target="_blank" rel="noopener">
@@ -23,7 +23,7 @@
         <span class="cite-meta"> — collection reference</span>
         <span class="cite-links">
           <a v-if="cc.doi" :href="`https://doi.org/${cc.doi}`" target="_blank" rel="noopener">doi:{{ cc.doi }} &#8599;</a>
-          <a v-else-if="cc.url" :href="cc.url" target="_blank" rel="noopener">{{ cc.journal || 'link' }} &#8599;</a>
+          <a v-else-if="safeHref(cc.url)" :href="safeHref(cc.url)" target="_blank" rel="noopener">{{ cc.journal || 'link' }} &#8599;</a>
         </span>
       </li>
     </ul>
@@ -40,6 +40,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { getCredits } from '../citation.js'
 import { createRequestGuard } from '../utils/requestGuard.js'
+import { safeHref } from '../utils/links.js'
 
 // `refs` is the list of contributing dataset refs ("ACC/hash"). For a single
 // dataset page it's one ref; for a claim it will be the top contributors.

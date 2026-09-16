@@ -64,7 +64,7 @@
           v-for="p in proteins"
           :key="p.accession"
           class="pp-protein-chip"
-          :href="p.uniprot_url || uniprotUrl(p.accession)"
+          :href="safeHref(p.uniprot_url) || uniprotUrl(p.accession)"
           target="_blank"
           rel="noopener"
           :title="`Open ${p.accession} on UniProt`"
@@ -160,7 +160,7 @@ import { ref, computed, watch } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
-import { uniprotUrl } from '../utils/links.js'
+import { uniprotUrl, safeHref } from '../utils/links.js'
 
 const props = defineProps({
   // Bare peptide sequence. Empty string clears the panel.

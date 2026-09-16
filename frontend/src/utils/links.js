@@ -17,3 +17,16 @@ export function peptideAtlasUrl(acc) {
 export function quantmsPeptideSearchPath(acc) {
   return `/apps/peptide-search?mode=protein&query=${encodeURIComponent(acc)}`
 }
+
+// Allow only absolute http(s) URLs coming from API data in an href. Anything
+// else (javascript:, data:, relative or malformed values) yields '' so the
+// link is not rendered.
+export function safeHref(url) {
+  if (typeof url !== 'string' || !url.trim()) return ''
+  try {
+    const u = new URL(url.trim())
+    return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : ''
+  } catch {
+    return ''
+  }
+}

@@ -89,7 +89,7 @@
                 </td>
                 <td class="td-num model-date">{{ model.date }}</td>
                 <td>
-                  <a :href="model.url" target="_blank" rel="noopener" class="download-link">
+                  <a v-if="safeHref(model.url)" :href="safeHref(model.url)" target="_blank" rel="noopener" class="download-link">
                     FTP &#8599;
                   </a>
                 </td>
@@ -128,6 +128,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { safeHref } from '../utils/links.js'
 
 const loading = ref(true)
 const loadError = ref(false)

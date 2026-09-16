@@ -200,7 +200,7 @@
                   <span v-if="ds.n_peptidoforms > 3" style="color: var(--text-muted)"> +{{ ds.n_peptidoforms - 3 }}</span>
                 </td>
                 <td style="text-align: center">
-                  <a v-if="ds.dataset_url" :href="ds.dataset_url" target="_blank" rel="noopener" class="dl-link" title="Browse dataset" :aria-label="`Browse dataset ${ds.dataset_accession}`">
+                  <a v-if="safeHref(ds.dataset_url)" :href="safeHref(ds.dataset_url)" target="_blank" rel="noopener" class="dl-link" title="Browse dataset" :aria-label="`Browse dataset ${ds.dataset_accession}`">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                   </a>
                   <span v-else style="color: var(--text-muted)">—</span>
@@ -256,6 +256,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '../api.js'
 import { normalizeSearchResult } from '../utils/search.js'
 import { getPeptideStats } from '../utils/peptideStats.js'
+import { safeHref } from '../utils/links.js'
 import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
