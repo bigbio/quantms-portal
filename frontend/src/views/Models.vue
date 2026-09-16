@@ -18,11 +18,11 @@
       <!-- Filter bar -->
       <div class="filter-bar">
         <div class="filter-group">
-          <select v-model="filterCollection" class="filter-select">
+          <select v-model="filterCollection" class="filter-select" aria-label="Filter by collection">
             <option value="">All Collections</option>
             <option v-for="col in collections" :key="col" :value="col">{{ col }}</option>
           </select>
-          <select v-model="filterTool" class="filter-select">
+          <select v-model="filterTool" class="filter-select" aria-label="Filter by tool">
             <option value="">All Tools</option>
             <option v-for="tool in tools" :key="tool" :value="tool">{{ tool }}</option>
           </select>
@@ -31,6 +31,7 @@
             type="text"
             class="filter-search"
             placeholder="Search models..."
+            aria-label="Search models"
           />
         </div>
         <span class="result-count">{{ filteredModels.length }} model{{ filteredModels.length !== 1 ? 's' : '' }}</span>
@@ -41,11 +42,17 @@
         Loading models...
       </div>
 
+      <!-- Load error -->
+      <div v-else-if="loadError" class="notice">
+        The model catalogue could not be loaded.
+        <button class="page-btn" style="margin-left: 12px" @click="load">Retry</button>
+      </div>
+
       <!-- Empty state -->
       <div v-else-if="filteredModels.length === 0" style="text-align:center; padding: 64px 0; color: var(--text-muted);">
-        <div style="font-size: 40px; margin-bottom: 16px;">&#129302;</div>
+        <div style="font-size: 40px; margin-bottom: 16px;" aria-hidden="true">&#129302;</div>
         <div style="font-size: 15px; font-weight: 600; margin-bottom: 8px;">No models found</div>
-        <div style="font-size: 13px;">Try adjusting your filters.</div>
+        <div v-if="models.length" style="font-size: 13px;">Try adjusting your filters.</div>
       </div>
 
       <!-- Models table -->
@@ -80,7 +87,7 @@
                 <td>
                   <span class="tag" :class="formatTagClass(model.format)">{{ model.format }}</span>
                 </td>
-                <td class="td-num" style="text-align: left;">{{ model.date }}</td>
+                <td class="td-num model-date">{{ model.date }}</td>
                 <td>
                   <a :href="model.url" target="_blank" rel="noopener" class="download-link">
                     FTP &#8599;
@@ -122,39 +129,20 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const loading = ref(false)
+const loading = ref(true)
+const loadError = ref(false)
 const models = ref([])
 const searchQuery = ref('')
 const filterCollection = ref('')
 const filterTool = ref('')
 
-const collections = computed(() => {
-  return [...new Set(models.value.map(m => m.collection))].sort()
-})
-
-const tools = computed(() => {
-  return [...new Set(models.value.map(m => m.tool))].sort()
-})
-
-const filteredModels = computed(() => {
-  let result = models.value
-  if (filterCollection.value) {
-    result = result.filter(m => m.collection === filterCollection.value)
-  }
-  if (filterTool.value) {
-    result = result.filter(m => m.tool === filterTool.value)
-  }
-  if (searchQuery.value.trim()) {
-    const q = searchQuery.value.toLowerCase().trim()
-    result = result.filter(m =>
-      m.name.toLowerCase().includes(q) ||
-      (m.description || '').toLowerCase().includes(q) ||
-      m.tool.toLowerCase().includes(q) ||
-      m.collection.toLowerCase().includes(q)
-    )
-  }
-  return result
-})
+const collections = computed(() => uniqueValues(models.value, 'collection'))
+const tools = computed(() => uniqueValues(models.value, 'tool'))
+const filteredModels = computed(() => filterModels(models.value, {
+  collection: filterCollection.value,
+  tool: filterTool.value,
+  query: searchQuery.value,
+}))
 
 function formatTagClass(format) {
   if (!format) return 'tag-blue'
@@ -165,28 +153,59 @@ function formatTagClass(format) {
   return 'tag-blue'
 }
 
-onMounted(async () => {
+async function load() {
   loading.value = true
+  loadError.value = false
   try {
     const base = import.meta.env.BASE_URL
     const res = await fetch(`${base}data/models.json`)
-    if (res.ok) {
-      models.value = await res.json()
-    }
+    if (!res.ok) throw new Error(`models.json: ${res.status}`)
+    const data = await res.json()
+    models.value = Array.isArray(data) ? data : []
   } catch (e) {
-    console.warn('Could not load models.json:', e)
+    models.value = []
+    loadError.value = true
   } finally {
     loading.value = false
   }
-})
+}
+
+onMounted(load)
+</script>
+
+<script>
+const text = (v) => (v == null ? '' : String(v))
+
+/** Sorted distinct non-empty values of `key`. */
+export function uniqueValues(models, key) {
+  return [...new Set((models || []).map((m) => text(m[key])).filter(Boolean))].sort()
+}
+
+/** Filter the catalogue by collection, tool and a free-text query (null-safe). */
+export function filterModels(models, { collection = '', tool = '', query = '' } = {}) {
+  let result = models || []
+  if (collection) result = result.filter((m) => text(m.collection) === collection)
+  if (tool) result = result.filter((m) => text(m.tool) === tool)
+  const q = query.trim().toLowerCase()
+  if (q) {
+    result = result.filter((m) =>
+      [m.name, m.description, m.tool, m.collection].some((v) => text(v).toLowerCase().includes(q)))
+  }
+  return result
+}
 </script>
 
 <style scoped>
 .model-name {
-  font-family: var(--mono);
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+  display: inline-block;
+  min-width: 180px;
+}
+.model-date {
+  text-align: left;
+  white-space: nowrap;
 }
 
 .download-link {
