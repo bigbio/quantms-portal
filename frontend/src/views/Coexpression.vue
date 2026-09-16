@@ -142,6 +142,7 @@
           <!-- Table -->
           <section class="chart-card">
             <div class="chart-head"><h3>Partners</h3></div>
+            <div class="partners-wrap">
             <table class="partners">
               <thead>
                 <tr><th>Gene</th><th>Accession</th><th class="num">r</th><th class="num">Datasets</th><th class="num">Lines</th><th class="num">Sign agrees</th></tr>
@@ -157,6 +158,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
           </section>
         </div>
 
@@ -364,8 +366,12 @@ onMounted(async () => {
 .linkish { background: none; border: 0; padding: 0; color: var(--indigo); cursor: pointer; font: inherit; text-decoration: underline; }
 .muted { color: var(--text-muted); font-weight: 400; font-size: 0.85em; }
 .no-match { margin: 2px 0 0; font-size: 0.85rem; color: #b45309; }
+.partners-wrap { overflow-x: auto; }
 .method { font-size: 0.85rem; color: var(--text-secondary); margin-top: 20px; max-width: 72ch; line-height: 1.55; }
 @media (max-width: 900px) {
-  .query-card, .result-grid { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr): a plain 1fr track grows to the table's min-content width
+     and pushed the cards past the viewport on phones. */
+  .query-card, .result-grid { grid-template-columns: minmax(0, 1fr); }
+  .chart-head { flex-wrap: wrap; }
 }
 </style>
