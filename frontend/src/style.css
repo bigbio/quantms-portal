@@ -379,6 +379,15 @@ body {
   position: relative;
   overflow: hidden;
 }
+.collection-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.collection-card:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
+}
 .collection-card:hover {
   border-color: rgba(99, 102, 241, 0.3);
   box-shadow: 0 6px 20px rgba(99, 102, 241, 0.08);

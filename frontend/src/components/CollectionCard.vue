@@ -1,5 +1,5 @@
 <template>
-  <div class="collection-card" @click="$emit('select', collection.name)" style="cursor: pointer;">
+  <router-link :to="`/collections/${encodeURIComponent(collection.name)}`" class="collection-card">
     <div class="collection-card-accent"></div>
     <div class="collection-icon" :class="iconClass">
       <svg v-if="collection.name === 'msnet'" width="26" height="26" viewBox="0 0 24 24" fill="none" :stroke="iconColor" stroke-width="1.6">
@@ -65,7 +65,7 @@
       </span>
     </div>
     <span class="collection-cta">Browse collection &rarr;</span>
-  </div>
+  </router-link>
 </template>
 
 <script setup>
@@ -74,8 +74,6 @@ import { computed } from 'vue'
 const props = defineProps({
   collection: { type: Object, required: true }
 })
-
-defineEmits(['select'])
 
 const colorMap = {
   'msnet': { icon: 'ci-blue', color: '#409eff' },

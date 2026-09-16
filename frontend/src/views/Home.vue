@@ -32,7 +32,7 @@
         <div v-for="n in 4" :key="n" class="skeleton-card"></div>
       </div>
       <div v-else class="collection-grid">
-        <CollectionCard v-for="col in collections" :key="col.name" :collection="col" @select="goToCollection" />
+        <CollectionCard v-for="col in collections" :key="col.name" :collection="col" />
       </div>
     </div>
   </section>
@@ -83,13 +83,11 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import StatsRibbon from '../components/StatsRibbon.vue'
 import CollectionCard from '../components/CollectionCard.vue'
 import { apiGet } from '../api.js'
 import { GATEWAY_BASE, DATASET_SEARCH_BASE, API_DOCS_URL } from '../config.js'
 
-const router = useRouter()
 const apiDocsUrl = API_DOCS_URL
 
 const collections = ref([])
@@ -130,9 +128,6 @@ const appCards = computed(() =>
     }))
 )
 
-function goToCollection(name) {
-  router.push(`/collections/${name}`)
-}
 
 async function loadCollections() {
   loadingCollections.value = true

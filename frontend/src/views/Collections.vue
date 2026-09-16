@@ -26,7 +26,7 @@
           v-for="col in collections"
           :key="col.name"
           :collection="col"
-          @select="goToCollection"
+         
         />
       </div>
     </div>
@@ -35,19 +35,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import CollectionCard from '../components/CollectionCard.vue'
 import { apiGet } from '../api.js'
 import { DATASET_SEARCH_BASE } from '../config.js'
 
-const router = useRouter()
 const collections = ref([])
 const loading = ref(true)
 const error = ref(false)
 
-function goToCollection(name) {
-  router.push(`/collections/${name}`)
-}
 
 async function load() {
   loading.value = true
