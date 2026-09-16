@@ -51,26 +51,23 @@
       </div>
 
       <div v-else class="app-grid">
-        <component
-          :is="app.to ? 'router-link' : 'a'"
-          v-for="app in appCards"
-          :key="app.id"
-          :to="app.to || undefined"
-          :href="app.href || undefined"
-          :target="app.href ? '_blank' : undefined"
-          :rel="app.href ? 'noopener' : undefined"
-          class="app-card"
-        >
+        <!-- The card is a plain container whose title link is stretched over
+             the whole card, so the separate "API docs" link isn't nested
+             inside another link (invalid HTML). -->
+        <div v-for="app in appCards" :key="app.id" class="app-card">
           <div class="app-card-head">
-            <h3>{{ app.title }}</h3>
+            <h3>
+              <router-link v-if="app.to" :to="app.to" class="app-card-link">{{ app.title }}</router-link>
+              <a v-else :href="app.href" target="_blank" rel="noopener" class="app-card-link">{{ app.title }}</a>
+            </h3>
             <span class="app-tier">tier {{ app.tier }}</span>
           </div>
           <p class="app-desc">{{ app.description }}</p>
           <div class="app-links">
-            <span v-if="app.to" class="app-cta">Open →</span>
-            <a v-if="app.docs_url" :href="app.docs_url" target="_blank" rel="noopener" class="app-doclink" @click.stop>API docs ↗</a>
+            <span v-if="app.to" class="app-cta" aria-hidden="true">Open →</span>
+            <a v-if="app.docs_url" :href="app.docs_url" target="_blank" rel="noopener" class="app-doclink">API docs ↗</a>
           </div>
-        </component>
+        </div>
       </div>
 
       <div class="api-hub">
@@ -80,6 +77,27 @@
     </div>
   </section>
 </template>
+
+<script>
+// Map app id -> in-portal route.
+const APP_ROUTES = {
+  collections: '/collections',
+  'dataset-search': '/apps/dataset-search',
+  'peptide-search': '/apps/peptide-search',
+  compass: '/apps/compass',
+  coexpression: '/apps/coexpression',
+  'differential-expression': '/differential-expression',
+  statistics: '/statistics',
+}
+
+// In-portal route for an app: the manifest's own `route` wins when it is a
+// portal path, then the known id mapping.
+export function appRoute(app) {
+  const r = app && typeof app.route === 'string' ? app.route : ''
+  if (r.startsWith('/') && !r.startsWith('//')) return r
+  return APP_ROUTES[app?.id] || ''
+}
+</script>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
@@ -98,14 +116,6 @@ const collectionsError = ref(false)
 const apps = ref([])
 const appsError = ref(false)
 
-// Map app id -> in-portal route.
-const APP_ROUTES = {
-  collections: '/collections',
-  'dataset-search': '/apps/dataset-search',
-  'peptide-search': '/apps/peptide-search',
-  statistics: '/statistics',
-}
-
 // Descriptions for apps whose manifest ships an empty description.
 const APP_FALLBACK_DESC = {
   collections: 'Browse and filter datasets grouped into curated collections.',
@@ -116,14 +126,14 @@ const appCards = computed(() =>
   apps.value
     // The gateway self-entry (Collections & Publish API) is the API hub, not a
     // user-facing app — it is surfaced via the API-hub link below, not as a card.
-    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && (APP_ROUTES[a.id] || a.docs_url))
+    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && (appRoute(a) || a.docs_url))
     .map((a) => ({
       id: a.id,
       title: a.title || a.id,
       description: a.description || APP_FALLBACK_DESC[a.id] || 'quantms service.',
       tier: a.tier ?? 1,
-      to: APP_ROUTES[a.id] || '',
-      href: APP_ROUTES[a.id] ? '' : a.base_url || a.docs_url || '',
+      to: appRoute(a),
+      href: appRoute(a) ? '' : a.base_url || a.docs_url || '',
       docs_url: a.docs_url || '',
     }))
 )
@@ -186,6 +196,7 @@ onMounted(() => {
   gap: 20px;
 }
 .app-card {
+  position: relative;
   display: block;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -194,6 +205,24 @@ onMounted(() => {
   text-decoration: none;
   color: inherit;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+.app-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+/* Stretch the title link over the card so the whole card stays clickable. */
+.app-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+.app-card-link:focus-visible {
+  outline: none;
+}
+.app-card:has(.app-card-link:focus-visible) {
+  outline: 2px solid var(--indigo);
+  outline-offset: 2px;
 }
 .app-card:hover {
   border-color: rgba(99, 102, 241, 0.3);
@@ -238,6 +267,8 @@ onMounted(() => {
   color: var(--indigo);
 }
 .app-doclink {
+  position: relative;
+  z-index: 1;
   font-size: 12px;
   color: var(--text-muted);
   text-decoration: none;
