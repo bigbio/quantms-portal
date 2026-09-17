@@ -83,4 +83,17 @@ describe('ProteomeCompass view', () => {
     expect(w.text()).not.toContain('Could not load the proteomes scoreboard')
     expect(calls('/organisms')).toHaveLength(2)
   })
+
+  it('opens the gap finder at the top when a scoreboard row is clicked', async () => {
+    apiGet.mockImplementation((base, path) => path === '/organisms'
+      ? Promise.resolve({ organisms: [{ organism: 'Homo sapiens', common_name: 'Human', kingdom: 'Metazoa', by_tier: {} }] })
+      : Promise.resolve({}))
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    const { w, router } = await mountAt('/apps/compass?mode=proteomes')
+    await w.find('tr.org-row').trigger('click')
+    await flushPromises()
+    expect(router.currentRoute.value.query.mode).toBe('gaps')
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0 })
+    scrollTo.mockRestore()
+  })
 })
