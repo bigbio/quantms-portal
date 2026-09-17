@@ -184,6 +184,9 @@ function tierWidth(r, t) {
 function openOrganism(r) {
   organism.value = r.organism
   mode.value = 'gaps'
+  // Query-only navigation keeps the scroll position; the Gap Finder should
+  // open at the top, not wherever the clicked scoreboard row was.
+  window.scrollTo({ top: 0 })
 }
 
 const acc = ref('')
