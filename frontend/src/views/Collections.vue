@@ -58,6 +58,9 @@ async function load() {
       stats: {
         total_peptides: c.total_peptides || 0,
         total_proteins: c.total_proteins || 0,
+        total_cell_lines: c.total_cell_lines || 0,
+        total_diseases: c.total_diseases || 0,
+        total_tissues: c.total_tissues || 0,
       },
     }))
   } catch (e) {

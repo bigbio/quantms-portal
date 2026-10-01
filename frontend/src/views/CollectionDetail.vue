@@ -15,6 +15,12 @@
               <div class="stat-value" style="font-size: 24px">{{ formatBig(datasetCount) }}</div>
               <div class="stat-label">Datasets</div>
             </div>
+            <!-- Biological coverage: distinct across members, from each dataset's SDRF
+                 (cell lines by Cellosaurus accession). Shown only when annotated. -->
+            <div v-for="b in bioStats" :key="b.label" class="col-stat">
+              <div class="stat-value" style="font-size: 24px">{{ formatBig(b.value) }}</div>
+              <div class="stat-label">{{ b.label }}</div>
+            </div>
             <!-- Peptides/Proteins are collection-wide UNIQUE (deduped genes + peptide
                  sequences across members); fall back to the summed totals for collections
                  not yet restatted. Features/PSMs/Samples remain sums (data volume). -->
@@ -126,6 +132,14 @@ const loadingRows = ref(true)
 const rowsError = ref(false)
 
 const organisms = computed(() => (summary.value && summary.value.organisms) || [])
+const bioStats = computed(() => {
+  const s = (summary.value && summary.value.stats) || {}
+  return [
+    { label: 'Cell lines', value: s.total_cell_lines },
+    { label: 'Diseases', value: s.total_diseases },
+    { label: 'Tissues', value: s.total_tissues },
+  ].filter((b) => b.value)
+})
 const datasetCount = computed(() => {
   if (total.value != null) return total.value
   return (summary.value && summary.value.stats && summary.value.stats.datasets) || 0
