@@ -8,18 +8,6 @@ The quantms Portal provides access to reanalyzed quantitative proteomics dataset
 
 ## Collections
 
-### Absolute Expression (103 datasets)
-- Human proteomics datasets quantified with iBAQ
-- 470,804 proteins across 18,053 samples
-- Use case: protein expression reference, tissue/cell line atlases
-- Browse: https://portal.quantms.org/collections/absolute-expression
-
-### Differential Expression (35 datasets)
-- Disease vs. control comparisons
-- 162,915 quantified proteins
-- Use case: biomarker discovery, disease proteomics
-- Browse: https://portal.quantms.org/collections/differential-expression
-
 ### MS-Net (107 datasets)
 - 53 species, 500M+ PSMs
 - Use case: ML training data, spectral library building, cross-species proteomics

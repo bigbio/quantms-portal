@@ -7,25 +7,32 @@
       </div>
 
       <div class="app-grid">
-        <router-link
-          v-for="app in apps"
-          :key="app.id"
-          :to="app.to"
-          class="app-card"
-        >
-          <div class="app-card-head">
-            <h3>{{ app.title }}</h3>
-            <span class="app-tier">tier {{ app.tier }}</span>
+        <template v-for="app in apps" :key="app.id">
+          <div v-if="app.obsolete" class="app-card app-card-obsolete" aria-disabled="true">
+            <div class="app-card-head">
+              <h3>{{ app.title }}</h3>
+              <span class="app-badge-obsolete">Obsolete</span>
+            </div>
+            <p class="app-desc">{{ app.description }}</p>
+            <span class="app-obsolete-note">{{ app.obsoleteNote }}</span>
           </div>
-          <p class="app-desc">{{ app.description }}</p>
-          <span class="app-cta">Open →</span>
-        </router-link>
+          <router-link v-else :to="app.to" class="app-card">
+            <div class="app-card-head">
+              <h3>{{ app.title }}</h3>
+              <span class="app-tier">tier {{ app.tier }}</span>
+            </div>
+            <p class="app-desc">{{ app.description }}</p>
+            <span class="app-cta">Open →</span>
+          </router-link>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { OBSOLETE_APPS } from '../config.js'
+
 // Curated catalog of the interactive analysis apps. Kept static (rather than the
 // gateway /apps catalog) so newly-added apps appear immediately and apps still
 // marked enabled:false in the manifest (e.g. a freshly deployed one) are listed.
@@ -57,6 +64,7 @@ const apps = [
     to: '/differential-expression',
     tier: 2,
     description: 'Pick a dataset, contrast conditions, and explore differential expression — volcano, table, heatmap, and QC.',
+    obsoleteNote: 'Retired: its datasets were old pre-qpx reanalyses. It will return once the collection is rebuilt.',
   },
   {
     id: 'coexpression',
@@ -72,7 +80,7 @@ const apps = [
     tier: 1,
     description: 'Portal-wide KPIs and distributions: datasets, peptides, proteins, organisms, instruments, and PTMs.',
   },
-]
+].map((a) => ({ ...a, obsolete: a.obsolete || OBSOLETE_APPS.has(a.id) }))
 </script>
 
 <style scoped>
@@ -132,6 +140,24 @@ const apps = [
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
+}
+.app-card-obsolete {
+  opacity: 0.6;
+  cursor: default;
+}
+.app-badge-obsolete {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.app-obsolete-note {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
 }
 .app-desc {
   margin: 0;

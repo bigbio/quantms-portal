@@ -9,14 +9,17 @@ describe('Applications page', () => {
       global: { stubs: { 'router-link': RouterLinkStub } },
     })
     const cards = w.findAllComponents(RouterLinkStub)
-    expect(cards.length).toBe(6)
+    expect(cards.length).toBe(5)
+    expect(w.findAll('.app-card').length).toBe(6)
     const titles = w.findAll('.app-card-head h3').map((n) => n.text())
     expect(titles).toContain('Differential Expression')
     expect(titles).toContain('Proteome Compass')
     expect(titles).toContain('Protein Co-expression')
     expect(cards.find((c) => c.props('to') === '/apps/coexpression')).toBeTruthy()
-    // the DE card points at the live route
-    const de = cards.find((c) => c.props('to') === '/differential-expression')
-    expect(de).toBeTruthy()
+    // DE is obsolete: shown with a badge, not linked
+    expect(cards.find((c) => c.props('to') === '/differential-expression')).toBeFalsy()
+    const obsolete = w.find('.app-card-obsolete')
+    expect(obsolete.find('h3').text()).toBe('Differential Expression')
+    expect(obsolete.find('.app-badge-obsolete').text()).toBe('Obsolete')
   })
 })

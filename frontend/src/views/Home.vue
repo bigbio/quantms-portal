@@ -104,7 +104,7 @@ import StatsRibbon from '../components/StatsRibbon.vue'
 import CollectionCard from '../components/CollectionCard.vue'
 import { apiGet } from '../api.js'
 import { safeHref } from '../utils/links.js'
-import { GATEWAY_BASE, DATASET_SEARCH_BASE, API_DOCS_URL } from '../config.js'
+import { GATEWAY_BASE, DATASET_SEARCH_BASE, API_DOCS_URL, OBSOLETE_APPS } from '../config.js'
 
 const apiDocsUrl = API_DOCS_URL
 
@@ -126,7 +126,7 @@ const appCards = computed(() =>
   apps.value
     // The gateway self-entry (Collections & Publish API) is the API hub, not a
     // user-facing app — it is surfaced via the API-hub link below, not as a card.
-    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && (appRoute(a) || safeHref(a.base_url) || safeHref(a.docs_url)))
+    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && !OBSOLETE_APPS.has(a.id) && (appRoute(a) || safeHref(a.base_url) || safeHref(a.docs_url)))
     .map((a) => ({
       id: a.id,
       title: a.title || a.id,

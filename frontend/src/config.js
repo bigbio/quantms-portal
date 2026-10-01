@@ -38,6 +38,11 @@ export const COEXP_PATH = '/quantms/apps/coexpression'
 // this constant is only the FALLBACK used when the backend reports no GPP data.
 export const GPP_FALLBACK_MIN = 0.15
 
+// Apps retired from the portal but kept in the codebase so they can be recovered.
+// Differential Expression: its source collection was removed (stale pre-qpx results);
+// re-enable by dropping the id here and restoring the route in router.js.
+export const OBSOLETE_APPS = new Set(['differential-expression'])
+
 // API documentation hub.
 export const API_DOCS_URL = `${API_BASE}/docs`
 
