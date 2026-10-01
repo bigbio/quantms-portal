@@ -19,6 +19,18 @@
         <div class="collection-stat-val">{{ collection.dataset_count }}</div>
         <div class="collection-stat-label">Datasets</div>
       </div>
+      <div v-if="collection.stats?.total_cell_lines" class="collection-stat">
+        <div class="collection-stat-val">{{ formatNumber(collection.stats.total_cell_lines) }}</div>
+        <div class="collection-stat-label">Cell lines</div>
+      </div>
+      <div v-if="collection.stats?.total_diseases" class="collection-stat">
+        <div class="collection-stat-val">{{ formatNumber(collection.stats.total_diseases) }}</div>
+        <div class="collection-stat-label">Diseases</div>
+      </div>
+      <div v-if="collection.stats?.total_tissues" class="collection-stat">
+        <div class="collection-stat-val">{{ collection.stats.total_tissues }}</div>
+        <div class="collection-stat-label">Tissues</div>
+      </div>
       <div v-if="collection.stats?.total_features" class="collection-stat">
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_features) }}</div>
         <div class="collection-stat-label">Features</div>
@@ -46,10 +58,6 @@
       <div v-if="collection.stats?.total_peptides" class="collection-stat">
         <div class="collection-stat-val">{{ formatNumber(collection.stats.total_peptides) }}</div>
         <div class="collection-stat-label">Peptides</div>
-      </div>
-      <div v-if="collection.stats?.total_tissues" class="collection-stat">
-        <div class="collection-stat-val">{{ collection.stats.total_tissues }}</div>
-        <div class="collection-stat-label">Tissues</div>
       </div>
       <div v-if="collection.stats?.total_contrasts" class="collection-stat">
         <div class="collection-stat-val">{{ collection.stats.total_contrasts }}</div>
