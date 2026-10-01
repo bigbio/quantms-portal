@@ -4,8 +4,6 @@
 
 ## Collections
 
-- Absolute Protein Expression: 103 human proteomics datasets, iBAQ quantification, 470,804 proteins, 18,053 samples. URL: https://portal.quantms.org/collections/absolute-expression
-- Differential Expression: 35 datasets, disease vs. control comparisons, 162,915 proteins. URL: https://portal.quantms.org/collections/differential-expression
 - MS-Net: 107 datasets, 53 species, 500M+ PSMs. URL: https://portal.quantms.org/collections/msnet
 - Single Cell Proteomics: 6 datasets, 538 single-cell samples. URL: https://portal.quantms.org/collections/single-cell
 

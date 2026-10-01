@@ -25,7 +25,7 @@ describe('sitemap.xml', () => {
     for (const slug of DOCS_NAV.flatMap((g) => g.items.map((i) => i.slug))) {
       expect(paths).toContain(`/docs/${slug}`)
     }
-    for (const p of ['/', '/applications', '/apps/dataset-search', '/apps/peptide-search', '/apps/compass', '/apps/coexpression', '/differential-expression', '/statistics']) {
+    for (const p of ['/', '/applications', '/apps/dataset-search', '/apps/peptide-search', '/apps/compass', '/apps/coexpression', '/statistics']) {
       expect(paths).toContain(p)
     }
   })
