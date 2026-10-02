@@ -136,15 +136,6 @@ export function powerMeta(value) {
   return POWER_META[powerLevel(value)]
 }
 
-// Sortable rank (0 = best) following QUALITY_ORDER / POWER_ORDER.
-export function qualityRank(value) {
-  return QUALITY_ORDER.indexOf(qualityLevel(value))
-}
-
-export function powerRank(value) {
-  return POWER_ORDER.indexOf(powerLevel(value))
-}
-
 // The `reasons` the backend attached to a classification, as a clean string
 // array. Returns [] for a bare level string or a malformed/absent block, so
 // callers can render it unconditionally.
