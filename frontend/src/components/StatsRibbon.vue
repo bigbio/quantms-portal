@@ -14,6 +14,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatBig } from '../utils/format.js'
 
 const props = defineProps({
   stats: {
@@ -22,12 +23,9 @@ const props = defineProps({
   }
 })
 
+// Non-numeric values render as nothing (formatBig would show an em-dash).
 function fmt(n) {
-  if (n == null || typeof n !== 'number') return null
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B'
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
-  return String(n)
+  return typeof n === 'number' ? formatBig(n) : null
 }
 
 const visibleStats = computed(() => {

@@ -8,8 +8,6 @@ import {
   powerLevel,
   qualityMeta,
   powerMeta,
-  qualityRank,
-  powerRank,
   classificationReasons,
   badgeTitle,
 } from './quality.js'
@@ -104,16 +102,7 @@ describe('qualityMeta / powerMeta', () => {
   })
 })
 
-describe('qualityRank / powerRank', () => {
-  it('ranks best first and sinks unknown to the bottom', () => {
-    expect(qualityRank('high')).toBeLessThan(qualityRank('medium'))
-    expect(qualityRank('medium')).toBeLessThan(qualityRank('low'))
-    expect(qualityRank('low')).toBeLessThan(qualityRank(null))
-    expect(powerRank('strong')).toBeLessThan(powerRank('moderate'))
-    expect(powerRank('moderate')).toBeLessThan(powerRank('limited'))
-    expect(powerRank('limited')).toBeLessThan(powerRank(null))
-  })
-
+describe('QUALITY_ORDER / POWER_ORDER', () => {
   it('follows the declared order arrays', () => {
     expect(QUALITY_ORDER).toEqual(['high', 'medium', 'low', 'unknown'])
     expect(POWER_ORDER).toEqual(['strong', 'moderate', 'limited', 'unknown'])
