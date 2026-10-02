@@ -78,6 +78,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { formatBig } from '../utils/format.js'
 
 const props = defineProps({
   collection: { type: Object, required: true }
@@ -117,11 +118,8 @@ function organismTagClass(org) {
   return 'tag-violet'
 }
 
+// Zero / missing counts show an em-dash (formatBig alone would print "0").
 function formatNumber(n) {
-  if (!n) return '—'
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B'
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
-  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
-  return String(n)
+  return n ? formatBig(n) : '—'
 }
 </script>
