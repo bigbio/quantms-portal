@@ -35,6 +35,7 @@
           <h1 class="detail-acc">{{ dataset.accession }}</h1>
           <span class="tag" :class="collectionTag(dataset.collection)">{{ dataset.collection_title || dataset.collection }}</span>
         </div>
+        <EvaluationBadge :record="evaluation" />
         <DatasetPanel :dataset="dataset" variant="full" />
       </template>
     </div>
@@ -45,8 +46,9 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DatasetPanel from '../components/DatasetPanel.vue'
+import EvaluationBadge from '../components/EvaluationBadge.vue'
 import { apiGet } from '../api.js'
-import { DATASET_SEARCH_BASE } from '../config.js'
+import { DATASET_SEARCH_BASE, BROWSE_BASE, EVALUATION_PATH } from '../config.js'
 import { collectionTag } from '../utils/format.js'
 import { createRequestGuard } from '../utils/requestGuard.js'
 
@@ -58,8 +60,21 @@ const dataset = ref(null)
 const loading = ref(true)
 const error = ref(false)
 const notFound = ref(false)
+const evaluation = ref(null)
 
 const guard = createRequestGuard()
+
+// Best-effort: a missing/failed record (404 until evaluated) just means no badge.
+async function loadEvaluation(data, isCurrent) {
+  if (!data || !data.dataset_ref) return
+  try {
+    const path = data.dataset_ref.split('/').map(encodeURIComponent).join('/')
+    const rec = await apiGet(BROWSE_BASE, `${EVALUATION_PATH}/${path}/evaluation.json`)
+    if (isCurrent() && rec && typeof rec === 'object') evaluation.value = rec
+  } catch {
+    if (isCurrent()) evaluation.value = null
+  }
+}
 
 async function load() {
   const isCurrent = guard.next()
@@ -67,9 +82,13 @@ async function load() {
   error.value = false
   notFound.value = false
   dataset.value = null
+  evaluation.value = null
   try {
     const data = await apiGet(DATASET_SEARCH_BASE, `/datasets/${encodeURIComponent(accession.value)}`)
-    if (isCurrent()) dataset.value = data
+    if (isCurrent()) {
+      dataset.value = data
+      loadEvaluation(data, isCurrent)
+    }
   } catch (e) {
     if (!isCurrent()) return
     if (e && e.status === 404) notFound.value = true

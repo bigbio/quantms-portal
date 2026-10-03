@@ -24,6 +24,9 @@ export const DE_BASE = (env.VITE_DE_BASE || `${API_BASE}/differential-expression
 // S3 browse host for dataset file downloads.
 export const BROWSE_BASE = (env.VITE_BROWSE_BASE || 'https://browse.quantms.org').replace(/\/$/, '')
 
+// Per-dataset evaluation records: ${BROWSE_BASE}${EVALUATION_PATH}/<dataset_ref>/evaluation.json (404 until evaluated).
+export const EVALUATION_PATH = '/quantms/evaluations'
+
 // Precomputed portal-wide statistics artifact (Tier-1 static app). The Statistics
 // view reads this JSON directly from browse — no stats backend, no per-request compute.
 export const STATS_PATH = '/quantms/apps/statistics/stats.json'
