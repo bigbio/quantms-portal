@@ -42,4 +42,30 @@ describe('DatasetDetail view', () => {
     await flushPromises()
     expect(apiGet.mock.calls[0][1]).toBe('/datasets/A%20B%3Fx')
   })
+
+  describe('evaluation badge', () => {
+    const rec = { verdict: 'PASS', dimensions: { ms: 'PASS', biology: 'WARN', metadata: 'NA' }, override: null, evaluator_version: '1', checks: [] }
+    async function mountWith(evalImpl) {
+      apiGet.mockReset()
+      apiGet.mockImplementation((base, path) => path.startsWith('/datasets/')
+        ? Promise.resolve({ accession: 'PXD1', title: 'T', dataset_ref: 'PXD1/abc' })
+        : evalImpl(path))
+      const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/collections/:name/:pxd', component: DatasetDetail }] })
+      router.push('/collections/msnet/PXD1')
+      await router.isReady()
+      const w = mount({ template: '<router-view />' }, { global: { plugins: [router], stubs } })
+      await flushPromises()
+      return w
+    }
+    it('renders the badge when a record exists', async () => {
+      const w = await mountWith(() => Promise.resolve(rec))
+      expect(apiGet.mock.calls[1][1]).toBe('/quantms/evaluations/PXD1/abc/evaluation.json')
+      expect(w.findAll('.eval-chip').map((c) => c.text())).toEqual(['MS PASS', 'Biology WARN', 'Metadata NA'])
+    })
+    it('renders nothing on 404', async () => {
+      const w = await mountWith(() => Promise.reject(Object.assign(new Error('nf'), { status: 404 })))
+      expect(w.find('.eval-badge').exists()).toBe(false)
+      expect(w.text()).not.toContain('unavailable')
+    })
+  })
 })
