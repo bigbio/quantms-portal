@@ -36,6 +36,16 @@
           <span class="tag" :class="collectionTag(dataset.collection)">{{ dataset.collection_title || dataset.collection }}</span>
         </div>
         <EvaluationBadge :record="evaluation" />
+        <div v-if="versions.length > 1" class="versions">
+          <span class="versions-label">{{ versions.length }} versions of {{ dataset.accession }}:</span>
+          <router-link
+            v-for="v in versions"
+            :key="v.dataset_ref"
+            :to="datasetPath({ collection: v.collection || collectionName, dataset_ref: v.dataset_ref })"
+            class="version-link"
+            :class="{ current: v.dataset_ref === dataset.dataset_ref }"
+          >{{ v.organism || v.dataset_ref }} <EvaluationChip :dataset-ref="v.dataset_ref" /></router-link>
+        </div>
         <DatasetPanel :dataset="dataset" variant="full" />
       </template>
     </div>
@@ -47,14 +57,18 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import DatasetPanel from '../components/DatasetPanel.vue'
 import EvaluationBadge from '../components/EvaluationBadge.vue'
+import EvaluationChip from '../components/EvaluationChip.vue'
+import { datasetPath, fetchEvaluation } from '../utils/evaluation.js'
 import { apiGet } from '../api.js'
-import { DATASET_SEARCH_BASE, BROWSE_BASE, EVALUATION_PATH } from '../config.js'
+import { DATASET_SEARCH_BASE } from '../config.js'
 import { collectionTag } from '../utils/format.js'
 import { createRequestGuard } from '../utils/requestGuard.js'
 
 const route = useRoute()
 const accession = computed(() => route.params.pxd)
 const collectionName = computed(() => route.params.name)
+const refHash = computed(() => route.params.hash || null)
+const versions = computed(() => (Array.isArray(dataset.value?.versions) ? dataset.value.versions : []))
 
 const dataset = ref(null)
 const loading = ref(true)
@@ -66,14 +80,8 @@ const guard = createRequestGuard()
 
 // Best-effort: a missing/failed record (404 until evaluated) just means no badge.
 async function loadEvaluation(data, isCurrent) {
-  if (!data || !data.dataset_ref) return
-  try {
-    const path = data.dataset_ref.split('/').map(encodeURIComponent).join('/')
-    const rec = await apiGet(BROWSE_BASE, `${EVALUATION_PATH}/${path}/evaluation.json`)
-    if (isCurrent() && rec && typeof rec === 'object') evaluation.value = rec
-  } catch {
-    if (isCurrent()) evaluation.value = null
-  }
+  const rec = await fetchEvaluation(data?.dataset_ref)
+  if (isCurrent()) evaluation.value = rec
 }
 
 async function load() {
@@ -84,7 +92,10 @@ async function load() {
   dataset.value = null
   evaluation.value = null
   try {
-    const data = await apiGet(DATASET_SEARCH_BASE, `/datasets/${encodeURIComponent(accession.value)}`)
+    const path = refHash.value
+      ? `/datasets/${encodeURIComponent(accession.value)}/${encodeURIComponent(refHash.value)}`
+      : `/datasets/${encodeURIComponent(accession.value)}`
+    const data = await apiGet(DATASET_SEARCH_BASE, path)
     if (isCurrent()) {
       dataset.value = data
       loadEvaluation(data, isCurrent)
@@ -99,10 +110,15 @@ async function load() {
 }
 
 onMounted(load)
-watch(accession, load)
+watch([accession, refHash], load)
 </script>
 
 <style scoped>
+.versions { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 4px 0 16px; font-size: 13px; }
+.versions-label { color: var(--text-muted); }
+.version-link { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-secondary); text-decoration: none; }
+.version-link.current { border-color: var(--indigo); color: var(--indigo); }
 .crumbs {
   margin-bottom: 20px;
   font-size: 13px;

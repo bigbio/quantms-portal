@@ -12,6 +12,7 @@ export const routes = [
   { path: '/collections', component: () => import('./views/Collections.vue'), meta: { title: 'Collections' } },
   { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue'), meta: { title: (r) => `${r.params.name} collection` } },
   { path: '/collections/:name/:pxd', component: () => import('./views/DatasetDetail.vue'), meta: { title: (r) => `${r.params.pxd} dataset` } },
+  { path: '/collections/:name/:pxd/:hash', component: () => import('./views/DatasetDetail.vue'), meta: { title: (r) => `${r.params.pxd} dataset` } },
   { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue'), meta: { title: 'Dataset Search' } },
   { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue'), meta: { title: 'Peptide & Protein Search' } },
   { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue'), meta: { title: 'Proteome Compass' } },
