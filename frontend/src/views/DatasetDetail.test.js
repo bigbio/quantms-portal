@@ -6,6 +6,7 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 vi.mock('../api.js', () => ({ apiGet: vi.fn() }))
 import { apiGet } from '../api.js'
 import DatasetDetail from './DatasetDetail.vue'
+import { _clearEvaluationCache } from '../utils/evaluation.js'
 
 const stubs = { DatasetPanel: { props: ['dataset'], template: '<div class="panel">{{ dataset.title }}</div>' } }
 
@@ -43,9 +44,30 @@ describe('DatasetDetail view', () => {
     expect(apiGet.mock.calls[0][1]).toBe('/datasets/A%20B%3Fx')
   })
 
+  it('loads a specific version and lists every version', async () => {
+    _clearEvaluationCache()
+    apiGet.mockReset()
+    apiGet.mockImplementation((base, path) => path.startsWith('/datasets/')
+      ? Promise.resolve({ accession: 'PXD9', title: 'T', collection: 'msnet', dataset_ref: 'PXD9/bbb',
+        versions: [{ dataset_ref: 'PXD9/aaa', organism: 'Danio rerio' }, { dataset_ref: 'PXD9/bbb', organism: 'Fusobacterium' }] })
+      : Promise.reject(Object.assign(new Error('nf'), { status: 404 })))
+    const router = createRouter({ history: createMemoryHistory(), routes: [
+      { path: '/collections/:name/:pxd', component: DatasetDetail },
+      { path: '/collections/:name/:pxd/:hash', component: DatasetDetail }] })
+    router.push('/collections/msnet/PXD9/bbb')
+    await router.isReady()
+    const w = mount({ template: '<router-view />' }, { global: { plugins: [router], stubs } })
+    await flushPromises()
+    expect(apiGet.mock.calls[0][1]).toBe('/datasets/PXD9/bbb')
+    const links = w.findAll('.version-link')
+    expect(links.map((l) => l.attributes('href'))).toEqual(['/collections/msnet/PXD9/aaa', '/collections/msnet/PXD9/bbb'])
+    expect(w.find('.version-link.current').text()).toContain('Fusobacterium')
+  })
+
   describe('evaluation badge', () => {
     const rec = { verdict: 'PASS', dimensions: { ms: 'PASS', biology: 'WARN', metadata: 'NA' }, override: null, evaluator_version: '1', checks: [] }
     async function mountWith(evalImpl) {
+      _clearEvaluationCache()
       apiGet.mockReset()
       apiGet.mockImplementation((base, path) => path.startsWith('/datasets/')
         ? Promise.resolve({ accession: 'PXD1', title: 'T', dataset_ref: 'PXD1/abc' })

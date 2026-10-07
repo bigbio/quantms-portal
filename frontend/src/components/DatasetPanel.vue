@@ -126,7 +126,7 @@
         >{{ sourceLabel }} ↗</a>
         <router-link
           v-if="variant === 'inline'"
-          :to="`/collections/${dataset.collection}/${dataset.accession}`"
+          :to="datasetPath(dataset)"
           class="btn btn-outline ds-btn"
         >Open full page →</router-link>
       </div>
@@ -138,6 +138,7 @@
 </template>
 
 <script setup>
+import { datasetPath } from '../utils/evaluation.js'
 import { computed } from 'vue'
 import { formatNum, formatBytes, cleanInstrument, collectionTag } from '../utils/format.js'
 import { browseUrl } from '../config.js'

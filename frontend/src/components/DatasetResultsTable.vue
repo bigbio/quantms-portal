@@ -62,6 +62,7 @@
           >
             Size<span class="sort-ind">{{ ind('size') }}</span>
           </th>
+          <th>Quality</th>
         </tr>
       </thead>
       <tbody>
@@ -91,6 +92,7 @@
             <td class="td-num">{{ formatNum(ds.proteins) }}</td>
             <td class="td-num">{{ formatNum(ds.samples) }}</td>
             <td class="td-num">{{ ds.total_size ? formatBytes(ds.total_size) : '—' }}</td>
+            <td><EvaluationChip :dataset-ref="ds.dataset_ref || null" /></td>
           </tr>
           <tr v-if="isOpen(ds, idx)" class="panel-row">
             <td :colspan="colCount" style="padding: 0">
@@ -106,6 +108,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import DatasetPanel from './DatasetPanel.vue'
+import EvaluationChip from './EvaluationChip.vue'
 import { formatNum, formatBytes, cleanInstrument, collectionTag } from '../utils/format.js'
 
 const props = defineProps({
@@ -115,7 +118,7 @@ const props = defineProps({
   // Hide the Collection column where every row belongs to the same collection.
   showCollection: { type: Boolean, default: true },
 })
-const colCount = computed(() => (props.showCollection ? 9 : 8))
+const colCount = computed(() => (props.showCollection ? 10 : 9))
 const emit = defineEmits(['sort'])
 
 const openKey = ref(null)

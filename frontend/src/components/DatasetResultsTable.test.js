@@ -10,16 +10,16 @@ describe('DatasetResultsTable', () => {
   it('shows the Collection column by default', () => {
     const w = mount(DatasetResultsTable, { props: { datasets }, global: { stubs } })
     expect(w.findAll('thead th').map((t) => t.text())).toContain('Collection')
-    expect(w.findAll('tbody tr')[0].findAll('td')).toHaveLength(9)
+    expect(w.findAll('tbody tr')[0].findAll('td')).toHaveLength(10)
   })
 
   it('can hide the Collection column and keeps colspans in sync', async () => {
     const w = mount(DatasetResultsTable, { props: { datasets, showCollection: false }, global: { stubs } })
     expect(w.findAll('thead th').map((t) => t.text())).not.toContain('Collection')
-    expect(w.findAll('thead th')).toHaveLength(8)
+    expect(w.findAll('thead th')).toHaveLength(9)
     await w.find('tbody tr').trigger('click')
-    expect(w.find('.panel-row td').attributes('colspan')).toBe('8')
+    expect(w.find('.panel-row td').attributes('colspan')).toBe('9')
     await w.setProps({ datasets: [] })
-    expect(w.find('.empty-cell').attributes('colspan')).toBe('8')
+    expect(w.find('.empty-cell').attributes('colspan')).toBe('9')
   })
 })
