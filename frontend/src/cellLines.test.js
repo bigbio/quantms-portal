@@ -13,6 +13,7 @@ afterEach(() => { vi.restoreAllMocks() })
 describe('compare request building', () => {
   it('builds a lines request from 2 to 5 distinct lines', () => {
     expect(compareParams({ mode: 'lines', lines: ['CVCL_1', 'CVCL_2', 'CVCL_1'] })).toEqual({ lines: 'CVCL_1,CVCL_2' })
+    expect(compareParams({ mode: 'lines', lines: ['CVCL_1', 'CVCL_2'], reproducibleOnly: true })).toEqual({ lines: 'CVCL_1,CVCL_2', reproducible_only: true })
     expect(compareParams({ mode: 'lines', lines: ['CVCL_1'] })).toBeNull()
     expect(compareParams({ mode: 'lines', lines: ['a', 'b', 'c', 'd', 'e', 'f'] })).toBeNull()
   })

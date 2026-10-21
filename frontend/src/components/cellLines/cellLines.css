@@ -366,3 +366,6 @@
 .cl-strip-dot.on { background: rgba(79, 70, 229, 0.8); border-color: #312e81; }
 .cl-strip-dot.ring { outline: 2px solid #dc2626; z-index: 2; }
 .cl-strip-dot:hover { outline: 2px solid #0f172a; z-index: 3; }
+.cl-cmp-cell { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cl-cmp-det { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; border: 1px solid currentColor; opacity: 0.7; vertical-align: middle; }
+.cl-cmp-det.on { background: currentColor; opacity: 1; }

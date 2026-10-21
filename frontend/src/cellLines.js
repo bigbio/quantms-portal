@@ -15,7 +15,6 @@ export const GROUP_KINDS = [
   { id: 'lineage', label: 'Lineage' },
   { id: 'primary_disease', label: 'Primary disease' },
 ]
-export const L4_AXIS = 'Rank among cell lines in the same study (0 = least, 1 = most)'
 
 const get = (path, params) => apiGet(CELL_LINES_BASE, path, params)
 
@@ -45,14 +44,21 @@ export const getGroups = () => get('/groups').then((r) => r.groups || [])
 export const getDatasets = () => get('/datasets').then((r) => r.studies || [])
 
 /** Query params for GET /compare, or null when the selection is incomplete. */
-export function compareParams({ mode, lines, group, a, b } = {}) {
+export function compareParams({ mode, lines, group, a, b, reproducibleOnly } = {}) {
   if (mode === 'groups') {
     if (!GROUP_KINDS.some((g) => g.id === group) || !a || !b || a === b) return null
     return { group, a, b, background: true }
   }
   const picked = [...new Set((lines || []).filter(Boolean))]
   if (picked.length < 2 || picked.length > MAX_COMPARE_LINES) return null
-  return { lines: picked.join(',') }
+  return reproducibleOnly ? { lines: picked.join(','), reproducible_only: true } : { lines: picked.join(',') }
+}
+
+/** Diverging fill for a log2 amount vs the study average: blue below, orange above; clamped at ±4. */
+export function amountColor(v) {
+  if (!Number.isFinite(v)) return 'transparent'
+  const t = Math.min(1, Math.abs(v) / 4)
+  return v >= 0 ? mixHex('#ffffff', '#c2410c', t) : mixHex('#ffffff', '#1d4ed8', t)
 }
 
 export function compare(selection) {
@@ -422,12 +428,6 @@ export function pct(v) {
   return `${Math.round(Number(v) * 100)}%`
 }
 
-/** Background for a level-4 rank cell (0..1): light to saturated indigo. */
-export function heatColor(v) {
-  if (!Number.isFinite(v)) return 'transparent'
-  const t = Math.min(1, Math.max(0, v))
-  return `rgba(99, 102, 241, ${(0.06 + t * 0.6).toFixed(3)})`
-}
 
 /** Diverging fill for a within-study enrichment: blue below 0, grey at 0, red above; clamped at ±0.5. */
 export function enrichmentColor(v) {

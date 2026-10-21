@@ -387,7 +387,26 @@ describe('CellLines view', () => {
     respond()
     await mountAt('/apps/cell-lines?tab=compare&lines=CVCL_0001,CVCL_0002')
     const call = apiGet.mock.calls.find((c) => c[1] === '/compare')
-    expect(call[2]).toEqual({ lines: 'CVCL_0001,CVCL_0002' })
+    expect(call[2]).toEqual({ lines: 'CVCL_0001,CVCL_0002', reproducible_only: true })
+  })
+
+  it('compares lines on amounts, marks detection, and can include all proteins', async () => {
+    const result = {
+      lines: [{ line: 'CVCL_0001', name: 'L1' }, { line: 'CVCL_0002', name: 'L2' }],
+      genes: [{ gene: 'ANXA1', amount: { CVCL_0001: -3.4, CVCL_0002: 2.1 }, detected: { CVCL_0001: true, CVCL_0002: false },
+        spread: 5.5, reliability_class: 'reproducible' }],
+      reproducible_only: true,
+    }
+    respond({ '/compare': () => result })
+    const { w } = await mountAt('/apps/cell-lines?tab=compare&lines=CVCL_0001,CVCL_0002')
+    const cells = w.findAll('[data-test="compare-cell"]')
+    expect(cells.map((c) => c.text())).toEqual(['−3.40', '+2.10'])
+    expect(cells.map((c) => c.find('.cl-cmp-det').classes().includes('on'))).toEqual([true, false])
+    expect(cells[0].attributes('title')).toBe('ANXA1 in L1: −3.40 log2, detected')
+    expect(w.find('[data-test="compare-lines-table"]').text()).toContain('reproducible')
+    await w.find('[data-test="compare-reproducible"]').setValue(false)
+    await flushPromises()
+    expect(apiGet.mock.calls.filter((c) => c[1] === '/compare').at(-1)[2]).toEqual({ lines: 'CVCL_0001,CVCL_0002' })
   })
 
   it('requests a group comparison and labels it descriptive', async () => {

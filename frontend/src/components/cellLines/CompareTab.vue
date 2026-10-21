@@ -27,23 +27,31 @@
       </details>
       <StatusBlock :loading="req.loading.value" :error="req.error.value" what="This comparison" :retry="load" />
       <section v-if="lineResult" class="cl-card">
-        <div class="cl-card-head"><h3>Genes with a level 4 value in every selected line, by spread</h3></div>
-        <div v-if="!lineResult.genes?.length" class="cl-empty">No gene has a level 4 value in all selected lines.</div>
+        <div class="cl-card-head">
+          <h3>Largest differences between the selected cell lines</h3>
+          <label class="cl-ctl-inline"><input v-model="reproducibleOnly" type="checkbox" data-test="compare-reproducible" /> reproducible proteins only</label>
+        </div>
+        <div v-if="!lineResult.genes?.length" class="cl-empty">No protein has an amount in all selected lines<template v-if="reproducibleOnly"> among reproducible proteins</template>.</div>
         <div v-else class="cl-table-wrap">
           <table class="cl-table" data-test="compare-lines-table">
             <thead>
-              <tr><th>Gene</th><th v-for="l in lineResult.lines" :key="l.line" class="num">{{ l.name || l.line }}</th><th class="num">Spread</th></tr>
+              <tr><th>Gene</th><th v-for="l in lineResult.lines" :key="l.line" class="num">{{ l.name || l.line }}</th><th class="num">Spread (log2)</th><th>Between labs</th></tr>
             </thead>
             <tbody>
               <tr v-for="g in lineResult.genes" :key="g.gene">
                 <td><button type="button" class="cl-linkish" @click="$emit('select-gene', g.gene)">{{ g.gene }}</button></td>
-                <td v-for="l in lineResult.lines" :key="l.line" class="num cl-heat" :style="{ background: heatColor(g.l4[l.line]) }">{{ fmt(g.l4[l.line]) }}</td>
+                <td v-for="l in lineResult.lines" :key="l.line" class="num cl-cmp-cell" data-test="compare-cell"
+                    :style="{ background: amountColor(g.amount[l.line]), color: Math.abs(g.amount[l.line]) > 2.5 ? '#ffffff' : 'inherit' }"
+                    :title="`${g.gene} in ${l.name || l.line}: ${signed(g.amount[l.line])} log2${g.detected[l.line] ? ', detected' : ', not detected'}`">
+                  <span class="cl-cmp-det" :class="{ on: g.detected[l.line] }"></span>{{ signed(g.amount[l.line]) }}
+                </td>
                 <td class="num">{{ fmt(g.spread) }}</td>
+                <td><span class="cl-pill" :style="relStyle(g.reliability_class)">{{ g.reliability_class || 'not scored' }}</span></td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p class="cl-caption">Values are each line's {{ L4_AXIS.toLowerCase() }}; lines need not share a study.</p>
+        <p class="cl-caption">Each value is the line's amount: log2 difference from the average cell line of its studies (0 = average, +1 = twice), averaged over its studies; ● = detected in that line. Lines need not share a study, so differences include lab effects; "reproducible proteins only" keeps proteins whose cell-line differences reproduce between labs.</p>
       </section>
     </template>
 
@@ -128,7 +136,7 @@ import StatusBlock from './StatusBlock.vue'
 import { useRequest } from './useRequest.js'
 import LineBrowser from './LineBrowser.vue'
 import {
-  MAX_COMPARE_LINES, GROUP_KINDS, L4_AXIS, compare, compareParams, fmt, pct, heatColor,
+  MAX_COMPARE_LINES, GROUP_KINDS, compare, compareParams, fmt, pct, signed, amountColor, reliabilityStyle,
 } from '../../cellLines.js'
 
 const props = defineProps({
@@ -142,7 +150,9 @@ const props = defineProps({
 const emit = defineEmits(['update', 'select-gene', 'select-line'])
 
 const req = useRequest(compare)
-const selection = computed(() => ({ mode: props.mode, lines: props.lines, group: props.group, a: props.a, b: props.b }))
+const reproducibleOnly = ref(true)
+const selection = computed(() => ({ mode: props.mode, lines: props.lines, group: props.group, a: props.a, b: props.b,
+  reproducibleOnly: reproducibleOnly.value }))
 const paramsKey = computed(() => JSON.stringify(compareParams(selection.value)))
 
 // DuckDB MAP columns may arrive as {key: [...], value: [...]} instead of a plain object.
@@ -155,7 +165,7 @@ const lineResult = computed(() => {
   if (!r || props.mode !== 'lines' || !r.lines) return null
   const order = new Map(props.lines.map((l, i) => [l, i]))
   const lines = [...r.lines].sort((x, y) => (order.get(x.line) ?? 99) - (order.get(y.line) ?? 99))
-  return { lines, genes: (r.genes || []).map((g) => ({ ...g, l4: toMap(g.l4) })) }
+  return { lines, genes: (r.genes || []).map((g) => ({ ...g, amount: toMap(g.amount), detected: toMap(g.detected) })) }
 })
 const picked = ref({})
 const lineNames = computed(() => ({ ...picked.value, ...Object.fromEntries((req.data.value?.lines || []).map((l) => [l.line, l.name])) }))
@@ -191,6 +201,10 @@ const groupOptions = computed(() => ({
   },
 }))
 
+const relStyle = (c) => {
+  const s = reliabilityStyle(c || 'not scored')
+  return { color: s.fg, background: s.bg }
+}
 const update = (patch) => emit('update', patch)
 function setMode(mode) { if (mode !== props.mode) update({ mode }) }
 function addLine(line, item) {
