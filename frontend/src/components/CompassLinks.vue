@@ -13,6 +13,6 @@ defineProps({ acc: { type: String, required: true } })
 </script>
 
 <style scoped>
-.rlink { color: #4f46e5; text-decoration: none; font-weight: 600; }
+.rlink { color: var(--brand); text-decoration: none; font-weight: 600; }
 .rlink:hover { text-decoration: underline; }
 </style>

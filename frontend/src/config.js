@@ -45,6 +45,9 @@ export const GPP_FALLBACK_MIN = 0.15
 // re-enable by dropping the id here and restoring the route in router.js.
 export const OBSOLETE_APPS = new Set(['differential-expression'])
 
+// PRIDE FTP folder holding the released models; the Models page lists it live.
+export const MODELS_FTP = 'https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/'
+
 // API documentation hub.
 export const API_DOCS_URL = `${API_BASE}/docs`
 

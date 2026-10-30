@@ -132,7 +132,7 @@
           <div v-for="row in topTissues" :key="'bt-' + row.value" class="pp-bar-row">
             <span class="pp-bar-label" :title="row.value">{{ row.value }}</span>
             <span class="pp-bar-track">
-              <span class="pp-bar-fill pp-bar-green" :style="{ width: pct(row.n_observations, topTissueMax) }" />
+              <span class="pp-bar-fill pp-bar-tissue" :style="{ width: pct(row.n_observations, topTissueMax) }" />
             </span>
             <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
           </div>
@@ -142,7 +142,7 @@
           <div v-for="row in topSpecies" :key="'bs-' + row.value" class="pp-bar-row">
             <span class="pp-bar-label" :title="row.value">{{ row.value }}</span>
             <span class="pp-bar-track">
-              <span class="pp-bar-fill pp-bar-blue" :style="{ width: pct(row.n_observations, topSpeciesMax) }" />
+              <span class="pp-bar-fill pp-bar-organism" :style="{ width: pct(row.n_observations, topSpeciesMax) }" />
             </span>
             <span class="pp-bar-val" :title="`${formatNum(row.n_observations)} observations`">{{ formatBig(row.n_observations) }}</span>
           </div>
@@ -199,9 +199,9 @@ const CONTEXT_SHOWN = 10
 const contextExpanded = ref(false)
 const observedContext = computed(() => {
   const items = [
-    ...species.value.map((s) => ({ ...s, key: 'sp-' + s.value, tagClass: 'tag-blue', icon: '🧬' })),
-    ...tissues.value.map((t) => ({ ...t, key: 'ts-' + t.value, tagClass: 'tag-green', icon: '' })),
-    ...diseases.value.map((d) => ({ ...d, key: 'ds-' + d.value, tagClass: 'tag-warning', icon: '' })),
+    ...species.value.map((s) => ({ ...s, key: 'sp-' + s.value, tagClass: 'tag-cat-7', icon: '🧬' })),
+    ...tissues.value.map((t) => ({ ...t, key: 'ts-' + t.value, tagClass: 'tag-cat-3', icon: '' })),
+    ...diseases.value.map((d) => ({ ...d, key: 'ds-' + d.value, tagClass: 'tag-cat-2', icon: '' })),
   ]
   return items.sort((a, b) => (Number(b.n_observations) || 0) - (Number(a.n_observations) || 0))
 })
@@ -360,7 +360,7 @@ watch(() => props.sequence, (s) => load(s), { immediate: true })
   color: #059669;
 }
 .pp-badge-indigo {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(26, 95, 180, 0.1);
   color: var(--indigo);
 }
 .pp-stats {
@@ -499,8 +499,8 @@ watch(() => props.sequence, (s) => load(s), { immediate: true })
   height: 100%;
   border-radius: 4px;
 }
-.pp-bar-green { background: var(--success); }
-.pp-bar-blue { background: var(--blue); }
+.pp-bar-tissue { background: var(--dim-tissue); }
+.pp-bar-organism { background: var(--dim-organism); }
 .pp-bar-val {
   font-size: 11px;
   color: var(--text-muted);

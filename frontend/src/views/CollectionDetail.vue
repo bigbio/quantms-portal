@@ -59,7 +59,7 @@
 
           <!-- Organism chips -->
           <div v-if="organisms.length" class="org-chips">
-            <span v-for="org in organisms" :key="org" class="tag tag-indigo">{{ org }}</span>
+            <span v-for="org in organisms" :key="org" class="tag tag-cat-7">{{ org }}</span>
           </div>
         </template>
 

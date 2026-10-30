@@ -405,7 +405,7 @@ onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 .cc-retry { margin-left: 8px; padding: 3px 12px; border: 1px solid #fca5a5; border-radius: 6px; background: #fff; color: #b91c1c; cursor: pointer; font-size: 13px; }
 .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
 .filter-search { padding: 8px 12px; border: 1px solid var(--border, #e2e5ea); border-radius: 8px; }
-.btn { padding: 8px 16px; border: none; border-radius: 8px; background: #4f46e5; color: #fff; cursor: pointer; font-weight: 600; }
+.btn { padding: 8px 16px; border: none; border-radius: 8px; background: var(--brand); color: #fff; cursor: pointer; font-weight: 600; }
 .cc-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .cc-metric { border: 1px solid var(--border, #e2e5ea); border-radius: 10px; padding: 16px; text-align: center; }
 .m-val { font-size: 26px; font-weight: 700; color: #3730a3; } .m-lab { font-size: 13px; color: var(--muted, #6b7280); margin-top: 4px; }
@@ -416,12 +416,12 @@ onMounted(() => { applyQuery(route.query); loadForMode(); syncUrl() })
 .cc-muted { color: #9ca3af; }
 .cc-metric small { color: var(--muted, #6b7280); font-weight: 400; font-size: 11px; }
 .sortable { cursor: pointer; user-select: none; }
-.sortable:hover { color: #4f46e5; }
-.sortable:focus-visible { outline: 2px solid #4f46e5; outline-offset: -2px; }
+.sortable:hover { color: var(--brand); }
+.sortable:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 .org-row { cursor: pointer; }
 .org-row:hover { background: #f8fafc; }
-.org-row:focus-visible { outline: 2px solid #4f46e5; outline-offset: -2px; }
+.org-row:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
 .tierbar { display: inline-flex; width: 90px; height: 10px; border-radius: 3px; overflow: hidden; }
 .tseg { display: inline-block; height: 100%; }
 .tier-T1 { background: #16a34a; } .tier-T2 { background: #65a30d; } .tier-T3 { background: #0891b2; }

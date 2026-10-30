@@ -57,6 +57,9 @@
 
       <!-- Models table -->
       <template v-else>
+        <p v-if="snapshotOnly" class="table-note" style="margin: 0 0 10px">
+          The live FTP listing could not be read; showing the catalogue snapshot instead.
+        </p>
         <div class="dataset-table-wrap">
           <table class="dataset-table">
             <thead>
@@ -66,12 +69,13 @@
                 <th>Collection</th>
                 <th>Tool</th>
                 <th>Format</th>
+                <th>Size</th>
                 <th>Date</th>
                 <th>Download</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="model in filteredModels" :key="model.name">
+              <tr v-for="model in filteredModels" :key="model.url">
                 <td>
                   <span class="model-name">{{ model.name }}</span>
                 </td>
@@ -79,14 +83,15 @@
                   <span style="font-size: 13px; color: var(--text-secondary);">{{ model.description }}</span>
                 </td>
                 <td>
-                  <span class="tag tag-indigo">{{ model.collection }}</span>
+                  <span class="tag" :class="collectionTag(model.collection)">{{ model.collection }}</span>
                 </td>
                 <td>
                   <span class="tag tag-blue">{{ model.tool }}</span>
                 </td>
                 <td>
-                  <span class="tag" :class="formatTagClass(model.format)">{{ model.format }}</span>
+                  <span class="model-format">{{ model.format }}</span>
                 </td>
+                <td class="td-num model-size">{{ model.size }}</td>
                 <td class="td-num model-date">{{ model.date }}</td>
                 <td>
                   <a v-if="safeHref(model.url)" :href="safeHref(model.url)" target="_blank" rel="noopener" class="download-link">
@@ -130,10 +135,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { safeHref } from '../utils/links.js'
 import { apiGet } from '../api.js'
+import { collectionTag } from '../utils/format.js'
+import { listModelFiles, describeModels } from '../models.js'
+import { MODELS_FTP } from '../config.js'
 
 const loading = ref(true)
 const loadError = ref(false)
 const models = ref([])
+// True when the FTP listing failed and the rows come from the snapshot alone.
+const snapshotOnly = ref(false)
 const searchQuery = ref('')
 const filterCollection = ref('')
 const filterTool = ref('')
@@ -146,28 +156,23 @@ const filteredModels = computed(() => filterModels(models.value, {
   query: searchQuery.value,
 }))
 
-function formatTagClass(format) {
-  if (!format) return 'tag-blue'
-  const f = format.toLowerCase()
-  if (f === 'onnx') return 'tag-violet'
-  if (f === 'hdf5' || f === 'h5') return 'tag-green'
-  if (f === 'pickle') return 'tag-blue'
-  return 'tag-blue'
-}
-
 async function load() {
   loading.value = true
   loadError.value = false
-  try {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, '')
-    const data = await apiGet(base, '/data/models.json')
-    models.value = Array.isArray(data) ? data : []
-  } catch (e) {
+  snapshotOnly.value = false
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const [files, snapshot] = await Promise.allSettled([listModelFiles(MODELS_FTP), apiGet(base, '/data/models.json')])
+  const described = snapshot.status === 'fulfilled' && Array.isArray(snapshot.value) ? snapshot.value : []
+  if (files.status === 'fulfilled') {
+    models.value = describeModels(files.value, MODELS_FTP, described)
+  } else if (described.length) {
+    models.value = described
+    snapshotOnly.value = true
+  } else {
     models.value = []
     loadError.value = true
-  } finally {
-    loading.value = false
   }
+  loading.value = false
 }
 
 onMounted(load)
@@ -208,6 +213,16 @@ export function filterModels(models, { collection = '', tool = '', query = '' } 
   white-space: nowrap;
 }
 
+.model-size {
+  white-space: nowrap;
+}
+
+.model-format {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
 .download-link {
   display: inline-flex;
   align-items: center;
@@ -218,18 +233,18 @@ export function filterModels(models, { collection = '', tool = '', query = '' } 
   text-decoration: none;
   padding: 4px 10px;
   border-radius: 6px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(26, 95, 180, 0.2);
   transition: background 0.15s, border-color 0.15s;
 }
 
 .download-link:hover {
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(26, 95, 180, 0.06);
   border-color: var(--indigo);
 }
 
 .ftp-callout {
-  background: rgba(99, 102, 241, 0.05);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: rgba(26, 95, 180, 0.05);
+  border: 1px solid rgba(26, 95, 180, 0.15);
   border-radius: 12px;
   padding: 20px 24px;
 }

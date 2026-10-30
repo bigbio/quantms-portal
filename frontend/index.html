@@ -14,19 +14,19 @@
       gtag('js', new Date());
       gtag('config', 'G-6PL70G5VC1');
     </script>
-    <meta name="description" content="Quantitative proteomics data portal: 251 standardized datasets across 4 collections (absolute expression, differential expression, single-cell, MS-Net). Download QPX-format data for AI and bioinformatics research.">
+    <meta name="description" content="Quantitative proteomics data portal: standardized datasets in curated collections. Download QPX-format data for AI and bioinformatics research.">
     <meta name="keywords" content="proteomics, mass spectrometry, ProteomeXchange, iBAQ, differential expression, quantms, QPX, PRIDE, protein quantification">
     <!-- Open Graph -->
     <meta property="og:image" content="https://portal.quantms.org/images/social-card.png">
     <meta property="og:title" content="quantms Portal — Quantitative Proteomics Data">
-    <meta property="og:description" content="Browse and download 251 standardized proteomics datasets in QPX format. 648,023 proteins, 500M+ PSMs, 4 curated collections.">
+    <meta property="og:description" content="Browse, query, and download standardized proteomics datasets in QPX format.">
     <meta property="og:url" content="https://portal.quantms.org/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="quantms Portal">
     <!-- Twitter -->
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="quantms Portal — Quantitative Proteomics Data">
-    <meta name="twitter:description" content="251 standardized proteomics datasets. Absolute expression, differential expression, MS-Net, single-cell. QPX format.">
+    <meta name="twitter:description" content="Standardized proteomics datasets in QPX format.">
     <!-- Canonical -->
     <link rel="canonical" href="https://portal.quantms.org/">
     <!-- Structured Data: DataCatalog -->
@@ -35,7 +35,7 @@
       "@context": "https://schema.org",
       "@type": "DataCatalog",
       "name": "quantms Portal",
-      "description": "Curated quantitative proteomics datasets reanalyzed with the quantms pipeline. 251 datasets across 4 collections.",
+      "description": "Curated quantitative proteomics datasets reanalyzed with the quantms pipeline.",
       "url": "https://portal.quantms.org",
       "license": "https://creativecommons.org/licenses/by/4.0/",
       "provider": {
@@ -46,27 +46,21 @@
       "dataset": [
         {
           "@type": "Dataset",
-          "name": "Absolute Protein Expression",
-          "url": "https://portal.quantms.org/collections/absolute-expression",
-          "description": "iBAQ-based absolute protein quantification across tissues and conditions. 103 datasets, 470,804 proteins, 18,053 samples."
-        },
-        {
-          "@type": "Dataset",
-          "name": "Differential Expression",
-          "url": "https://portal.quantms.org/collections/differential-expression",
-          "description": "Fold changes and statistical significance across disease vs. control conditions. 35 datasets, 162,915 proteins."
+          "name": "Human Cancer Cell Lines",
+          "url": "https://portal.quantms.org/collections/celllines",
+          "description": "Human cancer cell-line proteomes reanalysed with quantms: the large ProCan (DIA), CCLE (TMT) and NCI-60 panels plus breast, gastric, Ewing sarcoma and timsTOF studies."
         },
         {
           "@type": "Dataset",
           "name": "MS-Net Peptide Identifications",
           "url": "https://portal.quantms.org/collections/msnet",
-          "description": "Large-scale peptide identification across 107 public proteomics datasets. 500M+ PSMs, 53 species."
+          "description": "Large-scale peptide identification across public proteomics datasets."
         },
         {
           "@type": "Dataset",
-          "name": "Single Cell Proteomics",
-          "url": "https://portal.quantms.org/collections/single-cell",
-          "description": "Single-cell resolution proteomics datasets. 6 datasets, 538 samples, 14,304 proteins."
+          "name": "Immunopeptidomics",
+          "url": "https://portal.quantms.org/collections/immunopeptidomics",
+          "description": "HLA-presented (non-tryptic) peptides; unspecific cleavage."
         }
       ]
     }
@@ -74,7 +68,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="app"></div>

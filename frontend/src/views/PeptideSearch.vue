@@ -901,7 +901,7 @@ onMounted(() => {
   display: inline-block;
   margin: 1px 3px 1px 0;
   padding: 1px 6px;
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(26, 95, 180, 0.08);
   border: 1px solid var(--border);
   border-radius: 5px;
   font-size: 11px;
@@ -919,7 +919,7 @@ onMounted(() => {
 }
 .dl-link:hover {
   border-color: var(--indigo);
-  background: rgba(99, 102, 241, 0.06);
+  background: rgba(26, 95, 180, 0.06);
 }
 .loading-block {
   text-align: center;

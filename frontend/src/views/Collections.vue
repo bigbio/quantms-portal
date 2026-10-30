@@ -1,41 +1,32 @@
 <template>
-  <div class="section" style="padding-top: 100px">
+  <section class="page-head">
     <div class="container">
-      <div class="section-header">
-        <h2>All Collections</h2>
-        <p>Curated groups of quantms datasets, each with specialized indexes and services.</p>
-      </div>
+      <h1>Collections</h1>
+      <p>Curated groups of quantms datasets, each with specialized indexes and services.</p>
+    </div>
+  </section>
 
-      <!-- Loading skeletons -->
-      <div v-if="loading" class="collection-grid">
-        <div v-for="n in 4" :key="n" class="skeleton-card"></div>
-      </div>
-
-      <!-- Error / retry -->
-      <div v-else-if="error" class="notice">
+  <section class="section">
+    <div class="container">
+      <div v-if="error" class="notice">
         Collections are temporarily unavailable.
         <button class="page-btn" style="margin-left: 12px" @click="load">Retry</button>
       </div>
 
-      <!-- Empty -->
-      <div v-else-if="collections.length === 0" class="notice">No collections found.</div>
+      <div v-else-if="!loading && collections.length === 0" class="notice">No collections found.</div>
 
-      <!-- Cards -->
-      <div v-else class="collection-grid">
-        <CollectionCard
-          v-for="col in collections"
-          :key="col.name"
-          :collection="col"
-         
-        />
-      </div>
+      <CollectionsTable v-else :collections="collections" :loading="loading" />
+      <p class="table-note">
+        Per-collection peptide and protein counts from the search index are on the
+        <router-link to="/statistics">Statistics</router-link> page.
+      </p>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import CollectionCard from '../components/CollectionCard.vue'
+import CollectionsTable from '../components/CollectionsTable.vue'
 import { apiGet } from '../api.js'
 import { DATASET_SEARCH_BASE } from '../config.js'
 
@@ -43,26 +34,12 @@ const collections = ref([])
 const loading = ref(true)
 const error = ref(false)
 
-
 async function load() {
   loading.value = true
   error.value = false
   try {
     const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
-    collections.value = (data.collections || []).map((c) => ({
-      name: c.name,
-      title: c.title || c.name,
-      description: c.description || '',
-      dataset_count: c.dataset_count || 0,
-      organisms: c.organisms || [],
-      stats: {
-        total_peptides: c.total_peptides || 0,
-        total_proteins: c.total_proteins || 0,
-        total_cell_lines: c.total_cell_lines || 0,
-        total_diseases: c.total_diseases || 0,
-        total_tissues: c.total_tissues || 0,
-      },
-    }))
+    collections.value = data.collections || []
   } catch (e) {
     error.value = true
   } finally {
@@ -74,21 +51,10 @@ onMounted(load)
 </script>
 
 <style scoped>
-.skeleton-card {
-  height: 220px;
-  border-radius: 12px;
-  background: var(--bg-alt);
-  border: 1px solid var(--border);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
 .notice {
-  padding: 20px 22px;
+  padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--surface);
   color: var(--text-secondary);
 }

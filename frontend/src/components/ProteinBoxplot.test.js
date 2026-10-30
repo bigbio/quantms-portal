@@ -6,7 +6,7 @@ vi.mock('chart.js', () => {
   class Chart { constructor() {} update() {} destroy() {} }
   Chart.register = () => {}
   return {
-    Chart, BarController: {}, BarElement: {}, DoughnutController: {}, ArcElement: {},
+    Chart, BarController: {}, BarElement: {}, LineController: {}, LineElement: {}, PointElement: {}, DoughnutController: {}, ArcElement: {},
     CategoryScale: {}, LinearScale: {}, Tooltip: {}, Legend: {},
   }
 })

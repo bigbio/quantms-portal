@@ -176,7 +176,7 @@ function ariaSort(key) {
   cursor: pointer;
 }
 .row-open {
-  background: rgba(99, 102, 241, 0.04) !important;
+  background: rgba(26, 95, 180, 0.04) !important;
 }
 .caret-cell {
   text-align: center;

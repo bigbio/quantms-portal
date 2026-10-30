@@ -56,7 +56,7 @@ describe('QxSampleIntensity', () => {
     expect(w.findAll('.si-box')).toHaveLength(3)
     expect(w.findAll('.si-flag')).toHaveLength(1)
     expect(w.findAll('.si-box.ref')).toHaveLength(1)
-    expect(w.text()).toContain('⚠ 1 flagged')
+    expect(w.text()).toContain('▼ 1 flagged')
     await w.findAll('.si-hit')[1].trigger('mouseenter')
     expect(w.find('.si-tip').text()).toContain('median intensity low (robust z -4.8)')
   })

@@ -13,10 +13,18 @@ const overview = {
 
 let searchDown = false
 
+const CATALOGUE = [
+  { accession: 'MSV000085836', title: 'CCLE', collection: 'celllines', collections: ['celllines'], organism: 'homo sapiens', instrument: 'Orbitrap Fusion', samples: 460, peptides: 300, dataset_ref: 'MSV000085836/hash1' },
+  { accession: 'PXD048538', title: 'Gastric', collection: 'celllines', collections: ['celllines'], organism: 'homo sapiens', instrument: 'Q Exactive HF', samples: 42, peptides: 200, dataset_ref: 'PXD048538/hash1' },
+  { accession: 'PXD2', title: 'Mouse brain', collection: 'msnet', collections: ['msnet'], organism: 'mus musculus', instrument: 'NT=timsTOF Pro;AC=MS:1003005', samples: 8, peptides: 100, dataset_ref: 'PXD2/hash2' },
+]
+
 function respond(url) {
+  if (url.includes('dataset-search/datasets?') && searchDown) throw new TypeError('network down')
+  if (url.includes('dataset-search/datasets?')) return { total: 3, total_pages: 1, datasets: CATALOGUE }
   const ds = url.match(/dataset-search\/datasets\/([^/?]+)$/)
-  if (ds && searchDown) throw new TypeError('network down')
-  if (ds) return ds[1] === 'PXD021013' ? {} : { accession: ds[1], dataset_ref: `${ds[1]}/hash1`, samples: 42 }
+  if (ds) return { accession: ds[1], dataset_ref: `${ds[1]}/hash1`, samples: 42 }
+  if (url.includes('rest.uniprot.org')) return { results: [] }
   if (url.includes('/overview')) return overview
   if (url.includes('/runs')) return { runs: [{ run_file_name: 'r1' }] }
   if (url.includes('/proteins')) return { columns: ['anchor_protein', 'intensity'], rows: [['P1', 40]] }
@@ -41,46 +49,53 @@ async function open(query) {
   return w
 }
 
-const searchCalls = () => global.fetch.mock.calls.filter((c) => String(c[0]).includes('dataset-search/datasets/')).length
+const catalogueLoads = () => global.fetch.mock.calls.filter((c) => String(c[0]).includes('dataset-search/datasets?')).length
 
 describe('QpxExplore', () => {
-  it('offers examples on the start page, resolved to their current version', async () => {
+  it('lists the catalogue on the start page and opens a row in the explorer', async () => {
     const w = await open({})
-    const cards = w.findAll('.qx-example')
-    expect(cards.map((c) => c.find('.qx-example-acc').text())).toEqual(['MSV000085836', 'PXD048538', 'PXD021013'])
-    expect(cards[0].find('.qx-example-kind').text()).toContain('42 samples')
-    // an example dataset search cannot resolve says so instead of sitting disabled
-    expect(cards[2].attributes('disabled')).toBeUndefined()
-    expect(cards[2].find('.qx-example-failed').exists()).toBe(true)
-    await cards[0].trigger('click')
+    expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['MSV000085836', 'PXD048538', 'PXD2'])
+    // examples take their current version from the catalogue; one not in it is left out
+    expect(w.findAll('.qc-start').map((b) => b.find('code').text())).toEqual(['MSV000085836', 'PXD048538'])
+    expect(w.find('.qc-totals').text()).toContain('510samples')
+    await w.findAll('.qc-row')[2].trigger('click')
     await flushPromises()
-    expect(global.fetch.mock.calls.some((c) => String(c[0]).includes('/datasets/MSV000085836/hash1/overview'))).toBe(true)
+    expect(global.fetch.mock.calls.some((c) => String(c[0]).includes('/datasets/PXD2/hash2/overview'))).toBe(true)
   })
 
-  it('retries an example whose lookup failed', async () => {
+  it('filters the catalogue by a facet and by search', async () => {
+    const w = await open({})
+    const organisms = w.findAll('.qc-facet')[1]
+    expect(organisms.findAll('.qc-opt').map((o) => o.text())).toEqual(['Homo sapiens2', 'Mus musculus1'])
+    await organisms.findAll('.qc-opt')[1].trigger('click')
+    expect(w.findAll('.qc-row')).toHaveLength(1)
+    // instrument names are cleaned and the other facets count within the filter
+    expect(w.findAll('.qc-facet')[2].findAll('.qc-opt').map((o) => o.text())).toEqual(['timsTOF Pro1'])
+    await organisms.findAll('.qc-opt')[1].trigger('click')
+    await w.find('.qc-search').setValue('gastric')
+    expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['PXD048538'])
+  })
+
+  it('retries the catalogue when it could not be loaded', async () => {
     searchDown = true
     const w = await open({})
-    expect(w.findAll('.qx-example-failed')).toHaveLength(3)
+    expect(w.text()).toContain('Could not load the dataset catalogue.')
     searchDown = false
-    await w.findAll('.qx-example')[0].trigger('click')
+    await w.find('.notice button').trigger('click')
     await flushPromises()
-    const card = w.findAll('.qx-example')[0]
-    expect(card.find('.qx-example-failed').exists()).toBe(false)
-    expect(card.find('.qx-example-kind').text()).toContain('42 samples')
+    expect(w.findAll('.qc-row')).toHaveLength(3)
   })
 
-  it('does not look up examples when opened on a dataset', async () => {
+  it('does not load the catalogue when opened on a dataset', async () => {
     await open({ ref: 'PXD1/abc' })
-    expect(searchCalls()).toBe(0)
+    expect(catalogueLoads()).toBe(0)
   })
 
   it('returns to a working start page when the ref leaves the URL', async () => {
     const w = await open({ ref: 'PXD1/abc' })
     await w.router.push({ path: '/apps/qpx-explore', query: {} })
     await flushPromises()
-    const cards = w.findAll('.qx-example')
-    expect(cards).toHaveLength(3)
-    expect(cards[0].attributes('disabled')).toBeUndefined()
+    expect(w.findAll('.qc-row')).toHaveLength(3)
     expect(w.find('.qx-card').exists()).toBe(false)
   })
 
@@ -142,14 +157,19 @@ describe('QpxExplore', () => {
   it('loads a tab only when it is opened, once', async () => {
     const w = await open({ ref: 'PXD1/abc' })
     const urls = () => global.fetch.mock.calls.map((c) => String(c[0]))
-    expect(urls().some((u) => u.includes('/proteins') || u.includes('/runs'))).toBe(false)
+    expect(urls().some((u) => u.includes('/proteins'))).toBe(false)
+    // the overview colours its charts by sample annotation, so it loads the run table (the sample table is absent)
+    expect(urls().filter((u) => u.includes('/runs')).length).toBe(1)
+    expect(urls().some((u) => u.includes('/samples'))).toBe(false)
     const tab = (label) => w.findAll('.qx-tab').find((b) => b.text() === label)
     await tab('Proteins').trigger('click')
     await flushPromises()
     await tab('Overview').trigger('click')
     await tab('Proteins').trigger('click')
+    await tab('Runs').trigger('click')
     await flushPromises()
     expect(urls().filter((u) => u.includes('/proteins')).length).toBe(1)
+    expect(urls().filter((u) => u.includes('/runs')).length).toBe(1)
   })
 
   it('sends sort parameters when a protein column is clicked', async () => {

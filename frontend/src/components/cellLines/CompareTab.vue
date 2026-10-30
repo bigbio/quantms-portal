@@ -91,7 +91,8 @@
               <h3>{{ groupResult.a }} vs {{ groupResult.b }}</h3>
               <span class="cl-legend">
                 <span class="cl-legend-item"><span class="cl-swatch cl-bg-grey"></span>all genes ({{ groupResult.background?.length ?? 0 }})</span>
-                <span class="cl-legend-item"><span class="cl-swatch cl-pos-bg"></span>largest differences ({{ groupResult.genes.length }})</span>
+                <span class="cl-legend-item"><span class="cl-swatch" :style="{ background: GROUP_A }"></span>higher in {{ groupResult.a }} ({{ nHigher.a }})</span>
+                <span class="cl-legend-item"><span class="cl-swatch" :style="{ background: GROUP_B }"></span>higher in {{ groupResult.b }} ({{ nHigher.b }})</span>
                 <span class="cl-legend-item"><span class="cl-line-swatch cl-diag-bg"></span> x = y</span>
               </span>
             </div>
@@ -138,6 +139,7 @@ import LineBrowser from './LineBrowser.vue'
 import {
   rule, GROUP_KINDS, compare, compareParams, fmt, pct, signed, amountColor, reliabilityStyle,
 } from '../../cellLines.js'
+import { CATEGORICAL } from '../../utils/chartColors.js'
 
 const props = defineProps({
   mode: { type: String, default: 'lines' },
@@ -174,12 +176,20 @@ const lineNames = computed(() => ({ ...picked.value, ...Object.fromEntries((req.
 const groupResult = computed(() => (props.mode === 'groups' && req.data.value?.group ? req.data.value : null))
 
 const options = computed(() => props.groups.filter((g) => g.group === props.group))
+// The largest differences take the colour of the group they are higher in; two
+// fixed palette slots, since hashed lineage hues of two groups can come out alike.
+const [GROUP_A, GROUP_B] = CATEGORICAL
+const nHigher = computed(() => {
+  const genes = groupResult.value?.genes || []
+  return { a: genes.filter((g) => g.mean_a > g.mean_b).length, b: genes.filter((g) => g.mean_b > g.mean_a).length }
+})
 const groupScatter = computed(() => ({
   datasets: [
     {
       label: 'largest differences', order: 0,
       data: (groupResult.value?.genes || []).map((g) => ({ x: g.mean_a, y: g.mean_b, label: g.gene })),
-      backgroundColor: 'rgba(79, 70, 229, 0.8)', pointRadius: 3, pointHoverRadius: 5,
+      backgroundColor: (groupResult.value?.genes || []).map((g) => (g.mean_a > g.mean_b ? GROUP_A : GROUP_B)),
+      pointRadius: 3, pointHoverRadius: 5,
     },
     {
       label: 'x = y', order: 1, data: [{ x: 0, y: 0 }, { x: 1, y: 1 }], showLine: true,

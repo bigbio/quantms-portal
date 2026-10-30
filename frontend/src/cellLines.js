@@ -389,9 +389,14 @@ export function rnaVerdict(agreement, flatSd = 0.5) {
 }
 
 const GREY = 'rgba(100, 116, 139, 0.45)'
-const INDIGO = 'rgba(79, 70, 229, 0.9)'
 
-/** RNA (x) vs amount (y, log2 difference from the study average) for detected lines; one lineage may be highlighted. */
+/** A lineage's dot colour; lines without a lineage are grey. */
+const lineageDot = (lineage) => (lineage === 'unmapped' ? GREY : lineageColor(lineage).dot)
+
+/**
+ * RNA (x) vs amount (y, log2 difference from the study average) for detected lines, each dot in its
+ * lineage's colour; with a lineage highlighted, the other lines turn grey.
+ */
 export function detectedScatter(rows, xKey, { transform = (x) => x, isDetected = (r) => r.protein_state === 'detected', highlight = '' } = {}) {
   const base = []
   const hi = []
@@ -408,8 +413,11 @@ export function detectedScatter(rows, xKey, { transform = (x) => x, isDetected =
   const lo = xs.length ? Math.min(...xs) : 0
   const top = xs.length ? Math.max(...xs) : 1
   const pad = Math.max(0.25, (top - lo) * 0.05)
-  const datasets = [{ label: 'detected lines', data: base, backgroundColor: GREY, pointRadius: 3, pointHoverRadius: 5, order: 1 }]
-  if (highlight) datasets.unshift({ label: highlight, data: hi, backgroundColor: INDIGO, pointRadius: 4, pointHoverRadius: 6, order: 0 })
+  const datasets = [{
+    label: 'detected lines', data: base, backgroundColor: highlight ? GREY : base.map((p) => lineageDot(p.lineage)),
+    pointRadius: 3, pointHoverRadius: 5, order: 1,
+  }]
+  if (highlight) datasets.unshift({ label: highlight, data: hi, backgroundColor: lineageDot(highlight), pointRadius: 4, pointHoverRadius: 6, order: 0 })
   return { n: xs.length, highlighted: hi.length, excluded, xMin: Math.max(0, lo - pad), xMax: top + pad, data: { datasets } }
 }
 

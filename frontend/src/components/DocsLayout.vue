@@ -85,7 +85,7 @@ function onTocClick(id) {
 
 <style scoped>
 .docs-shell {
-  padding-top: 59px; /* fixed gradient-bar (3px) + navbar (56px) */
+  padding-top: var(--nav-h); /* clear the fixed navbar */
   min-height: 100vh;
   background: var(--bg);
 }
@@ -103,9 +103,9 @@ function onTocClick(id) {
 /* ── Sidebar ── */
 .docs-sidebar {
   position: sticky;
-  top: 59px;
+  top: var(--nav-h);
   align-self: start;
-  height: calc(100vh - 59px);
+  height: calc(100vh - var(--nav-h));
   overflow-y: auto;
   padding: 32px 0 40px;
 }
@@ -158,10 +158,10 @@ function onTocClick(id) {
 /* ── Right TOC ── */
 .docs-toc {
   position: sticky;
-  top: 59px;
+  top: var(--nav-h);
   align-self: start;
   padding: 44px 0 40px;
-  max-height: calc(100vh - 59px);
+  max-height: calc(100vh - var(--nav-h));
   overflow-y: auto;
 }
 .docs-toc-title {
@@ -217,7 +217,7 @@ function onTocClick(id) {
   .docs-mobilebar {
     display: block;
     position: sticky;
-    top: 59px;
+    top: var(--nav-h);
     z-index: 40;
     background: var(--bg);
     border-bottom: 1px solid var(--border);

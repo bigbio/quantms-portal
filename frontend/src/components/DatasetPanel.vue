@@ -80,8 +80,8 @@
     <div v-if="arr(dataset.tissues).length || arr(dataset.diseases).length" class="ds-block">
       <div class="ds-block-label">Tissue &amp; disease</div>
       <div class="ds-chips">
-        <span v-for="t in arr(dataset.tissues)" :key="'t-' + t" class="tag tag-green">{{ t }}</span>
-        <span v-for="d in arr(dataset.diseases)" :key="'d-' + d" class="tag tag-warning">{{ d }}</span>
+        <span v-for="t in arr(dataset.tissues)" :key="'t-' + t" class="tag tag-cat-3">{{ t }}</span>
+        <span v-for="d in arr(dataset.diseases)" :key="'d-' + d" class="tag tag-cat-2">{{ d }}</span>
       </div>
     </div>
 

@@ -14,36 +14,63 @@
         </p>
         <label class="rq-toggle"><input v-model="onlyFlagged" type="checkbox" :disabled="!data.n_flagged" /> Only flagged runs</label>
       </div>
-      <QxTable :columns="columns" :rows="shown" sort-key="run" sort-dir="asc" empty-text="No runs.">
-        <template #cell="{ column, row, text }">
-          <span v-if="flagOf(row, column)" class="rq-flag" :title="flagTitle(flagOf(row, column))">⚠ {{ text }}</span>
-          <span v-else-if="column === 'flags'" :class="{ 'rq-warn': row.flags.length }">{{ flagText(row) }}</span>
-          <template v-else>{{ text }}</template>
-        </template>
-      </QxTable>
+      <QxRunChart
+        v-if="data.rows.length > 1"
+        :rows="data.rows"
+        :columns="data.columns"
+        :baseline="data.baseline"
+        :colouring="colouring"
+        :selected="selected"
+        @select="select"
+      />
+      <div ref="tableEl">
+        <QxTable :columns="columns" :rows="shown" sort-key="run" sort-dir="asc" empty-text="No runs." row-key="run" :selected="selected">
+          <template #cell="{ column, row, text }">
+            <span v-if="flagOf(row, column)" class="rq-flag" :title="flagTitle(flagOf(row, column))">⚠ {{ text }}</span>
+            <span v-else-if="column === 'flags'" :class="{ 'rq-warn': row.flags.length }">{{ flagText(row) }}</span>
+            <template v-else>{{ text }}</template>
+          </template>
+        </QxTable>
+      </div>
     </template>
   </section>
 </template>
 
 <script setup>
 // Per-run QC metrics with outlier flags (GET /qc/runs).
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import QxTable from './QxTable.vue'
 import QxProgress from './QxProgress.vue'
+import QxRunChart from './QxRunChart.vue'
 import { qpxQc } from '../qpx.js'
 import { colLabel } from '../qpxFormat.js'
 
-const props = defineProps({ datasetRef: { type: String, required: true } })
+const props = defineProps({
+  datasetRef: { type: String, required: true },
+  // passed on to the chart; see QxRunChart
+  colouring: { type: Object, default: null },
+})
 
 const data = ref(null)
 const loading = ref(false)
 const error = ref('')
 const onlyFlagged = ref(false)
+const selected = ref('')
+const tableEl = ref(null)
+
+// A dot clicked in the chart: show its run's row.
+async function select(run) {
+  selected.value = run
+  if (onlyFlagged.value && !data.value.rows.find((r) => r.run === run).flags.length) onlyFlagged.value = false
+  await nextTick()
+  tableEl.value.querySelector('.qt-selected')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+}
 
 async function load(r) {
   loading.value = true
   error.value = ''
   data.value = null
+  selected.value = ''
   try {
     const d = await qpxQc(r, 'runs')
     if (r === props.datasetRef) data.value = d

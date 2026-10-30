@@ -2,17 +2,18 @@
   <nav class="nav">
     <div class="nav-inner">
       <router-link to="/" class="nav-logo">
-        <svg class="logo-svg" width="34" height="34" viewBox="0 0 70 70" fill="none">
-          <polygon points="35,56 10,46 35,36 60,46" fill="#409eff" opacity="0.3"/>
-          <polygon points="35,48 14,40 35,32 56,40" fill="#6366f1" opacity="0.5"/>
-          <polygon points="35,40 18,34 35,28 52,34" fill="#7c3aed" opacity="0.65"/>
-          <rect x="24" y="20" width="2.5" height="6" rx="0.8" fill="#7c3aed" opacity="0.4"/>
-          <rect x="28" y="14" width="2.5" height="12" rx="0.8" fill="#8b5cf6" opacity="0.55"/>
-          <rect x="32" y="8" width="2.5" height="18" rx="0.8" fill="#7c3aed" opacity="0.8"/>
-          <rect x="36" y="12" width="2.5" height="14" rx="0.8" fill="#8b5cf6" opacity="0.6"/>
-          <rect x="40" y="18" width="2.5" height="8" rx="0.8" fill="#7c3aed" opacity="0.45"/>
+        <!-- Light variant of the logo, as on the quantms.org header. -->
+        <svg class="logo-svg" width="34" height="34" viewBox="0 0 70 70" fill="none" aria-hidden="true">
+          <polygon points="35,56 10,46 35,36 60,46" fill="#60a5fa" opacity="0.4"/>
+          <polygon points="35,48 14,40 35,32 56,40" fill="#818cf8" opacity="0.6"/>
+          <polygon points="35,40 18,34 35,28 52,34" fill="#a78bfa" opacity="0.75"/>
+          <rect x="24" y="20" width="2.5" height="6" rx="0.8" fill="#a78bfa" opacity="0.5"/>
+          <rect x="28" y="14" width="2.5" height="12" rx="0.8" fill="#c4b5fd" opacity="0.65"/>
+          <rect x="32" y="8" width="2.5" height="18" rx="0.8" fill="#a78bfa" opacity="0.9"/>
+          <rect x="36" y="12" width="2.5" height="14" rx="0.8" fill="#c4b5fd" opacity="0.7"/>
+          <rect x="40" y="18" width="2.5" height="8" rx="0.8" fill="#a78bfa" opacity="0.55"/>
         </svg>
-        <span>quant<span class="logo-accent">ms</span> <span class="nav-portal-badge">Portal</span></span>
+        <span>quant<span class="logo-accent">ms</span><span class="nav-sub">data portal</span></span>
       </router-link>
       <button
         type="button"
@@ -43,7 +44,7 @@
             @click="toggle('data')"
             @keydown.escape="closeAll"
           >
-            Data <span class="nav-caret" aria-hidden="true">&#9662;</span>
+            <span class="nav-label">Data</span> <span class="nav-caret" aria-hidden="true">&#9662;</span>
           </button>
           <div v-show="openMenu === 'data'" class="nav-dropdown-menu" role="menu">
             <router-link to="/apps/dataset-search" role="menuitem">Datasets</router-link>
@@ -71,7 +72,7 @@
             @click="toggle('about')"
             @keydown.escape="closeAll"
           >
-            About <span class="nav-caret" aria-hidden="true">&#9662;</span>
+            <span class="nav-label">About</span> <span class="nav-caret" aria-hidden="true">&#9662;</span>
           </button>
           <div v-show="openMenu === 'about'" class="nav-dropdown-menu" role="menu">
             <router-link to="/docs" role="menuitem">Docs</router-link>
@@ -159,7 +160,7 @@ watch(() => route.fullPath, () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-primary);
+  color: #fff;
 }
 .nav-hamburger-icon {
   font-size: 22px;
@@ -183,17 +184,20 @@ watch(() => route.fullPath, () => {
   margin: 0;
   cursor: pointer;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  color: var(--text-secondary);
-  transition: color 0.15s;
+  color: #fff;
 }
-.nav-dropdown-trigger:hover,
-.nav-dropdown-trigger:focus-visible {
-  color: var(--text-primary);
+/* Underline the label only: the caret rotates and would carry the line above it. */
+.nav-dropdown-trigger:hover .nav-label {
+  text-decoration: underline;
+  text-underline-offset: 6px;
 }
-.nav-dropdown-trigger.is-active {
-  color: var(--indigo);
+.nav-dropdown-trigger.is-active .nav-label {
+  text-decoration: underline;
+  text-decoration-color: #9cc8ff;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }
 .nav-caret {
   font-size: 10px;
@@ -214,8 +218,8 @@ watch(() => route.fullPath, () => {
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 8px 20px rgba(8, 43, 79, 0.16);
   z-index: 1100;
 }
 /* Invisible bridge so hover survives the gap between trigger and menu. */
@@ -230,24 +234,22 @@ watch(() => route.fullPath, () => {
 .nav-dropdown-menu a {
   display: block;
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: 3px;
   text-decoration: none;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
-  transition:
-    color 0.15s,
-    background 0.15s;
 }
 .nav-dropdown-menu a:hover,
 .nav-dropdown-menu a:focus-visible {
-  color: var(--text-primary);
-  background: var(--bg-alt);
+  color: var(--brand-deep);
+  background: var(--brand-tint);
 }
 .nav-dropdown-menu a.router-link-active {
-  color: var(--indigo);
-  background: rgba(99, 102, 241, 0.08);
+  color: var(--brand-deep);
+  background: var(--brand-tint);
+  box-shadow: inset 3px 0 0 var(--brand);
 }
 .nav-dropdown-menu .nav-link-ext {
   opacity: 0.85;
@@ -272,14 +274,14 @@ watch(() => route.fullPath, () => {
     align-items: stretch;
     gap: 4px;
     position: fixed;
-    top: 59px;
+    top: var(--nav-h);
     left: 0;
     right: 0;
     padding: 14px 24px 22px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
-    max-height: calc(100vh - 59px);
+    background: var(--brand-ink);
+    border-bottom: 1px solid #23476e;
+    box-shadow: 0 10px 28px rgba(8, 43, 79, 0.3);
+    max-height: calc(100vh - var(--nav-h));
     overflow-y: auto;
     z-index: 1200;
   }
@@ -300,10 +302,21 @@ watch(() => route.fullPath, () => {
     min-width: 0;
     margin-top: 4px;
     padding: 4px 0 4px 12px;
+    background: transparent;
     border: none;
-    border-left: 2px solid var(--border);
+    border-left: 2px solid var(--on-dark-rule);
     border-radius: 0;
     box-shadow: none;
+  }
+  .nav-links.open .nav-dropdown-menu a {
+    color: var(--on-dark);
+  }
+  .nav-links.open .nav-dropdown-menu a:hover,
+  .nav-links.open .nav-dropdown-menu a.router-link-active {
+    color: #fff;
+    background: transparent;
+    box-shadow: none;
+    text-decoration: underline;
   }
   .nav-links.open .nav-dropdown-menu::before {
     display: none;
@@ -311,8 +324,8 @@ watch(() => route.fullPath, () => {
   .nav-scrim {
     display: block;
     position: fixed;
-    inset: 59px 0 0;
-    background: rgba(15, 23, 42, 0.4);
+    inset: var(--nav-h) 0 0;
+    background: rgba(8, 43, 79, 0.4);
     z-index: 1150;
   }
 }

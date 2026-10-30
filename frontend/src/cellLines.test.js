@@ -3,7 +3,7 @@ import {
   studyProfile,
   compareParams, compare, presenceState, errorMessage, tabFromQuery, listFromQuery, boxStats,
   sortRows, getGene, getDatasets, searchLines, groupDots, kindFromQuery, byParam, rnaVerdict, rnaByDetection,
-  detectedScatter, rule, decisionList, RULE_DEFAULTS, filterPartners, accessionUrl, enrichmentColor, signed, radialLayout, groupSummary, tukeyBox,
+  detectedScatter, lineageColor, rule, decisionList, RULE_DEFAULTS, filterPartners, accessionUrl, enrichmentColor, signed, radialLayout, groupSummary, tukeyBox,
 } from './cellLines.js'
 import { ApiError } from './api.js'
 
@@ -210,6 +210,10 @@ describe('RNA reference', () => {
     expect(s.xMax).toBeGreaterThan(5)
     const hi = detectedScatter(depmap, 'log2_tpm', { highlight: 'Lung' })
     expect(hi.data.datasets.map((d) => [d.label, d.data.length])).toEqual([['Lung', 1], ['detected lines', 1]])
+    // dots take their lineage's colour; a highlighted lineage keeps it and the rest turn grey
+    expect(s.data.datasets[0].backgroundColor).toHaveLength(2)
+    expect(hi.data.datasets[0].backgroundColor).toBe(lineageColor('Lung').dot)
+    expect(typeof hi.data.datasets[1].backgroundColor).toBe('string')
     const hpa = detectedScatter([{ line: 'x', ntpm: 3, amount: 0.2 }, { line: 'y', ntpm: 3, amount: null }], 'ntpm',
       { transform: (v) => Math.log2(v + 1), isDetected: (r) => r.line === 'x' })
     expect(hpa.data.datasets[0].data).toEqual([{ x: 2, y: 0.2, label: 'x', lineage: 'unmapped' }])
