@@ -27,12 +27,19 @@ vi.mock('../api.js', () => ({
 import Home from './Home.vue'
 
 async function mountHome() {
-  const w = mount(Home, { global: { stubs: { RouterLink: RouterLinkStub } } })
+  const w = mount(Home, { global: { stubs: { RouterLink: RouterLinkStub, HomeGlance: true, ProteinSpotlight: true, HomeCode: true } } })
   await flushPromises()
   return w
 }
 
 describe('Home', () => {
+  it('sends a search to the application that matches the query', async () => {
+    const w = await mountHome()
+    await w.find('.search-row input').setValue('P02768')
+    await w.find('.search-row').trigger('submit')
+    expect(push).toHaveBeenLastCalledWith({ path: '/apps/peptide-search', query: { mode: 'protein', query: 'P02768' } })
+  })
+
   it('shows catalogue and search-index figures with their definitions', async () => {
     const w = await mountHome()
     const facts = w.find('.facts').text()
@@ -66,11 +73,14 @@ describe('Home', () => {
     }
   })
 
-  it('sends the search form to Dataset Search with its query and collection', async () => {
+  it('sends an accession to Dataset Search, whatever the kind guessed', async () => {
     const w = await mountHome()
     await w.find('.search-row input').setValue('PXD000561')
-    await w.find('.search-row select').setValue('celllines')
     await w.find('.search-row').trigger('submit')
-    expect(push).toHaveBeenCalledWith({ path: '/apps/dataset-search', query: { q: 'PXD000561', collection: 'celllines' } })
+    expect(push).toHaveBeenLastCalledWith({ path: '/apps/dataset-search', query: { q: 'PXD000561' } })
+    await w.find('.search-row select').setValue('peptide')
+    await w.find('.search-row input').setValue('lvneltefak')
+    await w.find('.search-row').trigger('submit')
+    expect(push).toHaveBeenLastCalledWith({ path: '/apps/peptide-search', query: { mode: 'peptide', sequence: 'LVNELTEFAK' } })
   })
 })

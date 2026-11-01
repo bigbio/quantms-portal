@@ -7,18 +7,29 @@
           Browse, query, and download standardized proteomics datasets in QPX format.
           Built for AI agents, bioinformaticians, and researchers.
         </p>
-        <form class="search-row" role="search" @submit.prevent="searchDatasets">
-          <input v-model.trim="q" type="search" placeholder="Accession, title, organism, instrument…" aria-label="Search datasets" />
-          <select v-model="collection" aria-label="Collection">
-            <option value="">All collections</option>
-            <option v-for="c in collections" :key="c.name" :value="c.name">{{ c.title || c.name }}</option>
+        <form class="search-row" role="search" @submit.prevent="runSearch">
+          <select v-model="searchKind" aria-label="What to search">
+            <option value="auto">Any</option>
+            <option value="peptide">Peptide</option>
+            <option value="protein">Protein</option>
+            <option value="dataset">Dataset</option>
           </select>
-          <button class="btn" type="submit">Search datasets</button>
+          <input
+            ref="searchInput"
+            v-model.trim="searchText"
+            type="search"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Peptide sequence, UniProt accession, gene name or PXD accession"
+            aria-label="Search reanalysed public proteomics data"
+          />
+          <button class="btn" type="submit">Search</button>
         </form>
         <p class="search-hint">
-          Or look up a peptide or protein:
-          <router-link :to="{ path: '/apps/peptide-search', query: { sequence: 'ADSRDPASDQMQHWK' } }"><code>ADSRDPASDQMQHWK</code></router-link>,
-          <router-link :to="{ path: '/apps/peptide-search', query: { mode: 'protein', query: 'P04040' } }"><code>P04040</code></router-link>
+          Examples:
+          <template v-for="(ex, i) in searchExamples" :key="ex">
+            <a href="#" @click.prevent="useExample(ex)"><code>{{ ex }}</code></a><span v-if="i < searchExamples.length - 1">, </span>
+          </template>
         </p>
       </div>
       <OrganismProteins :stats="stats" :failed="statsFailed" />
@@ -59,7 +70,9 @@
     </div>
   </section>
 
-  <section class="section" id="collections">
+  <HomeGlance :collections="collections" />
+
+  <section class="section section-alt" id="collections">
     <div class="container">
       <h2 class="rule-title">Collections</h2>
       <p class="section-lede">Curated groups of datasets, each with specialized indexes and services built on top.</p>
@@ -75,6 +88,8 @@
     </div>
   </section>
 
+  <ProteinSpotlight />
+
   <section class="section section-alt" id="apps">
     <div class="container">
       <h2 class="rule-title">Applications</h2>
@@ -88,11 +103,17 @@
       </p>
     </div>
   </section>
+
+  <HomeCode />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { searchRoute } from '../utils/search.js'
+import HomeGlance from '../components/home/HomeGlance.vue'
+import ProteinSpotlight from '../components/home/ProteinSpotlight.vue'
+import HomeCode from '../components/home/HomeCode.vue'
 import CollectionsTable from '../components/CollectionsTable.vue'
 import AppGrid from '../components/AppGrid.vue'
 import OrganismProteins from '../components/OrganismProteins.vue'
@@ -122,14 +143,22 @@ const index = computed(() =>
   stats.value && { proteins: stats.value.kpis.proteins, peptides: stats.value.kpis.peptides, generated: stats.value.generated_at.slice(0, 10) }
 )
 
-const q = ref('')
-const collection = ref('')
+const searchText = ref('')
+const searchKind = ref('auto')
+const searchInput = ref(null)
+const searchExamples = ['LVNELTEFAK', 'P02768', 'GAPDH', 'PXD004452']
 
-function searchDatasets() {
-  const query = {}
-  if (q.value) query.q = q.value
-  if (collection.value) query.collection = collection.value
-  router.push({ path: '/apps/dataset-search', query })
+function runSearch() {
+  if (!searchText.value) {
+    searchInput.value?.focus()
+    return
+  }
+  router.push(searchRoute(searchText.value, searchKind.value))
+}
+function useExample(ex) {
+  searchText.value = ex
+  searchKind.value = 'auto'
+  searchInput.value?.focus()
 }
 
 async function loadCollections() {
@@ -184,7 +213,7 @@ onMounted(() => {
   min-width: 0;
 }
 .search-row select {
-  flex: 0 1 180px;
+  flex: 0 1 120px;
   min-width: 0;
 }
 .search-row .btn {
@@ -194,6 +223,9 @@ onMounted(() => {
   font-size: 14px;
   color: var(--on-dark-muted);
   margin-top: 10px;
+}
+.search-hint a {
+  text-decoration: none;
 }
 .search-hint code {
   font-family: var(--mono);
