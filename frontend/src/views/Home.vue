@@ -1,8 +1,7 @@
 <template>
   <section class="hero">
     <div class="hero-inner">
-      <div class="hero-badge">AI-Ready Proteomics Data</div>
-      <h1>The Quantitative Proteomics<br />Data Portal</h1>
+      <h1>The quantitative proteomics data portal</h1>
       <p class="hero-sub">
         Browse, query, and download standardized proteomics datasets in
         <strong>QPX format</strong>. Built for AI agents, bioinformaticians, and researchers.
@@ -186,13 +185,11 @@ onMounted(() => {
 .hero-actions {
   display: flex;
   gap: 12px;
-  justify-content: center;
   flex-wrap: wrap;
-  margin-top: 8px;
 }
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 20px;
 }
 .app-card {
@@ -200,7 +197,7 @@ onMounted(() => {
   display: block;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 6px;
   padding: 22px;
   text-decoration: none;
   color: inherit;
@@ -215,7 +212,7 @@ onMounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: 12px;
+  border-radius: 6px;
 }
 .app-card-link:focus-visible {
   outline: none;
@@ -225,9 +222,7 @@ onMounted(() => {
   outline-offset: 2px;
 }
 .app-card:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.08);
-  transform: translateY(-2px);
+  border-color: var(--brand);
 }
 .app-card-head {
   display: flex;
@@ -237,8 +232,8 @@ onMounted(() => {
   margin-bottom: 8px;
 }
 .app-card-head h3 {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: 600;
 }
 .app-tier {
   font-size: 10px;
@@ -278,7 +273,6 @@ onMounted(() => {
 }
 .api-hub {
   margin-top: 28px;
-  text-align: center;
   font-size: 14px;
   color: var(--text-secondary);
 }

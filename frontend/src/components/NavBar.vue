@@ -2,16 +2,7 @@
   <nav class="nav">
     <div class="nav-inner">
       <router-link to="/" class="nav-logo">
-        <svg class="logo-svg" width="34" height="34" viewBox="0 0 70 70" fill="none">
-          <polygon points="35,56 10,46 35,36 60,46" fill="#409eff" opacity="0.3"/>
-          <polygon points="35,48 14,40 35,32 56,40" fill="#6366f1" opacity="0.5"/>
-          <polygon points="35,40 18,34 35,28 52,34" fill="#7c3aed" opacity="0.65"/>
-          <rect x="24" y="20" width="2.5" height="6" rx="0.8" fill="#7c3aed" opacity="0.4"/>
-          <rect x="28" y="14" width="2.5" height="12" rx="0.8" fill="#8b5cf6" opacity="0.55"/>
-          <rect x="32" y="8" width="2.5" height="18" rx="0.8" fill="#7c3aed" opacity="0.8"/>
-          <rect x="36" y="12" width="2.5" height="14" rx="0.8" fill="#8b5cf6" opacity="0.6"/>
-          <rect x="40" y="18" width="2.5" height="8" rx="0.8" fill="#7c3aed" opacity="0.45"/>
-        </svg>
+        <img class="logo-img" src="/logo-mark-dark.svg" alt="" width="42" height="42" />
         <span>quant<span class="logo-accent">ms</span> <span class="nav-portal-badge">Portal</span></span>
       </router-link>
       <button
@@ -159,7 +150,7 @@ watch(() => route.fullPath, () => {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-primary);
+  color: #fff;
 }
 .nav-hamburger-icon {
   font-size: 22px;
@@ -183,17 +174,18 @@ watch(() => route.fullPath, () => {
   margin: 0;
   cursor: pointer;
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
-  color: var(--text-secondary);
-  transition: color 0.15s;
+  color: #fff;
 }
-.nav-dropdown-trigger:hover,
-.nav-dropdown-trigger:focus-visible {
-  color: var(--text-primary);
+.nav-dropdown-trigger:hover {
+  text-decoration: underline;
 }
 .nav-dropdown-trigger.is-active {
-  color: var(--indigo);
+  text-decoration: underline;
+  text-decoration-color: #9cc8ff;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
 }
 .nav-caret {
   font-size: 10px;
@@ -214,8 +206,8 @@ watch(() => route.fullPath, () => {
   padding: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(8, 43, 79, 0.18);
   z-index: 1100;
 }
 /* Invisible bridge so hover survives the gap between trigger and menu. */
@@ -247,7 +239,7 @@ watch(() => route.fullPath, () => {
 }
 .nav-dropdown-menu a.router-link-active {
   color: var(--indigo);
-  background: rgba(99, 102, 241, 0.08);
+  background: var(--brand-tint);
 }
 .nav-dropdown-menu .nav-link-ext {
   opacity: 0.85;
@@ -282,6 +274,10 @@ watch(() => route.fullPath, () => {
     max-height: calc(100vh - 59px);
     overflow-y: auto;
     z-index: 1200;
+  }
+  .nav-links.open > a,
+  .nav-links.open .nav-dropdown-trigger {
+    color: var(--text-primary);
   }
   .nav-links.open > a,
   .nav-links.open .nav-dropdown {
