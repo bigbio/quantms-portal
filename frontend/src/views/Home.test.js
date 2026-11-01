@@ -33,7 +33,7 @@ describe('appRoute', () => {
 
 describe('Home app cards', () => {
   it('never nests a link inside another link', async () => {
-    const w = mount(Home, { global: { stubs: { RouterLink: RouterLinkStub, CollectionCard: true, StatsRibbon: true } } })
+    const w = mount(Home, { global: { stubs: { RouterLink: RouterLinkStub, CollectionCard: true, HomeGlance: true, ProteinSpotlight: true, HomeCode: true } } })
     await flushPromises()
     const cards = w.findAll('.app-card')
     expect(cards.length).toBeGreaterThan(0)

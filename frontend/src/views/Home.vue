@@ -36,10 +36,10 @@
     </div>
   </section>
 
-  <StatsRibbon v-if="globalStats" :stats="globalStats" />
+  <HomeGlance :collections="collections" />
 
   <!-- Collections (listed first) -->
-  <section class="section" id="collections">
+  <section class="section section-alt" id="collections">
     <div class="container">
       <div class="section-header">
         <h2>Collections</h2>
@@ -58,6 +58,8 @@
       </div>
     </div>
   </section>
+
+  <ProteinSpotlight />
 
   <!-- Applications (the app catalog, gateway API excluded) -->
   <section class="section section-alt" id="apps">
@@ -98,6 +100,8 @@
       </div>
     </div>
   </section>
+
+  <HomeCode />
 </template>
 
 <script>
@@ -124,7 +128,9 @@ export function appRoute(app) {
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchRoute } from '../utils/search.js'
-import StatsRibbon from '../components/StatsRibbon.vue'
+import HomeGlance from '../components/home/HomeGlance.vue'
+import ProteinSpotlight from '../components/home/ProteinSpotlight.vue'
+import HomeCode from '../components/home/HomeCode.vue'
 import CollectionCard from '../components/CollectionCard.vue'
 import { apiGet } from '../api.js'
 import { safeHref } from '../utils/links.js'
@@ -153,7 +159,6 @@ function useExample(ex) {
 }
 
 const collections = ref([])
-const globalStats = ref(null)
 const loadingCollections = ref(true)
 const collectionsError = ref(false)
 
@@ -197,12 +202,6 @@ async function loadCollections() {
       organisms: c.organisms || [],
       stats: { total_peptides: c.total_peptides || 0, total_proteins: c.total_proteins || 0 },
     }))
-    globalStats.value = {
-      total_collections: list.length,
-      total_datasets: list.reduce((s, c) => s + (c.dataset_count || 0), 0),
-      total_peptides: list.reduce((s, c) => s + (c.total_peptides || 0), 0),
-      total_proteins: list.reduce((s, c) => s + (c.total_proteins || 0), 0),
-    }
   } catch (e) {
     collectionsError.value = true
   } finally {

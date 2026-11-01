@@ -239,46 +239,6 @@ body {
   color: var(--text-muted);
 }
 
-/* ─── Stats Ribbon ─── */
-.stats-ribbon {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 20px 0;
-}
-.stats-inner {
-  max-width: var(--wrap);
-  margin: 0 auto;
-  padding: 0 32px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0;
-}
-.stat-item {
-  text-align: center;
-  flex: 1;
-}
-.stat-value {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--brand-deep);
-}
-.stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-top: 2px;
-}
-.stat-divider {
-  width: 1px;
-  height: 36px;
-  background: var(--border);
-  flex-shrink: 0;
-}
-
 /* ─── Sections ─── */
 .section {
   padding: var(--section-pad) 0;
@@ -757,13 +717,6 @@ body {
     font-size: 30px;
   }
   .nav-links {
-    display: none;
-  }
-  .stats-inner {
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .stat-divider {
     display: none;
   }
   .collection-grid {
