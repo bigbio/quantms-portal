@@ -147,6 +147,10 @@ describe('scrollBehavior', () => {
     expect(scrollBehavior(at('/models'), at('/statistics'), null)).toEqual({ top: 0 })
     expect(scrollBehavior(at('/models'), { path: '/', matched: [] }, null)).toEqual({ top: 0 })
   })
+
+  it('ignores the position stored when the tab was hidden on a reload', () => {
+    expect(scrollBehavior(at('/'), { path: '/', matched: [] }, { left: 0, top: 1300 })).toEqual({ top: 0 })
+  })
 })
 
 describe('legacy routes', () => {

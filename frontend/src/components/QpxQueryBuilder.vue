@@ -171,7 +171,7 @@ function addFilter() {
 .qb-stack { display: flex; flex-direction: column; gap: 6px; }
 .qb-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .qb-chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 12px;
-  background: rgba(99, 102, 241, 0.1); font-size: 0.85em; }
+  background: rgba(26, 95, 180, 0.1); font-size: 0.85em; }
 .qb-x { border: none; background: none; cursor: pointer; color: inherit; opacity: 0.6; padding: 0 2px; }
 .qb-x:hover { opacity: 1; }
 .qb-add { align-self: flex-start; padding: 2px 10px; font-size: 0.85em; }

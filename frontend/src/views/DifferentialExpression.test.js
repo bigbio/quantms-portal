@@ -8,7 +8,7 @@ vi.mock('chart.js', () => {
   Chart.register = () => {}
   return {
     Chart,
-    ScatterController: {}, PointElement: {}, LineElement: {},
+    ScatterController: {}, LineController: {}, PointElement: {}, LineElement: {},
     BarController: {}, BarElement: {}, DoughnutController: {}, ArcElement: {},
     CategoryScale: {}, LinearScale: {}, Tooltip: {}, Legend: {},
   }

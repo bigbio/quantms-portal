@@ -1,14 +1,13 @@
 <template>
-  <section class="hero">
-    <div class="hero-inner">
-      <h1>The quantitative proteomics data portal</h1>
-      <p class="hero-sub">
-        Browse, query, and download standardized proteomics datasets in
-        <strong>QPX format</strong>. Built for AI agents, bioinformaticians, and researchers.
-      </p>
-      <form class="home-search" role="search" @submit.prevent="runSearch">
-        <label for="home-search-q">Search reanalysed public proteomics data</label>
-        <div class="home-search-row">
+  <section class="intro">
+    <div class="container intro-grid">
+      <div>
+        <h1>quantms data portal</h1>
+        <p class="lede">
+          Browse, query, and download standardized proteomics datasets in QPX format.
+          Built for AI agents, bioinformaticians, and researchers.
+        </p>
+        <form class="search-row" role="search" @submit.prevent="runSearch">
           <select v-model="searchKind" aria-label="What to search">
             <option value="auto">Any</option>
             <option value="peptide">Peptide</option>
@@ -16,113 +15,97 @@
             <option value="dataset">Dataset</option>
           </select>
           <input
-            id="home-search-q"
             ref="searchInput"
-            v-model="searchText"
+            v-model.trim="searchText"
             type="search"
             autocomplete="off"
             spellcheck="false"
             placeholder="Peptide sequence, UniProt accession, gene name or PXD accession"
+            aria-label="Search reanalysed public proteomics data"
           />
-          <button type="submit">Search</button>
-        </div>
-        <p class="home-search-examples">
+          <button class="btn" type="submit">Search</button>
+        </form>
+        <p class="search-hint">
           Examples:
           <template v-for="(ex, i) in searchExamples" :key="ex">
-            <a href="#" @click.prevent="useExample(ex)">{{ ex }}</a><span v-if="i < searchExamples.length - 1">, </span>
+            <a href="#" @click.prevent="useExample(ex)"><code>{{ ex }}</code></a><span v-if="i < searchExamples.length - 1">, </span>
           </template>
         </p>
-      </form>
+      </div>
+      <OrganismProteins :stats="stats" :failed="statsFailed" />
+    </div>
+
+    <!-- Key figures read live: placeholders hold their place while loading; a source
+         that fails to load is left out. -->
+    <div v-if="!(catalogFailed && statsFailed)" class="container facts-band" :aria-busy="!catalog && !index">
+      <dl class="facts">
+        <template v-if="!catalogFailed">
+          <div><dt>Collections</dt><dd><LiveValue :value="catalog?.collections" width="1ch" /></dd></div>
+          <div>
+            <dt>Datasets</dt>
+            <dd>
+              <LiveValue :value="catalog?.datasets" width="2.2ch" />
+              <small>from <LiveValue :value="catalog?.accessions" width="2ch" /> source accessions</small>
+            </dd>
+          </div>
+        </template>
+        <template v-if="!statsFailed">
+          <div>
+            <dt>Proteins in search index</dt>
+            <dd><LiveValue :value="index && formatBig(index.proteins)" :title="index?.proteins.toLocaleString()" width="3.6ch" /></dd>
+          </div>
+          <div>
+            <dt>Peptides in search index</dt>
+            <dd><LiveValue :value="index && formatBig(index.peptides)" :title="index?.peptides.toLocaleString()" width="3ch" /></dd>
+          </div>
+        </template>
+      </dl>
+      <p class="facts-note">
+        <span v-if="!catalogFailed">Collections and datasets: current portal catalogue; a dataset listed in more than one collection is counted once.</span>
+        <span v-if="!statsFailed">
+          Proteins and peptides: distinct counts over the peptide search index, which also covers retired collections; index generated
+          <LiveValue :value="index?.generated" width="6em" />.
+        </span>
+      </p>
     </div>
   </section>
 
   <HomeGlance :collections="collections" />
 
-  <!-- Collections (listed first) -->
   <section class="section section-alt" id="collections">
     <div class="container">
-      <div class="section-header">
-        <h2>Collections</h2>
-        <p>Curated groups of datasets, each with specialized indexes and services built on top.</p>
-      </div>
-
+      <h2 class="rule-title">Collections</h2>
+      <p class="section-lede">Curated groups of datasets, each with specialized indexes and services built on top.</p>
       <div v-if="collectionsError" class="notice">
         Collections are temporarily unavailable.
         <button class="page-btn" style="margin-left: 12px" @click="loadCollections">Retry</button>
       </div>
-      <div v-else-if="loadingCollections" class="collection-grid">
-        <div v-for="n in 4" :key="n" class="skeleton-card"></div>
-      </div>
-      <div v-else class="collection-grid">
-        <CollectionCard v-for="col in collections" :key="col.name" :collection="col" />
-      </div>
+      <CollectionsTable v-else :collections="collections" :loading="loadingCollections" />
+      <p class="table-note">
+        Per-collection peptide and protein counts from the search index are on the
+        <router-link to="/statistics">Statistics</router-link> page.
+      </p>
     </div>
   </section>
 
   <ProteinSpotlight />
 
-  <!-- Applications (the app catalog, gateway API excluded) -->
   <section class="section section-alt" id="apps">
     <div class="container">
-      <div class="section-header">
-        <h2>Applications</h2>
-        <p>Live services over the quantms data — each one also served to AI agents over MCP.</p>
-      </div>
-
-      <div v-if="appsError" class="notice">
-        The app catalog is temporarily unavailable.
-        <button class="page-btn" style="margin-left: 12px" @click="loadApps">Retry</button>
-      </div>
-
-      <div v-else class="app-grid">
-        <!-- The card is a plain container whose title link is stretched over
-             the whole card, so the separate "API docs" link isn't nested
-             inside another link (invalid HTML). -->
-        <div v-for="app in appCards" :key="app.id" class="app-card">
-          <div class="app-card-head">
-            <h3>
-              <router-link v-if="app.to" :to="app.to" class="app-card-link">{{ app.title }}</router-link>
-              <a v-else :href="app.href" target="_blank" rel="noopener" class="app-card-link">{{ app.title }}</a>
-            </h3>
-            <span class="app-tier">tier {{ app.tier }}</span>
-          </div>
-          <p class="app-desc">{{ app.description }}</p>
-          <div class="app-links">
-            <span v-if="app.to" class="app-cta" aria-hidden="true">Open →</span>
-            <a v-if="app.docs_url" :href="app.docs_url" target="_blank" rel="noopener" class="app-doclink">API docs ↗</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="api-hub">
-        Building an agent or client? Explore every backend — including the
-        <a :href="apiDocsUrl" target="_blank" rel="noopener">Collections &amp; Publish API ↗</a>.
-      </div>
+      <h2 class="rule-title">Applications</h2>
+      <p class="section-lede">Live services over the quantms data.</p>
+      <AppGrid :apps="[...apps, ...registry]" />
+      <p class="api-hub">
+        API documentation: <a :href="apiDocsUrl" target="_blank" rel="noopener">api.quantms.org/docs</a>
+        (collections, dataset search and peptide search) and the “API docs” link of each application.
+        AI agents can list collections, datasets and applications through the MCP endpoint
+        <code>https://publish.quantms.org/mcp/</code>.
+      </p>
     </div>
   </section>
 
   <HomeCode />
 </template>
-
-<script>
-// Map app id -> in-portal route.
-const APP_ROUTES = {
-  collections: '/collections',
-  'dataset-search': '/apps/dataset-search',
-  'peptide-search': '/apps/peptide-search',
-  compass: '/apps/compass',
-  'cell-lines': '/apps/cell-lines',
-  'differential-expression': '/differential-expression',
-  statistics: '/statistics',
-}
-
-// In-portal route for an app. Only the id mapping above is used: the gateway
-// manifest's `route` field is not a portal path (it lists /dataset-search while
-// the page lives at /apps/dataset-search), so it must not drive links.
-export function appRoute(app) {
-  return APP_ROUTES[app?.id] || ''
-}
-</script>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
@@ -131,26 +114,46 @@ import { searchRoute } from '../utils/search.js'
 import HomeGlance from '../components/home/HomeGlance.vue'
 import ProteinSpotlight from '../components/home/ProteinSpotlight.vue'
 import HomeCode from '../components/home/HomeCode.vue'
-import CollectionCard from '../components/CollectionCard.vue'
+import CollectionsTable from '../components/CollectionsTable.vue'
+import AppGrid from '../components/AppGrid.vue'
+import OrganismProteins from '../components/OrganismProteins.vue'
+import LiveValue from '../components/LiveValue.vue'
 import { apiGet } from '../api.js'
-import { safeHref } from '../utils/links.js'
-import { GATEWAY_BASE, DATASET_SEARCH_BASE, API_DOCS_URL, OBSOLETE_APPS } from '../config.js'
+import { countDistinctDatasets } from '../catalog.js'
+import { formatBig } from '../utils/format.js'
+import { APPS, registryApps } from '../apps.js'
+import { DATASET_SEARCH_BASE, BROWSE_BASE, STATS_PATH, API_DOCS_URL } from '../config.js'
 
 const apiDocsUrl = API_DOCS_URL
-
+const apps = APPS.filter((a) => !a.obsolete)
+// Registry-only apps; when the gateway is unreachable the curated list stands alone.
+const registry = ref([])
 const router = useRouter()
+
+const collections = ref([])
+const loadingCollections = ref(true)
+const collectionsError = ref(false)
+// Published catalogue: { collections, datasets, accessions }.
+const catalog = ref(null)
+const catalogFailed = ref(false)
+// stats.json of the peptide search index.
+const stats = ref(null)
+const statsFailed = ref(false)
+const index = computed(() =>
+  stats.value && { proteins: stats.value.kpis.proteins, peptides: stats.value.kpis.peptides, generated: stats.value.generated_at.slice(0, 10) }
+)
+
 const searchText = ref('')
 const searchKind = ref('auto')
 const searchInput = ref(null)
 const searchExamples = ['LVNELTEFAK', 'P02768', 'GAPDH', 'PXD004452']
 
 function runSearch() {
-  const q = searchText.value.trim()
-  if (!q) {
+  if (!searchText.value) {
     searchInput.value?.focus()
     return
   }
-  router.push(searchRoute(q, searchKind.value))
+  router.push(searchRoute(searchText.value, searchKind.value))
 }
 function useExample(ex) {
   searchText.value = ex
@@ -158,265 +161,99 @@ function useExample(ex) {
   searchInput.value?.focus()
 }
 
-const collections = ref([])
-const loadingCollections = ref(true)
-const collectionsError = ref(false)
-
-const apps = ref([])
-const appsError = ref(false)
-
-// Descriptions for apps whose manifest ships an empty description.
-const APP_FALLBACK_DESC = {
-  collections: 'Browse and filter datasets grouped into curated collections.',
-  statistics: 'Portal-wide statistics — peptides, proteins, datasets, species, PTMs and proteome coverage.',
-}
-
-const appCards = computed(() =>
-  apps.value
-    // The gateway self-entry (Collections & Publish API) is the API hub, not a
-    // user-facing app — it is surfaced via the API-hub link below, not as a card.
-    .filter((a) => a.enabled !== false && a.kind !== 'gateway' && !OBSOLETE_APPS.has(a.id) && (appRoute(a) || safeHref(a.base_url) || safeHref(a.docs_url)))
-    .map((a) => ({
-      id: a.id,
-      title: a.title || a.id,
-      description: a.description || APP_FALLBACK_DESC[a.id] || 'quantms service.',
-      tier: a.tier ?? 1,
-      to: appRoute(a),
-      href: appRoute(a) ? '' : safeHref(a.base_url) || safeHref(a.docs_url),
-      docs_url: safeHref(a.docs_url),
-    }))
-)
-
-
 async function loadCollections() {
   loadingCollections.value = true
   collectionsError.value = false
+  catalogFailed.value = false
   try {
     const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
-    const list = data.collections || []
-    collections.value = list.map((c) => ({
-      name: c.name,
-      title: c.title || c.name,
-      description: c.description || '',
-      dataset_count: c.dataset_count || 0,
-      organisms: c.organisms || [],
-      stats: { total_peptides: c.total_peptides || 0, total_proteins: c.total_proteins || 0 },
-    }))
+    collections.value = data.collections || []
   } catch (e) {
     collectionsError.value = true
+    catalogFailed.value = true
+    return
   } finally {
     loadingCollections.value = false
   }
-}
-
-async function loadApps() {
-  appsError.value = false
-  try {
-    const data = await apiGet(GATEWAY_BASE, '/apps')
-    apps.value = data.apps || []
-  } catch (e) {
-    appsError.value = true
-  }
+  // The key figures are optional: when the count fails they are left out.
+  countDistinctDatasets()
+    .then((n) => { catalog.value = { collections: collections.value.length, ...n } })
+    .catch(() => { catalogFailed.value = true })
 }
 
 onMounted(() => {
   loadCollections()
-  loadApps()
+  apiGet(BROWSE_BASE, STATS_PATH)
+    .then((s) => { stats.value = s })
+    .catch(() => { statsFailed.value = true })
+  registryApps().then((r) => (registry.value = r), () => {})
 })
 </script>
 
 <style scoped>
-.home-search label {
-  display: block;
-  color: #fff;
-  font-size: 17px;
-  font-weight: 500;
-  margin-bottom: 8px;
-}
-.home-search-row {
+.search-row {
   display: flex;
-  max-width: 900px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+  max-width: 720px;
 }
-.home-search-row select,
-.home-search-row input,
-.home-search-row button {
+.search-row input,
+.search-row select {
   font: inherit;
-  font-size: 16px;
-  border: 0;
-  margin: 0;
-}
-.home-search-row select {
-  flex: none;
-  padding: 0 10px;
-  background: #e9eef3;
-  color: var(--text-primary);
-  border-radius: 3px 0 0 3px;
-  border-right: 1px solid var(--border);
-}
-.home-search-row input {
-  flex: 1;
-  min-width: 0;
-  padding: 11px 12px;
+  font-size: 15px;
+  padding: 8px 12px;
+  border: 1px solid #fff;
+  border-radius: 4px;
   background: #fff;
   color: var(--text-primary);
 }
-.home-search-row input:focus-visible,
-.home-search-row select:focus-visible {
-  outline: 3px solid #9cc8ff;
-  outline-offset: 0;
+.search-row input {
+  flex: 1 1 200px;
+  min-width: 0;
 }
-.home-search-row button {
+.search-row select {
+  flex: 0 1 120px;
+  min-width: 0;
+}
+.search-row .btn {
   flex: none;
-  padding: 0 22px;
-  background: var(--brand);
-  color: #fff;
-  font-weight: 600;
-  border-radius: 0 3px 3px 0;
-  cursor: pointer;
 }
-.home-search-row button:hover {
-  background: var(--brand-ink);
-}
-.home-search-examples {
-  margin-top: 8px;
+.search-hint {
   font-size: 14px;
-  color: #d5e4f4;
+  color: var(--on-dark-muted);
+  margin-top: 10px;
 }
-.home-search-examples a {
+.search-hint a {
+  text-decoration: none;
+}
+.search-hint code {
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #1d4a7a;
   color: #fff;
-}
-.app-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 20px;
-}
-.app-card {
-  position: relative;
-  display: block;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 22px;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-}
-.app-card-link {
-  color: inherit;
-  text-decoration: none;
-}
-/* Stretch the title link over the card so the whole card stays clickable. */
-.app-card-link::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-}
-.app-card-link:focus-visible {
-  outline: none;
-}
-.app-card:has(.app-card-link:focus-visible) {
-  outline: 2px solid var(--indigo);
-  outline-offset: 2px;
-}
-.app-card:hover {
-  border-color: var(--brand);
-}
-.app-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.app-card-head h3 {
-  font-size: 17px;
-  font-weight: 600;
-}
-.app-tier {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 6px;
-}
-.app-desc {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.55;
-  margin-bottom: 14px;
-}
-.app-links {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.app-cta {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--indigo);
-}
-.app-doclink {
-  position: relative;
-  z-index: 1;
-  font-size: 12px;
-  color: var(--text-muted);
-  text-decoration: none;
-}
-.app-doclink:hover {
-  color: var(--indigo);
 }
 .api-hub {
-  margin-top: 28px;
+  margin-top: 24px;
   font-size: 14px;
   color: var(--text-secondary);
+  max-width: 110ch;
 }
 .api-hub a {
-  color: var(--indigo);
-  text-decoration: none;
-  font-weight: 600;
+  color: var(--brand);
 }
-.skeleton-card {
-  height: 220px;
-  border-radius: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.api-hub code {
+  font-family: var(--mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 .notice {
-  padding: 18px 20px;
+  padding: 16px 18px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 4px;
   background: var(--surface);
   color: var(--text-secondary);
-}
-@media (max-width: 1024px) {
-  .app-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-@media (max-width: 768px) {
-  .app-grid {
-    grid-template-columns: 1fr;
-  }
-  .home-search-row {
-    flex-wrap: wrap;
-  }
-  .home-search-row select {
-    width: 100%;
-    padding: 8px 10px;
-    border-radius: 3px 3px 0 0;
-    border-right: 0;
-  }
-  .home-search-row input {
-    border-radius: 0 0 0 3px;
-  }
 }
 </style>

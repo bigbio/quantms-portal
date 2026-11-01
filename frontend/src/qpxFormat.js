@@ -37,11 +37,24 @@ export function colLabel(key) {
 const PROBABILITY = /(qvalue|q_value|posterior_error|^pep$|fdr)/i
 const IDENTIFIER = /(scan|_id$|^id$|index|fraction)/i
 const PERCENT = /coverage|_pct$|percent/i
+// Raw (not log) intensities span many orders of magnitude.
+const INTENSITY = /^(?!.*log).*intensity/i
+const RT = /^rt($|_)/i
+const MZ = /mz$/i
+const PPM = /ppm/i
+
+const fixed = (n, d) => n.toLocaleString(undefined, { minimumFractionDigits: d, maximumFractionDigits: d })
+// 1.50e11 rather than 1.50e+11, like the small q-values (8.45e-5)
+const exponent = (n) => n.toExponential(2).replace('e+', 'e')
 
 function formatNumber(n, key) {
   if (!Number.isFinite(n)) return String(n)
   if (PERCENT.test(key)) return `${n.toFixed(1)}%`
   if (PROBABILITY.test(key)) return n === 0 ? '0' : n < 0.001 ? n.toExponential(2) : n.toPrecision(3)
+  if (INTENSITY.test(key) && Math.abs(n) >= 1e5) return exponent(n)
+  if (RT.test(key)) return fixed(n, 1)
+  if (MZ.test(key)) return fixed(n, 4)
+  if (PPM.test(key) && Math.abs(n) >= 0.1) return fixed(n, 2)
   if (Number.isInteger(n)) return IDENTIFIER.test(key) ? String(n) : n.toLocaleString()
   const a = Math.abs(n)
   if (a >= 1000) return Math.round(n).toLocaleString()
@@ -53,6 +66,8 @@ function summarizeObject(o) {
   if (o == null) return '—'
   if (typeof o !== 'object') return formatScalar(o, '')
   if ('name' in o && o.name != null) return String(o.name)
+  const acc = Object.keys(o).find((k) => /accession$/.test(k) && o[k] != null)
+  if (acc) return String(o[acc])
   const parts = Object.entries(o)
     .filter(([, v]) => v != null && typeof v !== 'object')
     .map(([k, v]) => `${colLabel(k)} ${formatScalar(v, k)}`)
@@ -73,6 +88,10 @@ export function formatCell(v, key = '') {
   if (Array.isArray(v)) {
     if (!v.length) return { text: '—', title: '' }
     const items = v.map((x) => (x != null && typeof x === 'object' ? summarizeObject(x) : formatScalar(x, key)))
+    // Several unnamed records (e.g. the samples of a multiplexed run): a count, listed in the title.
+    if (v.length > 1 && v.every((x) => x != null && typeof x === 'object' && x.name == null)) {
+      return { text: `${v.length} ${key ? colLabel(key) : 'items'}`, title: items.join(', ') }
+    }
     const shown = items.slice(0, MAX_ITEMS).join(', ')
     const more = items.length > MAX_ITEMS ? ` +${items.length - MAX_ITEMS} more` : ''
     return { text: shown + more, title: items.join(', ') }

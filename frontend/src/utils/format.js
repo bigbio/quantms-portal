@@ -1,5 +1,7 @@
 // Shared display formatters used across views.
 
+import { CATEGORICAL, categorySlot } from './chartColors.js'
+
 // Compact big-number: 1_234_567 -> "1.2M".
 export function formatBig(n) {
   if (n == null || n === '' || Number.isNaN(Number(n))) return '—'
@@ -107,21 +109,24 @@ export function orderPtms(list) {
     .map((x) => x.rec)
 }
 
-// Stable tag color class per known collection.
+// Tag colour class per collection. Current and retired collections keep fixed
+// palette slots; a collection added later gets a free slot automatically.
+const COLLECTION_SLOTS = {
+  msnet: 1,
+  immunopeptidomics: 2,
+  'absolute-expression': 3,
+  celllines: 5,
+  'single-cell-expression': 6,
+  'single-cell': 6,
+  'differential-expression': 7,
+}
 export function collectionTag(name) {
-  switch (name) {
-    case 'absolute-expression':
-      return 'tag-indigo'
-    case 'differential-expression':
-      return 'tag-violet'
-    case 'msnet':
-      return 'tag-blue'
-    case 'single-cell-expression':
-    case 'single-cell':
-      return 'tag-green'
-    default:
-      return 'tag-blue'
-  }
+  return `tag-cat-${categorySlot(name, COLLECTION_SLOTS)}`
+}
+
+// The palette colour of a collection's tag, for marks beside it.
+export function collectionColour(name) {
+  return CATEGORICAL[categorySlot(name, COLLECTION_SLOTS) - 1]
 }
 
 // --- biological dataset classes ----------------------------------------------

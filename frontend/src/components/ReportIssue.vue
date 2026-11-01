@@ -53,36 +53,28 @@ function report() {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 16px;
-  border: 1px solid var(--border, #e2e8f0);
-  border-radius: 999px;
-  background: var(--surface, #fff);
-  color: var(--text-secondary, #64748b);
-  font: 600 13px/1 var(--font, "Inter", sans-serif);
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font: 500 13px/1 var(--font);
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
-  transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(8, 43, 79, 0.14);
 }
 .report-issue:hover {
-  color: var(--violet, #7c3aed);
-  border-color: var(--violet, #7c3aed);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.22);
+  color: var(--brand-deep);
+  border-color: var(--brand);
 }
 .report-issue:focus-visible {
-  outline: 2px solid var(--violet, #7c3aed);
+  outline: 2px solid var(--brand);
   outline-offset: 2px;
 }
 .report-issue-icon { flex: none; }
 
-/* On narrow screens collapse to an icon-only circle so it never covers content. */
+/* On narrow screens collapse to an icon-only button so it never covers content. */
 @media (max-width: 640px) {
   .report-issue { padding: 12px; }
   .report-issue-label { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .report-issue { transition: none; }
-  .report-issue:hover { transform: none; }
 }
 </style>

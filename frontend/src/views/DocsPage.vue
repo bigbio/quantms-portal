@@ -242,7 +242,7 @@ onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
   color: var(--indigo);
   text-decoration: none;
   font-weight: 500;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.25);
+  border-bottom: 1px solid rgba(26, 95, 180, 0.25);
 }
 .docs-prose :deep(a:hover) {
   border-bottom-color: var(--indigo);

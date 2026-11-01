@@ -1,10 +1,10 @@
 <template>
   <section v-if="!failed" class="section spotlight" aria-labelledby="spot-title">
     <div class="container">
-      <div class="section-header spot-head">
+      <div class="spot-head">
         <div>
-          <h2 id="spot-title">Protein spotlight</h2>
-          <p>One protein a day, seen through every dataset in the portal.</p>
+          <h2 id="spot-title" class="rule-title">Protein spotlight</h2>
+          <p class="section-lede">One protein a day, seen through every dataset in the portal.</p>
         </div>
         <button type="button" class="btn btn-outline" :disabled="loading" @click="next">Show another protein</button>
       </div>

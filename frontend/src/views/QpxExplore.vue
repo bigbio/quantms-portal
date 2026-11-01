@@ -30,29 +30,8 @@
         </button>
       </div>
 
-      <!-- Not loaded -->
-      <div v-if="!loaded && !loading && !error" class="qx-start">
-        <p class="qx-start-lead">
-          Enter a dataset ref above, open one from a dataset's page (Downloads → “Explore with DuckDB”),
-          or start from an example:
-        </p>
-        <div class="qx-examples-grid">
-          <button
-            v-for="ex in shownExamples"
-            :key="ex.accession"
-            class="qx-example"
-            :disabled="ex.state === 'loading'"
-            :aria-busy="ex.state === 'loading'"
-            @click="openExample(ex)"
-          >
-            <span class="qx-example-acc">{{ ex.accession }}</span>
-            <strong>{{ ex.title }}</strong>
-            <span class="qx-example-kind">{{ ex.kind }}{{ ex.samples ? ` · ${ex.samples.toLocaleString()} samples` : '' }}</span>
-            <span class="qx-example-why">{{ ex.why }}</span>
-            <span v-if="ex.state === 'failed'" class="qx-example-failed">Could not look up the current version. Click to retry.</span>
-          </button>
-        </div>
-      </div>
+      <!-- Not loaded: the catalogue to pick from -->
+      <QxCatalogue v-if="!loaded && !loading && !error && !refFromQuery(route.query)" :examples="START_EXAMPLES" @open="(r) => router.push({ query: { ref: r } })" />
 
       <!-- Loading -->
       <QxProgress v-else-if="loading" class="qx-opening" label="Opening the dataset with DuckDB…" />
@@ -65,6 +44,28 @@
 
       <!-- Loaded -->
       <template v-else-if="overview">
+        <!-- What the dataset is: catalogue entry, organisms, instruments, acquisition -->
+        <header class="qx-dataset">
+          <div class="qx-dataset-main">
+            <span class="qx-dataset-ref">{{ visibleRef }}</span>
+            <h2 v-if="dsInfo && dsInfo.title && dsInfo.title !== overview.accession" class="qx-dataset-title">{{ dsInfo.title }}</h2>
+            <p v-if="dsInfo" class="qx-dataset-links">
+              <router-link v-if="dsInfo.collection" :to="`/collections/${dsInfo.collection}`">{{ dsInfo.collection_title || dsInfo.collection }}</router-link>
+              <router-link v-if="dsInfo.collection" :to="`/collections/${dsInfo.collection}/${overview.accession}/${overview.phash}`">Dataset page</router-link>
+              <a v-if="dsInfo.source_url" :href="dsInfo.source_url" target="_blank" rel="noopener">{{ dsInfo.source }} {{ overview.accession }}</a>
+              <a :href="browseUrl(visibleRef)" target="_blank" rel="noopener">Files<template v-if="isCurrent && dsInfo.total_size"> · {{ formatBytes(dsInfo.total_size) }}</template></a>
+            </p>
+            <p v-if="dsInfo && !isCurrent && dsInfo.dataset_ref" class="qx-hint qx-dataset-version">
+              The catalogue lists <router-link :to="{ query: { ref: dsInfo.dataset_ref } }">{{ dsInfo.dataset_ref }}</router-link> as this dataset's current version.
+            </p>
+          </div>
+          <dl class="qx-dataset-facts">
+            <div><dt>Organisms</dt><dd>{{ overview.organisms.join(', ') || '—' }}</dd></div>
+            <div><dt>Instruments</dt><dd>{{ overview.instruments.join(', ') || '—' }}</dd></div>
+            <div><dt>Acquisition</dt><dd>{{ overview.acquisition_methods.join(', ') || '—' }}</dd></div>
+          </dl>
+        </header>
+
         <!-- Overview cards -->
         <div class="qx-cards">
           <div v-for="c in cards" :key="c.label" class="qx-card">
@@ -90,36 +91,21 @@
 
         <!-- Overview tab -->
         <div v-if="tab === 'overview'" class="qx-tab-body">
-          <QxOverviewStats :dataset-ref="visibleRef" />
-          <div class="qx-facts">
-          <div class="qx-block" v-if="filesList.length">
-            <div class="qx-block-label">qpx files</div>
+          <QxColourBy v-if="colourChoices.length" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
+          <QxOverviewStats
+            :dataset-ref="visibleRef"
+            :samples="meta.samples.rows"
+            :runs="meta.runs.rows"
+            :scales="scales"
+            :colouring="colouring"
+            @colour-by="colourField = $event"
+          />
+          <details v-if="filesList.length" class="qx-files">
+            <summary>qpx files ({{ filesList.length }})</summary>
             <ul class="qx-file-list">
               <li v-for="f in filesList" :key="f">{{ f }}</li>
             </ul>
-          </div>
-          <div class="qx-block">
-            <div class="qx-block-label">Organisms</div>
-            <div class="qx-chips">
-              <span v-for="o in overview.organisms" :key="o" class="tag tag-green">{{ o }}</span>
-              <span v-if="!overview.organisms.length" class="text-muted">—</span>
-            </div>
-          </div>
-          <div class="qx-block">
-            <div class="qx-block-label">Instruments</div>
-            <div class="qx-chips">
-              <span v-for="i in overview.instruments" :key="i" class="tag tag-blue">{{ i }}</span>
-              <span v-if="!overview.instruments.length" class="text-muted">—</span>
-            </div>
-          </div>
-          <div class="qx-block">
-            <div class="qx-block-label">Acquisition methods</div>
-            <div class="qx-chips">
-              <span v-for="a in overview.acquisition_methods" :key="a" class="tag">{{ a }}</span>
-              <span v-if="!overview.acquisition_methods.length" class="text-muted">—</span>
-            </div>
-          </div>
-          </div>
+          </details>
           <p v-if="missingViews.length" class="qx-hint">
             This dataset has no {{ missingViews.join(', ') }} table; the tabs that need it are disabled.
           </p>
@@ -127,10 +113,11 @@
 
         <!-- QC: per-run metrics and per-sample intensity, each with outlier flags -->
         <div v-else-if="tab === 'qc'" class="qx-tab-body">
+          <QxColourBy v-if="colourChoices.length" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
           <h3 class="qx-section">Runs</h3>
-          <QxRunQc :dataset-ref="visibleRef" />
+          <QxRunQc :dataset-ref="visibleRef" :colouring="colouring" />
           <h3 class="qx-section">Samples</h3>
-          <QxSampleIntensity :dataset-ref="visibleRef" />
+          <QxSampleIntensity :dataset-ref="visibleRef" :colouring="colouring" />
         </div>
 
         <!-- Runs / Samples: small tables, loaded whole and sorted here -->
@@ -143,7 +130,7 @@
             :rows="meta[tab].rows"
             :loading="meta[tab].loading"
             :error="meta[tab].error"
-            :sort-key="tab === 'runs' ? 'run_file_name' : 'sample_accession'"
+            :sort-key="meta[tab].columns[0]"
             sort-dir="asc"
             :empty-text="`No ${tab}.`"
           />
@@ -368,9 +355,13 @@ import QxProgress from '../components/QxProgress.vue'
 import QxOverviewStats from '../components/QxOverviewStats.vue'
 import QxRunQc from '../components/QxRunQc.vue'
 import QxSampleIntensity from '../components/QxSampleIntensity.vue'
+import QxCatalogue from '../components/QxCatalogue.vue'
+import QxColourBy from '../components/QxColourBy.vue'
 import { apiGet } from '../api.js'
-import { DATASET_SEARCH_BASE } from '../config.js'
+import { DATASET_SEARCH_BASE, browseUrl } from '../config.js'
 import { formatCell } from '../qpxFormat.js'
+import { formatBytes } from '../utils/format.js'
+import { annotation, colourFields, colourScale, GROUPED_FIELDS, runAnnotation, useSampleGroups } from '../sampleColors.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -445,6 +436,9 @@ const tab = ref('overview')
 
 const overview = ref(null)
 const filesList = ref([])
+// The dataset's catalogue entry (dataset search), describing its current version.
+const dsInfo = ref(null)
+const isCurrent = computed(() => dsInfo.value?.dataset_ref === visibleRef.value)
 
 //: Large tables: sorted and filtered on the backend, PAGE rows at a time.
 const newServerTab = (sortKey, dir) => ({ rows: [], columns: [], loading: false, error: '', q: '', sort: { key: sortKey, dir } })
@@ -506,6 +500,58 @@ const cards = computed(() => {
 
 const ptmNames = computed(() => meta.ptms.rows.map((r) => r[0]).filter(Boolean))
 
+//: Sample colouring shared by the Overview and QC charts: the annotation picked,
+//: its colours, and how to look up the value of a sample or a run.
+const colourField = ref('')
+const highlight = ref('')
+const colourChoices = computed(() => colourFields(meta.samples.rows))
+watch(colourChoices, (c) => {
+  if (!c.some((f) => f.key === colourField.value)) colourField.value = c.length ? c[0].key : ''
+})
+watch(colourField, () => { highlight.value = '' })
+// Biological groups of the grouped fields' values (organ system, taxon, ...),
+// looked up live; until they arrive a grouped field colours nothing.
+const sampleGroups = useSampleGroups(() => meta.samples.rows, () => colourField.value)
+const scales = computed(() => {
+  const samples = meta.samples.rows
+  return Object.fromEntries(colourChoices.value.map((f) => {
+    const g = sampleGroups.value[f.key]
+    return [f.key, g && g.status === 'pending' ? null : colourScale(samples, f.key, g ? g.groupOf : null)]
+  }))
+})
+const colourNote = computed(() => {
+  const f = colourChoices.value.find((x) => x.key === colourField.value)
+  const grouped = f && GROUPED_FIELDS[f.key]
+  if (!grouped) return ''
+  const g = sampleGroups.value[f.key]
+  if (!g || g.status === 'pending') return `Looking up each ${f.title.toLowerCase()}'s ${grouped.source}…`
+  const scale = scales.value[f.key]
+  const how = scale.splits.length && scale.splits[0].family
+    ? `Hue: ${grouped.source}; shade: each ${f.title.toLowerCase()}.`
+    : `Hue: ${grouped.source}; shade: each ${f.title.toLowerCase()}. Too many values to draw one by one, so the charts group them by ${grouped.source.replace(/ \(.*/, '')}.`
+  return g.failed ? `${how} ${g.failed} could not be looked up and are grey.` : how
+})
+const colouring = computed(() => {
+  const field = colourChoices.value.find((f) => f.key === colourField.value)
+  if (!field || !scales.value[field.key]) return null
+  const samples = meta.samples.rows
+  const byId = new Map(samples.map((x) => [x.sample_accession, x]))
+  const runSamples = new Map()
+  for (const r of meta.runs.rows) {
+    const accs = (r.samples || []).map((x) => x.sample_accession)
+    runSamples.set(r.run_accession, accs)
+    runSamples.set(r.run_file_name, accs)
+  }
+  return {
+    key: field.key,
+    title: field.title,
+    scale: scales.value[field.key],
+    highlight: highlight.value,
+    value: (acc) => annotation(byId.get(acc), field.key),
+    run: (name) => runAnnotation(runSamples.get(name) || [], byId, field.key),
+  }
+})
+
 function shownText(id) {
   const n = sv[id].rows.length
   if (sv[id].loading) return 'Loading…'
@@ -515,6 +561,8 @@ function shownText(id) {
 function resetDerived() {
   overview.value = null
   filesList.value = []
+  dsInfo.value = null
+  highlight.value = ''
   Object.assign(sv.proteins, newServerTab('intensity', 'desc'))
   Object.assign(sv.peptides, newServerTab('n_psms', 'desc'))
   Object.assign(sv.features, newServerTab('', 'desc'))
@@ -535,8 +583,8 @@ function resetDerived() {
   exampleBusy.value = ''
 }
 
-//: Start-page examples, by accession. The version and sample count come from dataset
-//: search, so the cards describe what to look at, not numbers that a republish changes.
+//: Start-page examples, by accession; the catalogue gives their current version, so
+//: they describe what to look at, not numbers that a republish changes.
 const START_EXAMPLES = [
   { accession: 'MSV000085836', title: 'CCLE cell lines', kind: 'TMT, fractionated',
     why: 'Many plexes: compare runs within a fraction and channels within a plex on the QC tab.' },
@@ -545,34 +593,6 @@ const START_EXAMPLES = [
   { accession: 'PXD021013', title: 'ProteomeTools HLA peptides', kind: 'MSNet import · PSMs only',
     why: 'Peptide-level evidence: PSMs with scan, RT and PEP.' },
 ]
-// accession -> { state: 'loading' | 'ok' | 'failed', ref, samples }
-const startExamples = ref({})
-const shownExamples = computed(() => START_EXAMPLES.map((ex) => ({ ...ex, state: 'loading', ...startExamples.value[ex.accession] })))
-
-function setExample(acc, v) {
-  startExamples.value = { ...startExamples.value, [acc]: v }
-}
-
-// Looks up every example not yet resolved or in flight; a failed one is tried again.
-function resolveExamples() {
-  for (const ex of START_EXAMPLES) {
-    const cur = startExamples.value[ex.accession]
-    if (cur && cur.state !== 'failed') continue
-    setExample(ex.accession, { state: 'loading' })
-    apiGet(DATASET_SEARCH_BASE, `/datasets/${encodeURIComponent(ex.accession)}`, undefined, { retries: 0, timeout: 10000 })
-      .then((d) => setExample(ex.accession, d && d.dataset_ref
-        ? { state: 'ok', ref: d.dataset_ref, samples: d.samples || 0 }
-        : { state: 'failed' }))
-      .catch(() => setExample(ex.accession, { state: 'failed' }))
-  }
-}
-
-function openExample(ex) {
-  if (ex.ref) router.push({ query: { ref: ex.ref } })
-  else if (ex.state === 'failed') resolveExamples()
-}
-
-const onStartPage = computed(() => !loaded.value && !loading.value && !error.value && !refFromQuery(route.query))
 
 // Bumped on every dataset open; a response for an older open is dropped.
 let loadGen = 0
@@ -593,6 +613,9 @@ async function loadRef() {
   const gen = ++loadGen
   loading.value = true
   error.value = ''
+  apiGet(DATASET_SEARCH_BASE, `/datasets/${encodeURIComponent(parts[0])}`, undefined, { retries: 0, timeout: 10000 })
+    .then((d) => { if (gen === loadGen && d && d.accession) dsInfo.value = d })
+    .catch(() => {})
   try {
     const ov = await qpxOverview(ref)
     if (gen !== loadGen) return
@@ -612,6 +635,15 @@ async function loadRef() {
   }
 }
 
+// Columns worth a table column: not empty in every row, and not a copy of an
+// earlier column (run_file_name repeats run_accession).
+function informativeColumns(rows) {
+  const empty = (v) => v == null || v === '' || (Array.isArray(v) && !v.length)
+  const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))].filter((k) => rows.some((r) => !empty(r[k])))
+  const same = (a, b) => rows.every((r) => JSON.stringify(r[a]) === JSON.stringify(r[b]))
+  return keys.filter((k, i) => !keys.slice(0, i).some((p) => same(p, k)))
+}
+
 // Runs/samples: every page (the API caps a page at 500).
 async function loadWhole(id, fetcher, key) {
   const ref = visibleRef.value
@@ -627,7 +659,7 @@ async function loadWhole(id, fetcher, key) {
       rows.push(...page)
       if (page.length < 500) break
     }
-    m.columns = [...new Set(rows.flatMap((r) => Object.keys(r)))]
+    m.columns = informativeColumns(rows)
     m.rows = rows
   } catch (e) {
     if (ref !== visibleRef.value) return
@@ -785,8 +817,11 @@ async function openProtein(acc) {
 //: Each tab's data loads the first time the tab is opened (once per dataset), so
 //: opening a dataset runs only the overview's queries instead of every tab's.
 const TAB_LOADERS = {
-  runs: () => loadWhole('runs', qpxRuns, 'runs'),
-  samples: () => loadWhole('samples', qpxSamples, 'samples'),
+  // the sample colouring needs the run and sample tables
+  overview: () => { wholeOnce('runs'); wholeOnce('samples') },
+  qc: () => { wholeOnce('runs'); wholeOnce('samples') },
+  runs: () => wholeOnce('runs'),
+  samples: () => wholeOnce('samples'),
   proteins: () => loadServer('proteins'),
   peptides: () => loadServer('peptides'),
   features: () => { loadServer('features'); ptmsOnce() },
@@ -795,6 +830,16 @@ const TAB_LOADERS = {
   queries: () => loadSchema(),
 }
 const tabLoaded = new Set()
+
+// Runs and samples load once per dataset, whichever tab asks first.
+const WHOLE = { runs: [qpxRuns, 'run'], samples: [qpxSamples, 'sample'] }
+function wholeOnce(id) {
+  const [fetcher, view] = WHOLE[id]
+  const key = `${visibleRef.value}|whole:${id}`
+  if (tabLoaded.has(key) || overview.value.available_views[view] === false) return
+  tabLoaded.add(key)
+  loadWhole(id, fetcher, id)
+}
 
 // Features (its PTM filter) and PTMs share one PTM list.
 function ptmsOnce() {
@@ -839,8 +884,6 @@ onMounted(() => {
   }
 })
 
-watch(onStartPage, (on) => { if (on) resolveExamples() }, { immediate: true })
-
 // Back to a URL without a ref (browser back, the Explorer link): show the start page.
 function closeDataset() {
   loadGen++
@@ -883,17 +926,6 @@ watch(() => route.query, (q) => {
 .qx-input-sm { min-width: 60px; font-family: var(--mono); }
 .qx-input-num { min-width: 0; width: 120px; }
 
-.qx-start { margin-top: 8px; }
-.qx-start-lead { color: var(--text-secondary); margin-bottom: 14px; }
-.qx-examples-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.qx-example { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 14px 16px; cursor: pointer;
-  border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text-primary); font: inherit; }
-.qx-example:hover:not(:disabled), .qx-example:focus-visible { border-color: var(--indigo); background: rgba(99, 102, 241, 0.03); }
-.qx-example:disabled { cursor: default; opacity: 0.55; }
-.qx-example-acc { font-family: var(--mono); font-size: 12px; color: var(--indigo); }
-.qx-example-kind { font-size: 13px; color: var(--text-secondary); }
-.qx-example-why { font-size: 12px; color: var(--text-muted); }
-.qx-example-failed { font-size: 12px; color: var(--qual-medium); }
 .placeholder-empty { text-align: center; padding: 40px 12px; color: var(--text-muted); }
 
 .qx-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -923,15 +955,25 @@ watch(() => route.query, (q) => {
 
 .qx-tab-body { margin-top: 4px; }
 .qx-section { font-size: 16px; font-weight: 600; margin: 18px 0 10px; }
-.qx-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 24px; }
+.qx-dataset { display: flex; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; margin-bottom: 16px;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.qx-dataset-main { min-width: 0; flex: 1 1 420px; }
+.qx-dataset-ref { font-family: var(--mono); font-size: 13px; color: var(--text-muted); }
+.qx-dataset-title { font-size: 18px; font-weight: 600; margin: 2px 0 6px; color: var(--text-primary); }
+.qx-dataset-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 4px 0 0; font-size: 13px; }
+.qx-dataset-version { margin: 6px 0 0; }
+.qx-dataset-facts { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; font-size: 13px; flex: 0 1 420px; }
+.qx-dataset-facts > div { display: contents; }
+.qx-dataset-facts dt { color: var(--text-muted); }
+.qx-dataset-facts dd { margin: 0; color: var(--text-primary); }
+.qx-files { margin: 4px 0 14px; font-size: 13px; color: var(--text-secondary); }
+.qx-files summary { cursor: pointer; margin-bottom: 6px; }
 .qx-opening { max-width: 420px; margin: 40px auto; }
-.qx-block { margin-bottom: 22px; }
 .qx-block-label { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
-.qx-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .qx-file-list { margin: 0; padding-left: 18px; color: var(--text-secondary); font-family: var(--mono); font-size: 13px; }
 
 .qx-prot-detail { margin-bottom: 20px; padding: 14px 16px; border: 1px solid var(--indigo); border-radius: 10px;
-  background: rgba(99, 102, 241, 0.03); scroll-margin-top: 90px; }
+  background: rgba(26, 95, 180, 0.03); scroll-margin-top: 90px; }
 .qx-detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .qx-mono { font-family: var(--mono); }
 .qx-normal { text-transform: none; }
@@ -945,7 +987,7 @@ watch(() => route.query, (q) => {
   padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
   background: var(--surface); cursor: pointer; font-size: 13px;
 }
-.qx-query-item.active { border-color: var(--indigo); background: rgba(99,102,241,0.04); }
+.qx-query-item.active { border-color: var(--indigo); background: rgba(26, 95, 180, 0.04); }
 
 /* SQL editor */
 .qx-builder { margin-bottom: 18px; padding: 12px 14px; border: 1px solid var(--border, rgba(0,0,0,0.1)); border-radius: 8px; }

@@ -131,7 +131,7 @@ const discordances = computed(() => {
 .cc-rev { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; }
 .cc-unrev { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: #f3f4f6; color: #6b7280; }
 .cc-links { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
-.cc-link { font-size: 13px; color: #4f46e5; text-decoration: none; font-weight: 600; }
+.cc-link { font-size: 13px; color: var(--brand); text-decoration: none; font-weight: 600; }
 .cc-link:hover { text-decoration: underline; }
 .cc-banner { font-size: 13px; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; background: #f8fafc; color: #475569; }
 .cc-banner.concordant { background: #f0fdf4; color: #15803d; }

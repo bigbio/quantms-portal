@@ -48,7 +48,11 @@ const NAV_OFFSET = 80
 // target; a query-only change on the same page (search filters synced to the
 // URL) keeps the current position; any other navigation starts at the top.
 export function scrollBehavior(to, from, savedPosition) {
-  if (savedPosition) return savedPosition
+  // On the first navigation (a reload) vue-router passes the position it stored
+  // in history.state when the tab was last hidden, which is often stale and made
+  // a reloaded page jump down on its own; restore positions only on back/forward.
+  const firstLoad = !(from && from.matched && from.matched.length)
+  if (savedPosition && !firstLoad) return savedPosition
   if (to.hash) {
     // Wait a tick so content rendered after the route resolves (docs) exists.
     return new Promise((resolve) => {

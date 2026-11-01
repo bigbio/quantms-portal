@@ -6,8 +6,8 @@
 
 <script setup>
 // Thin Chart.js v4 wrapper — the ONE charting dependency in the portal.
-// Only the Bar + Doughnut controllers are registered (every stats plot is one of
-// those), keeping the tree-shaken bundle small. Colors come from the portal CSS
+// Only the Bar, Line and Doughnut controllers are registered (every stats plot is
+// one of those), keeping the tree-shaken bundle small. Colors come from the portal CSS
 // variables so light/dark stays consistent; the chart is responsive and destroys
 // cleanly on unmount / data change.
 import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
@@ -15,6 +15,9 @@ import {
   Chart,
   BarController,
   BarElement,
+  LineController,
+  LineElement,
+  PointElement,
   DoughnutController,
   ArcElement,
   CategoryScale,
@@ -25,13 +28,14 @@ import {
 
 Chart.register(
   BarController, BarElement,
+  LineController, LineElement, PointElement,
   DoughnutController, ArcElement,
   CategoryScale, LinearScale,
   Tooltip, Legend,
 )
 
 const props = defineProps({
-  type: { type: String, default: 'bar' },          // 'bar' | 'doughnut'
+  type: { type: String, default: 'bar' },          // 'bar' | 'line' | 'doughnut'
   data: { type: Object, required: true },           // Chart.js data object
   options: { type: Object, default: () => ({}) },   // extra Chart.js options (merged)
   height: { type: Number, default: 320 },
@@ -53,6 +57,8 @@ function baseOptions() {
     responsive: true,
     maintainAspectRatio: false,
     animation: { duration: 400 },
+    // Thin marks: a bar never fills its whole band.
+    datasets: { bar: { maxBarThickness: 20 } },
     plugins: {
       legend: {
         display: props.type === 'doughnut',

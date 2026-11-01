@@ -1,13 +1,11 @@
 <template>
   <section class="section code-section" aria-labelledby="code-title">
     <div class="container">
-      <div class="section-header">
-        <h2 id="code-title">Use the data from your code or your AI assistant</h2>
-        <p>
-          Everything in the portal is open: no account and no key. The web apps call the same REST API you can call,
-          and an MCP endpoint gives AI assistants the same searches as tools.
-        </p>
-      </div>
+      <h2 id="code-title" class="rule-title">Use the data from your code or your AI assistant</h2>
+      <p class="section-lede">
+        Everything in the portal is open: no account and no key. The web apps call the same REST API you can call,
+        and an MCP endpoint gives AI assistants the same searches as tools.
+      </p>
 
       <div class="code-cols">
         <div class="code-col">
