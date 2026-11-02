@@ -34,6 +34,7 @@ export const routes = [
   { path: '/baseline', component: () => import('./views/BaselineExpression.vue'), meta: { title: 'Baseline Expression' } },
   { path: '/models', component: () => import('./views/Models.vue'), meta: { title: 'Models' } },
   { path: '/contact', component: () => import('./views/Contact.vue'), meta: { title: 'Contact' } },
+  { path: '/status', component: () => import('./views/Status.vue'), meta: { title: 'Status' } },
   // Obsolete (see OBSOLETE_APPS in config.js): the view is kept for recovery, the route redirects.
   { path: '/differential-expression', redirect: '/applications' },
   { path: '/applications', component: () => import('./views/Applications.vue'), meta: { title: 'Applications' } },
