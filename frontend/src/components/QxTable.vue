@@ -1,5 +1,8 @@
 <template>
   <div class="qt" :aria-busy="loading">
+    <ul v-if="rows.length && pfMods.length" class="qt-mods" aria-label="Modifications in these rows">
+      <li v-for="m in pfMods" :key="m.name" :style="{ '--pf': m.color }" :title="m.unimod || null">{{ m.name }}</li>
+    </ul>
     <div v-if="error" class="notice">{{ error }}</div>
     <QxProgress v-if="loading && !rows.length" class="qt-state-progress" label="Loading…" />
     <div v-else-if="!rows.length && !error" class="qt-state">{{ emptyText }}</div>
@@ -34,7 +37,8 @@
           >
             <td v-for="(c, j) in cols" :key="c.key" :class="numeric[j] ? 'qt-num' : 'qt-text'" :title="fmt(r, c, j).title">
               <slot name="cell" :column="c.key" :value="cell(r, c.key, j)" :row="r" :text="fmt(r, c, j).text">
-                {{ fmt(r, c, j).text }}
+                <Peptidoform v-if="c.key === 'peptidoform' && typeof cell(r, c.key, j) === 'string'" :value="cell(r, c.key, j)" />
+                <template v-else>{{ fmt(r, c, j).text }}</template>
               </slot>
             </td>
           </tr>
@@ -50,6 +54,8 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { colLabel, compareValues, formatCell, isNumericColumn } from '../qpxFormat.js'
 import QxProgress from './QxProgress.vue'
+import Peptidoform from './Peptidoform.vue'
+import { modsInPeptidoforms } from '../utils/peptidoform.js'
 
 const props = defineProps({
   // ['col', ...] or [{ key, label, sortable }]
@@ -85,6 +91,12 @@ function fmt(row, c, j) {
 }
 
 const numeric = computed(() => cols.value.map((c, j) => isNumericColumn(props.rows.map((r) => cell(r, c.key, j)))))
+
+// Modifications in the shown peptidoforms, for the legend.
+const pfMods = computed(() => {
+  const j = cols.value.findIndex((c) => c.key === 'peptidoform')
+  return j < 0 ? [] : modsInPeptidoforms(props.rows.map((r) => cell(r, 'peptidoform', j)))
+})
 
 const sortState = reactive({ key: props.sortKey, dir: props.sortDir })
 watch(() => [props.sortKey, props.sortDir], ([k, d]) => { sortState.key = k; sortState.dir = d })
@@ -138,5 +150,8 @@ th.qt-num .qt-sort { justify-content: flex-end; }
 .qt-state { text-align: center; padding: 40px 12px; color: var(--text-muted); }
 .qt-updating table { opacity: 0.5; transition: opacity 0.15s; }
 .qt-state-progress { max-width: 320px; margin: 40px auto; }
+.qt-mods { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 8px; font-size: 12px; color: var(--text-secondary); }
+.qt-mods li::before { content: ''; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 2px;
+  vertical-align: -1px; background: color-mix(in srgb, var(--pf) 22%, transparent); box-shadow: inset 0 -2px 0 var(--pf); }
 .qt-refresh { position: sticky; top: 0; left: 0; z-index: 2; }
 </style>
