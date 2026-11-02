@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  APPS, MCP_ENDPOINTS, BUILDS, checkApp, checkMcp, checkSearchIndex, checkCatalogue, buildResult, fetchBuilds, overall, ago,
+  APPS, MCP_ENDPOINTS, BUILDS, prRun, prResult, checkApp, checkMcp, checkSearchIndex, checkCatalogue, buildResult, fetchBuilds, overall, ago,
 } from './status.js'
 
 const res = (body, { status = 200, type = 'cors' } = {}) => ({
@@ -77,19 +77,33 @@ describe('builds', () => {
     expect(buildResult(undefined, NOW).state).toBe('degraded')
   })
 
-  it('asks GitHub once per repository and branch, and caches the answer', async () => {
+  it('asks GitHub once per repository and branch, follows the latest pull request, and caches', async () => {
     const calls = []
     const store = new Map()
     const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }
     const gh = async (url) => {
       calls.push(url)
+      if (url.includes('/pulls?')) return res([{ number: 712, title: 'OpenMS upgrade', head: { sha: 'abc' }, html_url: 'https://github.com/pr/712' }])
       return res({ workflow_runs: BUILDS.map((b) => run(b.workflow, 'success')) })
     }
     const out = await fetchBuilds(gh, storage, NOW)
-    expect(calls).toHaveLength(new Set(BUILDS.map((b) => `${b.repo}@${b.branch}`)).size)
+    const branchRepos = new Set(BUILDS.filter((b) => !b.pr).map((b) => `${b.repo}@${b.branch}`)).size
+    const n = branchRepos + 2 * BUILDS.filter((b) => b.pr).length
+    expect(calls).toHaveLength(n)
+    expect(calls.some((u) => u.includes('head_sha=abc'))).toBe(true)
     expect(out.every((b) => b.result.state === 'up')).toBe(true)
+    expect(out.find((b) => b.repo === 'quantms').result.detail).toBe('#712 OpenMS upgrade: passed 2 h ago')
     await fetchBuilds(gh, storage, NOW + 60000)
-    expect(calls).toHaveLength(new Set(BUILDS.map((b) => `${b.repo}@${b.branch}`)).size)
+    expect(calls).toHaveLength(n)
+  })
+
+  it('judges a pull request by its newest run that a later push did not cancel', () => {
+    const runs = [run('nf-core CI', 'cancelled'), run('nf-core CI', 'failure'), run('nf-core CI', 'success'), run('other', 'success')]
+    expect(prRun(runs, 'nf-core CI').conclusion).toBe('failure')
+    expect(prRun([run('nf-core CI', 'cancelled')], 'nf-core CI').conclusion).toBe('cancelled')
+    const pr = { number: 9, title: 'x'.repeat(80), html_url: 'https://github.com/pr/9' }
+    expect(prResult(pr, undefined, NOW)).toMatchObject({ state: 'degraded', href: 'https://github.com/pr/9' })
+    expect(prResult(pr, undefined, NOW).detail).toBe(`#9 ${'x'.repeat(57)}…: no test run`)
   })
 
   it('says so when GitHub rate-limits, and does not cache that', async () => {

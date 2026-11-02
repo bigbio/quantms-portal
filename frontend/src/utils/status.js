@@ -33,8 +33,9 @@ export const BUILDS = [
   { title: 'qpx (quantms.io) tests', repo: 'quantms.io', branch: 'main', workflow: 'CI' },
   { title: 'qpx Docker image', repo: 'quantms.io', branch: 'main', workflow: 'Publish Docker image' },
   { title: 'pmultiqc tests', repo: 'pmultiqc', branch: 'main', workflow: 'Pytest' },
-  { title: 'quantms pipeline CI', repo: 'quantms', branch: 'dev', workflow: 'nf-core CI' },
-  { title: 'quantmsdiann pipeline CI', repo: 'quantmsdiann', branch: 'dev', workflow: 'nf-core CI' },
+  // Pipelines are tested on their pull requests: the latest one, open or merged.
+  { title: 'quantms: latest pull request', repo: 'quantms', pr: true, workflow: 'nf-core CI' },
+  { title: 'quantmsdiann: latest pull request', repo: 'quantmsdiann', pr: true, workflow: 'nf-core CI' },
 ]
 
 const up = (detail, extra) => ({ state: 'up', detail, ...extra })
@@ -155,8 +156,21 @@ export function buildResult(run, now = Date.now()) {
   const extra = { href: run.html_url }
   if (run.status !== 'completed') return { state: 'running', detail: `running, started ${ago(run.run_started_at, now)}`, ...extra }
   if (run.conclusion === 'success') return up(`passed ${when}`, extra)
+  if (run.conclusion === 'action_required') return degraded(`waiting for approval to run, ${when}`, extra)
   if (run.conclusion === 'failure' || run.conclusion === 'timed_out') return down(`failed ${when}`, extra)
   return degraded(`${run.conclusion || 'unknown'} ${when}`, extra)
+}
+
+// The run that speaks for a pull request: its newest one that was not cancelled by a later push.
+export function prRun(runs, workflow) {
+  const mine = runs.filter((r) => r.name === workflow)
+  return mine.find((r) => r.conclusion !== 'cancelled') || mine[0]
+}
+
+export function prResult(pr, run, now = Date.now()) {
+  const title = pr.title.length > 60 ? `${pr.title.slice(0, 57)}…` : pr.title
+  const r = buildResult(run, now)
+  return { ...r, detail: `#${pr.number} ${title}: ${run ? r.detail : 'no test run'}`, href: run?.html_url || pr.html_url }
 }
 
 export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionStorage, now = Date.now()) {
@@ -165,24 +179,34 @@ export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionS
     const cached = JSON.parse(storage?.getItem(key) || 'null')
     if (cached && now - cached.at < BUILDS_CACHE_MS) return cached.results
   } catch { /* no cache */ }
-  const repos = [...new Set(BUILDS.map((b) => `${b.repo}@${b.branch}`))]
-  const runs = {}
   let limited = false
-  await Promise.all(repos.map(async (rb) => {
-    const [repo, branch] = rb.split('@')
-    const t = await timed(fetchFn, `https://api.github.com/repos/bigbio/${repo}/actions/runs?branch=${branch}&per_page=50&exclude_pull_requests=true`)
+  async function gh(path) {
+    const t = await timed(fetchFn, `https://api.github.com/repos/bigbio/${path}`)
     if (t.error || !t.res.ok) {
       if (t.res?.status === 403 || t.res?.status === 429) limited = true
-      runs[rb] = null
-      return
+      return null
     }
-    runs[rb] = (await json(t.res))?.workflow_runs || []
+    return json(t.res)
+  }
+  const failed = () => degraded(limited ? 'GitHub rate limit reached, try later' : 'GitHub not reachable')
+
+  // One request per repository and branch, shared by its workflows.
+  const branchRuns = {}
+  for (const b of BUILDS.filter((x) => !x.pr)) {
+    const k = `${b.repo}@${b.branch}`
+    branchRuns[k] ??= gh(`${b.repo}/actions/runs?branch=${b.branch}&per_page=50&exclude_pull_requests=true`)
+  }
+  const results = await Promise.all(BUILDS.map(async (b) => {
+    if (!b.pr) {
+      const data = await branchRuns[`${b.repo}@${b.branch}`]
+      return { ...b, result: data ? buildResult(data.workflow_runs?.find((r) => r.name === b.workflow), now) : failed() }
+    }
+    const pulls = await gh(`${b.repo}/pulls?state=all&sort=updated&direction=desc&per_page=1`)
+    const pr = pulls?.[0]
+    if (!pr) return { ...b, result: pulls ? degraded('no pull requests') : failed() }
+    const data = await gh(`${b.repo}/actions/runs?head_sha=${pr.head.sha}&per_page=20`)
+    return { ...b, result: data ? prResult(pr, prRun(data.workflow_runs || [], b.workflow), now) : failed() }
   }))
-  const results = BUILDS.map((b) => {
-    const list = runs[`${b.repo}@${b.branch}`]
-    if (!list) return { ...b, result: degraded(limited ? 'GitHub rate limit reached, try later' : 'GitHub not reachable') }
-    return { ...b, result: buildResult(list.find((r) => r.name === b.workflow), now) }
-  })
   if (!limited) {
     try { storage?.setItem(key, JSON.stringify({ at: now, results })) } catch { /* private mode */ }
   }
