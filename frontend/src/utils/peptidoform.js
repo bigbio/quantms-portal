@@ -31,15 +31,18 @@ export function modInfo(tag) {
   return { tag: raw, name, unimod: m ? `UNIMOD:${m[1]}` : '', family: family.key, color: family.color }
 }
 
+const CLOSE = { '[': ']', '(': ')' }
+
 // Bracketed tags, allowing nested brackets inside a tag (e.g. "Label:13C(6)").
 function readTags(s, i) {
   const tags = []
-  while (s[i] === '[') {
+  while (CLOSE[s[i]]) {
+    const open = s[i]
     let depth = 0
     let j = i
     for (; j < s.length; j++) {
-      if (s[j] === '[') depth++
-      else if (s[j] === ']' && --depth === 0) break
+      if (s[j] === open) depth++
+      else if (s[j] === CLOSE[open] && --depth === 0) break
     }
     if (j >= s.length) return null
     tags.push(s.slice(i + 1, j))
@@ -48,13 +51,19 @@ function readTags(s, i) {
   return { tags, next: i }
 }
 
-// { nterm: [mod], residues: [{ aa, mods: [mod] }], cterm: [mod] }, or null when it is not ProForma.
+// { nterm: [mod], residues: [{ aa, mods: [mod] }], cterm: [mod] }, or null when it is not a peptidoform.
+// Reads ProForma ("[Acetyl]-PEPM[Oxidation]K-[Amidated]") and OpenMS (".(Acetyl)PEPM(Oxidation)K.(Amidated)").
 export function parsePeptidoform(pf) {
   if (typeof pf !== 'string' || !pf) return null
   const s = pf.trim()
   let i = 0
   let nterm = []
-  if (s[0] === '[') {
+  if (s[0] === '.' || s[0] === '(') {
+    const r = readTags(s, s[0] === '.' ? 1 : 0)
+    if (!r) return null
+    nterm = r.tags
+    i = r.next
+  } else if (s[0] === '[') {
     const r = readTags(s, 0)
     if (!r || s[r.next] !== '-') return null
     nterm = r.tags
@@ -64,7 +73,7 @@ export function parsePeptidoform(pf) {
   let cterm = []
   while (i < s.length) {
     const c = s[i]
-    if (c === '-' && s[i + 1] === '[') {
+    if ((c === '-' && s[i + 1] === '[') || c === '.') {
       const r = readTags(s, i + 1)
       if (!r || r.next !== s.length) return null
       cterm = r.tags

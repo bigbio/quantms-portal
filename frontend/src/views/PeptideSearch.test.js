@@ -109,6 +109,44 @@ describe('PeptideSearch view', () => {
     vi.useRealTimers()
   })
 
+  it('lists a protein per peptide, in sequence order, with the datasets on a second tab', async () => {
+    backend(() => ok('PXD1'))
+    const base = apiGet.getMockImplementation()
+    const pep = (sequence, start, extra) => ({
+      sequence, start, end: start && start + sequence.length - 1, n_occurrences: start ? 1 : 0,
+      proteotypic: true, n_datasets: 2, n_obs: 10, n_peptidoforms: 1, peptidoforms: [{ peptidoform: sequence, n_obs: 10 }], ...extra,
+    })
+    apiGet.mockImplementation((b, path, params) => path === '/protein/peptides'
+      ? Promise.resolve({ found: true, peptides: [
+        pep('ISOFORMK', null),
+        pep('VPTANVSVVDLTCR', 230, { proteotypic: false, n_peptidoforms: 4,
+          peptidoforms: [{ peptidoform: 'VPTANVSVVDLTC(Carbamidomethyl)R', n_obs: 9 }] }),
+        pep('LVINGNPITIFQER', 67),
+      ] })
+      : base(b, path, params))
+    const { w } = await mountAt('/apps/peptide-search?mode=protein&query=P04406')
+    const rows = w.findAll('.pp-peptides tbody tr')
+    expect(rows.map((r) => r.find('.pp-seq').text())).toEqual(['LVINGNPITIFQER', 'VPTANVSVVDLTCR', 'ISOFORMK'])
+    expect(rows[1].text()).toContain('230–243')
+    expect(rows[1].text()).toContain('shared')
+    expect(rows[1].find('.pf-mod').text()).toBe('C')
+    expect(rows[1].text()).toContain('+3')
+    expect(w.find('.pp-peptides').text()).toContain('3 peptides, 2 unique to the gene')
+    expect(w.text()).not.toContain('dataset match')
+
+    await w.findAll('.pp-tabs button')[1].trigger('click')
+    expect(w.find('.pp-peptides').isVisible()).toBe(false)
+    expect(w.text()).toContain('1 dataset match')
+  })
+
+  it('falls back to the dataset table when the protein has no peptide list', async () => {
+    backend(() => ok('PXD1'))
+    const { w } = await mountAt('/apps/peptide-search?mode=protein&query=P04406')
+    expect(w.find('.pp-tabs').exists()).toBe(false)
+    expect(w.find('.pp-peptides').exists()).toBe(false)
+    expect(w.text()).toContain('1 dataset match')
+  })
+
   it('upper-cases the typed sequence via a class, not the placeholder', async () => {
     backend(() => ok('PXD1'))
     const { w } = await mountAt('/apps/peptide-search')
