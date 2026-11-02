@@ -23,11 +23,20 @@ describe('parsePeptidoform', () => {
     expect(p.residues[3].mods[0].family).toBe('silac')
   })
 
-  it('returns null for anything that is not ProForma', () => {
+  it('returns null for anything that is not a peptidoform', () => {
     expect(parsePeptidoform('')).toBeNull()
     expect(parsePeptidoform(null)).toBeNull()
-    expect(parsePeptidoform('.(Acetyl)ADSR')).toBeNull()
+    expect(parsePeptidoform('PEP-TIDE')).toBeNull()
     expect(parsePeptidoform('PEP[Oxidation')).toBeNull()
+  })
+
+  it('reads OpenMS notation', () => {
+    const p = parsePeptidoform('.(Acetyl)ADSRDPASDQM(Oxidation)QHWK.(Amidated)')
+    expect(p.nterm[0].name).toBe('Acetyl')
+    expect(p.residues[10]).toMatchObject({ aa: 'M', mods: [{ name: 'Oxidation' }] })
+    expect(p.cterm[0].name).toBe('Amidated')
+    expect(parsePeptidoform('VPTANVSVVDLTC(Carbamidomethyl)R').residues[12].mods[0].family).toBe('fixed')
+    expect(parsePeptidoform('PEPK(Label:13C(6)15N(2))').residues[3].mods[0].name).toBe('Label:13C(6)15N(2)')
   })
 
   it('names unknown UNIMOD ids by their tag', () => {

@@ -156,6 +156,27 @@
         <!-- Protein-level mirror: biological profile for the searched protein, above the rows -->
         <ProteinProfile v-if="mode === 'protein' && profileProtein" :accession="profileProtein" :gpp-min="profileGppMin" @pick="pickProtein" />
 
+        <!-- A protein's evidence: per peptide by default, per dataset on the second tab. -->
+        <template v-if="mode === 'protein' && profileProtein">
+          <div v-if="nProteinPeptides && result" class="pp-tabs" role="tablist" aria-label="Show the protein's evidence">
+            <button type="button" role="tab" :aria-selected="proteinTab === 'peptides'" :class="{ active: proteinTab === 'peptides' }" @click="proteinTab = 'peptides'">
+              Peptides <span class="pp-tab-n">{{ formatNum(nProteinPeptides) }}</span>
+            </button>
+            <button type="button" role="tab" :aria-selected="proteinTab === 'datasets'" :class="{ active: proteinTab === 'datasets' }" @click="proteinTab = 'datasets'">
+              Datasets <span class="pp-tab-n">{{ formatNum(result.total_datasets) }}</span>
+            </button>
+          </div>
+          <ProteinPeptides
+            v-if="nProteinPeptides !== 0"
+            v-show="proteinTab === 'peptides'"
+            :accession="profileProtein"
+            :gpp-min="profileGppMin"
+            @loaded="(n) => (nProteinPeptides = n)"
+            @unavailable="nProteinPeptides = 0"
+          />
+        </template>
+
+        <template v-if="showDatasetResults">
         <div v-if="result" class="result-count" style="margin: 8px 0 16px">
           {{ result.total_datasets }} dataset<span v-if="result.total_datasets !== 1">s</span> match
           <span v-if="query"> — <code>{{ query }}</code></span>
@@ -196,7 +217,7 @@
                 <td class="td-num">{{ formatNum(ds.n_peptidoforms) }}</td>
                 <td class="td-num">{{ formatNum(ds.total_obs) }}</td>
                 <td style="font-size: 12px">
-                  <code v-for="pf in (ds.sample_peptidoforms || []).slice(0, 3)" :key="pf" class="pf-chip">{{ pf }}</code>
+                  <code v-for="pf in (ds.sample_peptidoforms || []).slice(0, 3)" :key="pf" class="pf-chip"><Peptidoform :value="pf" /></code>
                   <span v-if="ds.n_peptidoforms > 3" style="color: var(--text-muted)"> +{{ ds.n_peptidoforms - 3 }}</span>
                 </td>
                 <td style="text-align: center">
@@ -245,6 +266,7 @@
             @keydown.space.prevent="demoProtein('P04040')"
           >P04040</code> (Catalase).
         </div>
+        </template>
       </template>
     </div>
   </div>
@@ -261,6 +283,8 @@ import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
 import PeptideProfile from '../components/PeptideProfile.vue'
 import ProteinProfile from '../components/ProteinProfile.vue'
+import ProteinPeptides from '../components/ProteinPeptides.vue'
+import Peptidoform from '../components/Peptidoform.vue'
 
 // Fallbacks used only until the data-driven /modifications vocabulary loads (or
 // if it is unavailable): the current free behavior is preserved.
@@ -655,6 +679,18 @@ function demoProtein(q) {
 // A "did you mean" candidate was chosen in ProteinProfile: re-run the protein
 // search/profile for that exact accession. Reuses the normal protein-search
 // path (run), which sets profileProtein and refreshes the shareable URL.
+// Protein results: 'peptides' (one row per peptide) or 'datasets'. nProteinPeptides is
+// null while loading, 0 when the protein has none or the endpoint is unavailable.
+const proteinTab = ref('peptides')
+const nProteinPeptides = ref(null)
+watch(profileProtein, () => {
+  proteinTab.value = 'peptides'
+  nProteinPeptides.value = null
+})
+const showDatasetResults = computed(() =>
+  mode.value !== 'protein' || !profileProtein.value || proteinTab.value === 'datasets' || nProteinPeptides.value === 0
+)
+
 function pickProtein(accession) {
   const acc = (accession || '').trim()
   if (!acc) return
@@ -897,6 +933,33 @@ onMounted(() => {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.pp-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 8px 0 4px;
+  border-bottom: 1px solid var(--border);
+}
+.pp-tabs button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.pp-tabs button.active {
+  color: var(--brand-deep);
+  border-bottom-color: var(--brand);
+}
+.pp-tab-n {
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-left: 4px;
+}
 .pf-chip {
   display: inline-block;
   margin: 1px 3px 1px 0;
@@ -906,6 +969,9 @@ onMounted(() => {
   border-radius: 5px;
   font-size: 11px;
   white-space: nowrap;
+}
+.pf-chip :deep(.pf) {
+  font-size: inherit;
 }
 .dl-link {
   display: inline-flex;
