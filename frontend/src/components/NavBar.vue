@@ -76,6 +76,7 @@
           </button>
           <div v-show="openMenu === 'about'" class="nav-dropdown-menu" role="menu">
             <router-link to="/docs" role="menuitem">Docs</router-link>
+            <router-link to="/status" role="menuitem">Status</router-link>
             <router-link to="/contact" role="menuitem">Contact</router-link>
             <a href="https://quantms.org" class="nav-link-ext" role="menuitem" target="_blank" rel="noopener">quantms.org &#8599;</a>
           </div>
@@ -97,7 +98,7 @@ const mobileOpen = ref(false)
 
 // Paths grouped under each dropdown, used for active-state highlighting.
 const dataPaths = ['/apps/dataset-search', '/collections', '/models', '/baseline']
-const aboutPaths = ['/docs', '/contact']
+const aboutPaths = ['/docs', '/status', '/contact']
 
 const isDataActive = computed(() => dataPaths.some((p) => route.path.startsWith(p)))
 const isAboutActive = computed(() => aboutPaths.some((p) => route.path.startsWith(p)))

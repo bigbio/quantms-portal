@@ -25,6 +25,7 @@
           <router-link to="/docs">Documentation</router-link>
           <a href="https://github.com/bigbio/quantms-portal" target="_blank" rel="noopener">Portal source</a>
           <a href="https://github.com/bigbio/quantms-portal/issues" target="_blank" rel="noopener">Report an issue</a>
+          <router-link to="/status">Status</router-link>
           <router-link to="/contact">Contact</router-link>
         </div>
         <div class="footer-col">
