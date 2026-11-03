@@ -146,3 +146,9 @@ export function datasetClassLabel(v) {
   if (v == null || v === '') return 'Unknown'
   return DATASET_CLASS_LABELS[v] || String(v)
 }
+
+// Organism label for charts: a ';'-joined multi-organism value reads as one "Mixed" entry.
+export function organismLabel(v) {
+  const orgs = String(v ?? '').split(';').map((s) => s.trim()).filter(Boolean)
+  return orgs.length > 1 ? `Mixed (${orgs.length} organisms)` : String(v ?? '')
+}
