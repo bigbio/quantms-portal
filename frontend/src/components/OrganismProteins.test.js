@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, RouterLinkStub } from '@vue/test-utils'
 import OrganismProteins from './OrganismProteins.vue'
 
 const row = (organism, datasets, proteins) => ({ organism, datasets, proteins, peptides: 1 })
@@ -23,5 +23,14 @@ describe('OrganismProteins', () => {
     const w = mount(OrganismProteins, { props: { stats: STATS } })
     expect(w.findAll('.bar-name').map((n) => n.text())).toEqual(['Homo sapiens', 'Mus musculus', 'Saccharomyces cerevisiae'])
     expect(w.findAll('.bar-value').map((n) => n.text())).toEqual(['20.4K', '21K', '4.9K'])
+  })
+
+  it('says so when the loaded index has none of the organisms, instead of loading forever', () => {
+    const w = mount(OrganismProteins, {
+      props: { stats: { species: [row('Gossypium hirsutum', 1, 33562)] } },
+      global: { stubs: { RouterLink: RouterLinkStub } },
+    })
+    expect(w.find('.bars').exists()).toBe(false)
+    expect(w.find('.fig-empty').text()).toContain('None of these organisms')
   })
 })

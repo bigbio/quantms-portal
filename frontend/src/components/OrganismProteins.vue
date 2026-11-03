@@ -17,7 +17,7 @@
         </span>
       </li>
     </ol>
-    <ol v-else-if="!failed" class="bars" aria-hidden="true">
+    <ol v-else-if="!stats && !failed" class="bars" aria-hidden="true">
       <li v-for="(f, i) in SKELETON" :key="i">
         <span class="bar-name"><span class="skel" :style="{ width: `${7 + (i % 3) * 2}em` }" /></span>
         <span class="bar-line">
@@ -26,6 +26,10 @@
         </span>
       </li>
     </ol>
+    <p v-else-if="stats" class="fig-empty">
+      None of these organisms is in the index yet; see the
+      <router-link to="/statistics">Statistics</router-link> page.
+    </p>
     <p v-else class="fig-empty">
       Organism figures are unavailable right now; see the
       <router-link to="/statistics">Statistics</router-link> page.
@@ -36,7 +40,7 @@
     <figcaption v-if="!failed">
       Common model organisms in the index, coloured by taxonomic group (UniProt taxonomy); proteins
       are counted as distinct genes. Index generated
-      <LiveValue :value="stats?.generated_at.slice(0, 10)" width="6em" />. Full breakdown on the
+      <LiveValue :value="stats?.generated_at?.slice(0, 10)" width="6em" />. Full breakdown on the
       <router-link to="/statistics">Statistics</router-link> page.
     </figcaption>
   </figure>

@@ -178,8 +178,7 @@ const filteredProteomes = computed(() => {
   const k = sortKey.value, d = sortDir.value
   return [...rows].sort((a, b) => {
     const av = a[k], bv = b[k]
-    if (av == null) return 1
-    if (bv == null) return -1
+    if (av == null || bv == null) return (av == null) - (bv == null)   // missing values last, either direction
     return av > bv ? d : av < bv ? -d : 0
   })
 })
@@ -207,6 +206,7 @@ async function lookup() {
   // identical request through the route watcher.
   loadKey = stateKey()
   profileErr.value = ''
+  profile.value = null
   try {
     const data = await apiGet(COMPASS_BASE, `/profile/${encodeURIComponent(a)}`)
     if (seq !== lookupSeq) return   // a newer lookup superseded this one
@@ -251,7 +251,10 @@ async function loadGaps() {
     targets.value = t.rows || []
     peUps.value = p.rows || []
     unobserved.value = u.rows || []
-  } catch (e) { loadErr.value = 'Could not load gaps for this organism.'; throw e }
+  } catch (e) {
+    if (organism.value !== org) return
+    loadErr.value = 'Could not load gaps for this organism.'; throw e
+  }
 }
 
 const presets = [

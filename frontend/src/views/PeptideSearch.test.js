@@ -147,6 +147,25 @@ describe('PeptideSearch view', () => {
     expect(w.text()).toContain('1 dataset match')
   })
 
+  it('brings the peptide list back when a looser cutoff finds peptides again', async () => {
+    backend(() => ok('PXD1'))
+    const base = apiGet.getMockImplementation()
+    const peptide = { sequence: 'LVINGNPITIFQER', start: 67, end: 80, n_occurrences: 1, proteotypic: true,
+      n_datasets: 2, n_obs: 10, n_peptidoforms: 1, peptidoforms: [{ peptidoform: 'LVINGNPITIFQER', n_obs: 10 }] }
+    apiGet.mockImplementation((b, path, params) => path === '/protein/peptides'
+      ? Promise.resolve({ found: true, peptides: params.gpp_min >= 0.3 ? [] : [peptide] })
+      : base(b, path, params))
+    const { w } = await mountAt('/apps/peptide-search?mode=protein&query=P04406&gpp_min=0.5')
+    expect(w.find('.pp-peptides tbody tr').exists()).toBe(false)
+
+    vi.useFakeTimers()
+    await w.find('input[type="range"]').setValue('0.2')
+    vi.advanceTimersByTime(250)
+    vi.useRealTimers()
+    await flushPromises()
+    expect(w.find('.pp-peptides tbody tr .pp-seq').text()).toBe('LVINGNPITIFQER')
+  })
+
   it('upper-cases the typed sequence via a class, not the placeholder', async () => {
     backend(() => ok('PXD1'))
     const { w } = await mountAt('/apps/peptide-search')

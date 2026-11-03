@@ -313,7 +313,7 @@ import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { apiGet } from '../api.js'
 import { PEPTIDE_SEARCH_BASE } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
-import { uniprotUrl as buildUniprotUrl } from '../utils/links.js'
+import { safeHref, uniprotUrl as buildUniprotUrl } from '../utils/links.js'
 import ProteinSequenceMap from './ProteinSequenceMap.vue'
 import ChartLegend from './ChartLegend.vue'
 import { chartColor } from '../utils/chartColors.js'
@@ -396,16 +396,15 @@ const primaryAccession = computed(() =>
   arr(profile.value?.resolved_accessions)[0] || profile.value?.query || displayQuery.value
 )
 const uniprotUrl = computed(() =>
-  profile.value?.uniprot_url || buildUniprotUrl(primaryAccession.value)
+  safeHref(profile.value?.uniprot_url) || buildUniprotUrl(primaryAccession.value)
 )
 
+// A number, or null when missing (Number(null) would read as 0).
+const finite = (v) => (v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v))
+
 // Sequence coverage: clamp to 0..100 and round for display.
-const coveragePct = computed(() => {
-  const v = Number(profile.value?.coverage_pct)
-  if (!Number.isFinite(v)) return 0
-  return Math.max(0, Math.min(100, Math.round(v)))
-})
-const hasCoverage = computed(() => Number.isFinite(Number(profile.value?.coverage_pct)))
+const coveragePct = computed(() => Math.max(0, Math.min(100, Math.round(finite(profile.value?.coverage_pct) ?? 0))))
+const hasCoverage = computed(() => finite(profile.value?.coverage_pct) != null)
 
 const species = computed(() => arr(profile.value?.species))
 const tissues = computed(() => arr(profile.value?.tissues))
@@ -422,8 +421,7 @@ const gppCounts = computed(() => {
 })
 // Show a high-confidence figure for a stat only when the backend supplied it.
 function gppFig(key) {
-  const v = gppCounts.value?.[key]
-  return Number.isFinite(Number(v)) ? Number(v) : null
+  return finite(gppCounts.value?.[key])
 }
 // Optional HPP-style protein tier, if the backend ever supplies one (top-level
 // or nested under gpp). Purely additive — absent today, so it renders nothing.

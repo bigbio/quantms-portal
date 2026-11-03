@@ -8,6 +8,12 @@ describe('formatBig', () => {
     expect(formatBig(1500)).toBe('1.5K')
     expect(formatBig(2_000_000)).toBe('2M')
     expect(formatBig(1_500_000_000)).toBe('1.5B')
+    expect(formatBig(999_950)).toBe('1M')
+    expect(formatBig(999_950_000)).toBe('1B')
+    expect(formatBig(999_940)).toBe('999.9K')
+    expect(formatBytes(1024 * 1023.96)).toBe('1.0 MB')
+    expect(formatBytes(1024 * 1024)).toBe('1.0 MB')
+    expect(formatBytes(512)).toBe('512 B')
   })
   it('returns an em-dash for null/NaN', () => {
     expect(formatBig(null)).toBe('—')
