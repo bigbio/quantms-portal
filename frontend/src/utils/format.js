@@ -124,7 +124,6 @@ const COLLECTION_SLOTS = {
   celllines: 5,
   'single-cell-expression': 6,
   'single-cell': 6,
-  'differential-expression': 7,
 }
 export function collectionTag(name) {
   return `tag-cat-${categorySlot(name, COLLECTION_SLOTS)}`
