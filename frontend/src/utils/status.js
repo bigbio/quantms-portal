@@ -6,8 +6,8 @@ export const CHECK_TIMEOUT_MS = 10000
 export const SLOW_MS = 3000
 // The search index is rebuilt daily; older than this it is reported stale.
 export const INDEX_STALE_DAYS = 7
-// GitHub allows 60 anonymous requests an hour per visitor.
-export const BUILDS_CACHE_MS = 5 * 60 * 1000
+// GitHub allows 60 anonymous requests an hour per visitor; a refresh costs about 8.
+export const BUILDS_CACHE_MS = 15 * 60 * 1000
 
 export const APPS = [
   { id: 'dataset-search', title: 'Dataset Search', base: `${API_BASE}/dataset-search`, page: '/apps/dataset-search' },
@@ -66,8 +66,15 @@ async function timed(fetchFn, url, init = {}) {
   }
 }
 
+// The body can stall after the headers arrive, so it gets its own timeout.
 async function json(res) {
-  try { return await res.json() } catch { return null }
+  let timer
+  const late = new Promise((resolve) => { timer = setTimeout(() => resolve(null), CHECK_TIMEOUT_MS) })
+  try { return await Promise.race([res.json(), late]) } catch { return null } finally { clearTimeout(timer) }
+}
+
+function sessionStore() {
+  try { return globalThis.sessionStorage } catch { return null }
 }
 
 // Health answers when the process runs; readiness and the *_available flags say whether it serves data.
@@ -173,12 +180,11 @@ export function prResult(pr, run, now = Date.now()) {
   return { ...r, detail: `#${pr.number} ${title}: ${run ? r.detail : 'no test run'}`, href: run?.html_url || pr.html_url }
 }
 
-export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionStorage, now = Date.now()) {
+export async function fetchBuilds(fetchFn = fetch, storage = sessionStore(), now = Date.now()) {
   const key = 'quantms-status-builds'
-  try {
-    const cached = JSON.parse(storage?.getItem(key) || 'null')
-    if (cached && now - cached.at < BUILDS_CACHE_MS) return cached.results
-  } catch { /* no cache */ }
+  let cached = null
+  try { cached = JSON.parse(storage?.getItem(key) || 'null') } catch { /* no cache */ }
+  if (cached && now - cached.at < BUILDS_CACHE_MS) return cached.results
   let limited = false
   async function gh(path) {
     const t = await timed(fetchFn, `https://api.github.com/repos/bigbio/${path}`)
@@ -188,7 +194,8 @@ export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionS
     }
     return json(t.res)
   }
-  const failed = () => degraded(limited ? 'GitHub rate limit reached, try later' : 'GitHub not reachable')
+  const FAILED = Symbol('failed')
+  const failed = () => FAILED
 
   // One request per repository and branch, shared by its workflows.
   const branchRuns = {}
@@ -196,7 +203,7 @@ export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionS
     const k = `${b.repo}@${b.branch}`
     branchRuns[k] ??= gh(`${b.repo}/actions/runs?branch=${b.branch}&per_page=50&exclude_pull_requests=true`)
   }
-  const results = await Promise.all(BUILDS.map(async (b) => {
+  const fetched = await Promise.all(BUILDS.map(async (b) => {
     if (!b.pr) {
       const data = await branchRuns[`${b.repo}@${b.branch}`]
       return { ...b, result: data ? buildResult(data.workflow_runs?.find((r) => r.name === b.workflow), now) : failed() }
@@ -207,9 +214,17 @@ export async function fetchBuilds(fetchFn = fetch, storage = globalThis.sessionS
     const data = await gh(`${b.repo}/actions/runs?head_sha=${pr.head.sha}&per_page=20`)
     return { ...b, result: data ? prResult(pr, prRun(data.workflow_runs || [], b.workflow), now) : failed() }
   }))
-  if (!limited) {
-    try { storage?.setItem(key, JSON.stringify({ at: now, results })) } catch { /* private mode */ }
-  }
+  // A row GitHub could not answer keeps its last known result; cached either way, so a
+  // rate-limited page does not ask again every minute.
+  const reason = limited ? 'GitHub rate limit reached' : 'GitHub not reachable'
+  const results = fetched.map((row) => {
+    if (row.result !== FAILED) return row
+    const prev = cached?.results?.find((r) => r.repo === row.repo && r.workflow === row.workflow)
+    if (!prev) return { ...row, result: degraded(`${reason}, try later`) }
+    const detail = prev.result.detail.replace(/ \(GitHub [^)]* now\)$/, '')
+    return { ...row, result: { ...prev.result, detail: `${detail} (${reason} now)` } }
+  })
+  try { storage?.setItem(key, JSON.stringify({ at: now, results })) } catch { /* private mode */ }
   return results
 }
 

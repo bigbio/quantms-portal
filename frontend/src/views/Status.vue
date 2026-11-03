@@ -41,7 +41,7 @@
       <p class="table-note">
         Each check runs in your browser when the page opens and every minute after, so a problem on your own
         network shows here too. Builds are the latest GitHub Actions run on each repository's main or dev branch,
-        refreshed every 5 minutes; a failing build does not count as an outage.
+        refreshed every 15 minutes; a failing build does not count as an outage.
       </p>
     </div>
   </section>
