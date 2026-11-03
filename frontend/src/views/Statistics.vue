@@ -157,7 +157,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { apiGet } from '../api.js'
 import { BROWSE_BASE, STATS_PATH } from '../config.js'
-import { formatBig, formatNum, cleanInstrument, collectionTag, datasetClassLabel, DATASET_CLASS_LABELS } from '../utils/format.js'
+import { formatBig, formatNum, organismLabel, cleanInstrument, collectionTag, datasetClassLabel, DATASET_CLASS_LABELS } from '../utils/format.js'
 import { CATEGORICAL, chartColor } from '../utils/chartColors.js'
 import StatsChart from '../components/StatsChart.vue'
 import ChartLegend from '../components/ChartLegend.vue'
@@ -288,7 +288,7 @@ const modOptions = {
 const speciesChart = computed(() => {
   const rows = (stats.value?.species || []).slice()
   const tail = stats.value?.species_long_tail
-  const labels = rows.map((r) => r.organism)
+  const labels = rows.map((r) => organismLabel(r.organism))
   const data = rows.map((r) => r[speciesMetric.value] || 0)
   if (tail && tail.organisms) {
     labels.push(`${tail.organisms} other organisms`)

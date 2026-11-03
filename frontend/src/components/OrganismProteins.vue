@@ -9,10 +9,10 @@
         :style="{ '--i': i }"
         :title="`${r.organism}: ${r.proteins.toLocaleString()} proteins, ${r.peptides.toLocaleString()} peptides${groups[r.organism] ? ` · ${groups[r.organism].group}` : ''}`"
       >
-        <span class="bar-name">{{ r.organism }}</span>
+        <span class="bar-name">{{ organismLabel(r.organism) }}</span>
         <span class="bar-meta">{{ r.datasets }} {{ r.datasets === 1 ? 'dataset' : 'datasets' }}</span>
         <span class="bar-line">
-          <span class="bar" :style="{ width: `calc(${r.proteins / rows[0].proteins} * (100% - 4.5em))`, background: colourOf(r.organism) }" />
+          <span class="bar" :style="{ width: `calc(${r.proteins / longest} * (100% - 4.5em))`, background: colourOf(r.organism) }" />
           <span class="bar-value">{{ formatBig(r.proteins) }}</span>
         </span>
       </li>
@@ -34,7 +34,7 @@
     <ChartLegend v-if="legend.length" :items="legend" class="organism-legend" />
 
     <figcaption v-if="!failed">
-      The {{ TOP }} largest of the <LiveValue :value="stats?.species.length" width="1.4em" /> organisms listed
+      The {{ TOP }} organisms with the most datasets, of the <LiveValue :value="stats?.species.length" width="1.4em" /> organisms listed
       individually in the index statistics, coloured by taxonomic group (UniProt taxonomy)<template v-if="!stats || tail"> (<LiveValue :value="stats && tail" width="1.4em" />
       more are reported only as a combined group)</template>. Index generated
       <LiveValue :value="stats?.generated_at.slice(0, 10)" width="6em" />. Full breakdown on the
@@ -47,7 +47,7 @@
 import { computed } from 'vue'
 import LiveValue from './LiveValue.vue'
 import ChartLegend from './ChartLegend.vue'
-import { formatBig } from '../utils/format.js'
+import { formatBig, organismLabel } from '../utils/format.js'
 import { chartColor } from '../utils/chartColors.js'
 import { TAXON_GROUPS, groupLegend, taxonGroup, useGroups } from '../chartGroups.js'
 
@@ -61,9 +61,9 @@ const TOP = 5
 // Bar lengths of the loading placeholder, as fractions of the longest bar.
 const SKELETON = [1, 0.62, 0.5, 0.44, 0.38]
 
-const rows = computed(() =>
-  (props.stats?.species || []).slice().sort((a, b) => b.proteins - a.proteins).slice(0, TOP)
-)
+// Most-studied organisms (stats.json lists them by dataset count); bars show their proteins.
+const rows = computed(() => (props.stats?.species || []).slice(0, TOP))
+const longest = computed(() => Math.max(1, ...rows.value.map((r) => r.proteins)))
 const tail = computed(() => props.stats?.species_long_tail?.organisms || 0)
 
 // Bars wait in grey until their organism's group arrives.

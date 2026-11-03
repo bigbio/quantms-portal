@@ -1,5 +1,5 @@
 // Data shaping for the home page charts and the protein spotlight.
-import { cleanInstrument } from './format.js'
+import { cleanInstrument, organismLabel } from './format.js'
 
 // Top `n` rows of a stats.json list as { label, value, share } bars, share relative to the largest.
 export function barRows(list, labelKey, n = 6, labelFn = (s) => s) {
@@ -71,7 +71,7 @@ export function catalogueBreakdowns(datasets, n = 6) {
   for (const d of datasets || []) {
     const orgs = String(d.organism ?? '').split(';').map((s) => s.trim()).filter(isKnown)
     orgs.forEach((o) => species.add(o.toLowerCase()))
-    if (orgs.length) bump(organisms, orgs.length > 1 ? `Mixed (${orgs.length} organisms)` : capitalize(orgs[0]))
+    if (orgs.length) bump(organisms, orgs.length > 1 ? organismLabel(orgs.join(';')) : capitalize(orgs[0]))
     for (const t of new Set((d.tissues || []).filter(isKnown))) bump(tissues, capitalize(t))
     const inst = cleanInstrument(d.instrument)
     if (isKnown(inst)) bump(instruments, inst)

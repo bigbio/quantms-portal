@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel } from './format.js'
+import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel, organismLabel } from './format.js'
 
 describe('formatBig', () => {
   it('abbreviates with K/M/B and trims trailing .0', () => {
@@ -56,5 +56,13 @@ describe('datasetClassLabel', () => {
     expect(datasetClassLabel(null)).toBe('Unknown')
     expect(datasetClassLabel('')).toBe('Unknown')
     expect(datasetClassLabel('something-new')).toBe('something-new')
+  })
+})
+
+describe('organismLabel', () => {
+  it('names a multi-organism value as one mixed entry', () => {
+    expect(organismLabel('Bacillus subtilis; Phage M13; Escherichia coli K24')).toBe('Mixed (3 organisms)')
+    expect(organismLabel('Homo sapiens')).toBe('Homo sapiens')
+    expect(organismLabel(null)).toBe('')
   })
 })
