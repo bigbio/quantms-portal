@@ -5,11 +5,11 @@
     <ol v-if="rows.length" class="bars">
       <li
         v-for="(r, i) in rows"
-        :key="r.organism"
+        :key="r.name"
         :style="{ '--i': i }"
         :title="`${r.organism}: ${r.proteins.toLocaleString()} proteins, ${r.peptides.toLocaleString()} peptides${groups[r.organism] ? ` · ${groups[r.organism].group}` : ''}`"
       >
-        <span class="bar-name">{{ organismLabel(r.organism) }}</span>
+        <span class="bar-name">{{ r.name }}</span>
         <span class="bar-meta">{{ r.datasets }} {{ r.datasets === 1 ? 'dataset' : 'datasets' }}</span>
         <span class="bar-line">
           <span class="bar" :style="{ width: `calc(${r.proteins / longest} * (100% - 4.5em))`, background: colourOf(r.organism) }" />
@@ -34,9 +34,8 @@
     <ChartLegend v-if="legend.length" :items="legend" class="organism-legend" />
 
     <figcaption v-if="!failed">
-      The {{ TOP }} organisms with the most datasets, of the <LiveValue :value="stats?.species.length" width="1.4em" /> organisms listed
-      individually in the index statistics, coloured by taxonomic group (UniProt taxonomy)<template v-if="!stats || tail"> (<LiveValue :value="stats && tail" width="1.4em" />
-      more are reported only as a combined group)</template>. Index generated
+      Common model organisms in the index, coloured by taxonomic group (UniProt taxonomy); proteins
+      are counted as distinct genes. Index generated
       <LiveValue :value="stats?.generated_at.slice(0, 10)" width="6em" />. Full breakdown on the
       <router-link to="/statistics">Statistics</router-link> page.
     </figcaption>
@@ -47,7 +46,7 @@
 import { computed } from 'vue'
 import LiveValue from './LiveValue.vue'
 import ChartLegend from './ChartLegend.vue'
-import { formatBig, organismLabel } from '../utils/format.js'
+import { formatBig } from '../utils/format.js'
 import { chartColor } from '../utils/chartColors.js'
 import { TAXON_GROUPS, groupLegend, taxonGroup, useGroups } from '../chartGroups.js'
 
@@ -57,14 +56,28 @@ const props = defineProps({
   failed: { type: Boolean, default: false },
 })
 
-const TOP = 5
+const MODEL_ORGANISMS = [
+  'Homo sapiens', 'Mus musculus', 'Rattus norvegicus', 'Danio rerio',
+  'Drosophila melanogaster', 'Arabidopsis thaliana', 'Saccharomyces cerevisiae', 'Escherichia coli',
+]
 // Bar lengths of the loading placeholder, as fractions of the longest bar.
-const SKELETON = [1, 0.62, 0.5, 0.44, 0.38]
+const SKELETON = [1, 0.9, 0.62, 0.55, 0.4, 0.5, 0.3, 0.15]
 
-// Most-studied organisms (stats.json lists them by dataset count); bars show their proteins.
-const rows = computed(() => (props.stats?.species || []).slice(0, TOP))
+// A model's row is its exact name or a strain of it ("Escherichia coli K-12"), the one with most datasets.
+const rows = computed(() => {
+  const species = (props.stats?.species || []).filter((r) => !String(r.organism).includes(';'))
+  return MODEL_ORGANISMS.flatMap((name) => {
+    const low = name.toLowerCase()
+    const hits = species.filter((r) => {
+      const o = String(r.organism).toLowerCase()
+      return o === low || o.startsWith(`${low} `)
+    })
+    if (!hits.length) return []
+    const best = hits.reduce((a, b) => (b.datasets > a.datasets ? b : a))
+    return [{ ...best, name }]
+  })
+})
 const longest = computed(() => Math.max(1, ...rows.value.map((r) => r.proteins)))
-const tail = computed(() => props.stats?.species_long_tail?.organisms || 0)
 
 // Bars wait in grey until their organism's group arrives.
 const { groups } = useGroups(() => rows.value.map((r) => r.organism), taxonGroup)
