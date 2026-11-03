@@ -58,7 +58,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { apiGet } from '../../api.js'
-import { PEPTIDE_SEARCH_BASE } from '../../config.js'
+import { PEPTIDE_SEARCH_BASE, PROTEIN_PROFILE_TIMEOUT_MS } from '../../config.js'
 import { SPOTLIGHT_PROTEINS, spotlightIndex, spotlightFacts } from '../../utils/homeData.js'
 
 const index = ref(spotlightIndex())
@@ -73,7 +73,7 @@ const profileLink = computed(() => ({ path: '/apps/peptide-search', query: { mod
 async function load(i) {
   loading.value = true
   try {
-    const p = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', { accession: SPOTLIGHT_PROTEINS[i].accession }, { retries: 2 })
+    const p = await apiGet(PEPTIDE_SEARCH_BASE, '/protein/profile', { accession: SPOTLIGHT_PROTEINS[i].accession }, { retries: 2, timeout: PROTEIN_PROFILE_TIMEOUT_MS })
     const f = spotlightFacts(p)
     if (f) {
       facts.value = f

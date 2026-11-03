@@ -311,7 +311,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { apiGet } from '../api.js'
-import { PEPTIDE_SEARCH_BASE } from '../config.js'
+import { PEPTIDE_SEARCH_BASE, PROTEIN_PROFILE_TIMEOUT_MS } from '../config.js'
 import { formatNum, formatBig, ptmClassInfo, orderPtms, isBiologicalPtm } from '../utils/format.js'
 import { safeHref, uniprotUrl as buildUniprotUrl } from '../utils/links.js'
 import ProteinSequenceMap from './ProteinSequenceMap.vue'
@@ -671,7 +671,7 @@ async function load(q) {
       // its value IS the cutoff. Omitted (filter off) when gppMin is null so the
       // off-state request stays identical to today.
       gpp_min: props.gppMin != null ? props.gppMin : undefined,
-    })
+    }, { timeout: PROTEIN_PROFILE_TIMEOUT_MS })
     if (myReq !== reqId) return // a newer query superseded this request
     profile.value = data
   } catch (e) {
