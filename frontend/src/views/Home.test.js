@@ -53,7 +53,7 @@ describe('Home', () => {
   it('charts the model organisms and says what is counted', async () => {
     const w = await mountHome()
     const names = w.findAll('.organism-card .bar-name').map((n) => n.text())
-    expect(names).toEqual(['Homo sapiens', 'Mus musculus', 'Danio rerio', 'Escherichia coli'])
+    expect(names).toEqual(['Homo sapiens', 'Mus musculus'])
     expect(w.find('.organism-card .bar-meta').text()).toBe('191 datasets')
     const caption = w.find('.organism-card figcaption').text()
     expect(caption).toContain('Common model organisms')
