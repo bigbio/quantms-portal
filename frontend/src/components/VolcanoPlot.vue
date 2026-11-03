@@ -1,6 +1,6 @@
 <template>
   <div class="volcano-plot">
-    <ScatterChart :data="chartData" @point-click="onPointClick" />
+    <ScatterChart :data="chartData" :options="AXES" @point-click="onPointClick" />
   </div>
 </template>
 
@@ -14,10 +14,18 @@ import ScatterChart from './ScatterChart.vue'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
+  // legend names of the two significant classes ({ up, down }), instead of Up / Down
+  labels: { type: Object, default: null },
 })
 const emit = defineEmits(['select'])
 
-const chartData = computed(() => toVolcanoData(props.rows))
+const chartData = computed(() => toVolcanoData(props.rows, props.labels))
+const AXES = {
+  scales: {
+    x: { title: { display: true, text: 'log2 fold change' } },
+    y: { title: { display: true, text: '−log10 adjusted p-value' } },
+  },
+}
 
 function onPointClick(datum) {
   if (datum && datum.protein) emit('select', datum.protein)
@@ -34,7 +42,7 @@ import { regulationClass, REGULATION_META, REGULATION_ORDER } from '../utils/reg
 // REGULATION_ORDER, so the legend is stable across contrasts.
 // Rows with a non-finite -log10(adj_pvalue) (adj_pvalue null/<=0) are skipped
 // since they cannot be plotted on a log scale.
-export function toVolcanoData(rows) {
+export function toVolcanoData(rows, labels = null) {
   const byClass = { up: [], down: [], ns: [] }
   for (const row of rows || []) {
     const p = row.adj_pvalue
@@ -45,7 +53,7 @@ export function toVolcanoData(rows) {
   }
   return {
     datasets: REGULATION_ORDER.map((key) => ({
-      label: REGULATION_META[key].short,
+      label: (labels && labels[key]) || REGULATION_META[key].short,
       data: byClass[key],
       backgroundColor: REGULATION_META[key].color,
       borderColor: REGULATION_META[key].color,

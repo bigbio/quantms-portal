@@ -146,3 +146,14 @@ export function datasetClassLabel(v) {
   if (v == null || v === '') return 'Unknown'
   return DATASET_CLASS_LABELS[v] || String(v)
 }
+
+// About `n` round axis ticks (steps of 1, 2 or 5 × 10^k) between lo and hi.
+export function niceTicks(lo, hi, n = 5) {
+  const raw = (hi - lo) / n
+  if (!(raw > 0)) return [lo]
+  const mag = 10 ** Math.floor(Math.log10(raw))
+  const step = [1, 2, 5, 10].map((s) => s * mag).find((s) => s >= raw)
+  const out = []
+  for (let t = Math.ceil(lo / step) * step; t <= hi + step * 1e-9; t += step) out.push(Number(t.toPrecision(12)))
+  return out
+}

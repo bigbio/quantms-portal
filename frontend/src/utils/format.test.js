@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel } from './format.js'
+import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel, niceTicks } from './format.js'
 
 describe('formatBig', () => {
   it('abbreviates with K/M/B and trims trailing .0', () => {
@@ -56,5 +56,13 @@ describe('datasetClassLabel', () => {
     expect(datasetClassLabel(null)).toBe('Unknown')
     expect(datasetClassLabel('')).toBe('Unknown')
     expect(datasetClassLabel('something-new')).toBe('something-new')
+  })
+})
+
+describe('niceTicks', () => {
+  it('steps by 1, 2 or 5 times a power of ten', () => {
+    expect(niceTicks(-3.2, 4.9)).toEqual([-2, 0, 2, 4])
+    expect(niceTicks(0.61, 0.98)).toEqual([0.7, 0.8, 0.9])
+    expect(niceTicks(1, 1)).toEqual([1])
   })
 })

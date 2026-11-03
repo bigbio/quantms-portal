@@ -72,7 +72,54 @@ describe('QpxExplore', () => {
     // instrument names are cleaned and the other facets count within the filter
     expect(w.findAll('.qc-facet')[2].findAll('.qc-opt').map((o) => o.text())).toEqual(['timsTOF Pro1'])
     await organisms.findAll('.qc-opt')[1].trigger('click')
-    await w.find('.qc-search').setValue('gastric')
+    await w.find('.qx-picker input').setValue('gastric')
+    expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['PXD048538'])
+  })
+
+  it('opens the one dataset left by part of an accession', async () => {
+    const w = await open({})
+    await w.find('.qx-picker input').setValue('MSV0000858')
+    expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['MSV000085836'])
+    expect(w.find('.qx-picker-hint').text()).toBe('Enter opens MSV000085836/hash1')
+    await w.find('.qx-picker input').trigger('keyup.enter')
+    await flushPromises()
+    expect(w.router.currentRoute.value.query).toEqual({ ref: 'MSV000085836/hash1' })
+  })
+
+  it('opens a dataset ref inside a pasted link', async () => {
+    const w = await open({})
+    await w.find('.qx-picker input').setValue('https://browse.quantms.org/quantms/datasets/PXD9/0123456789ab/')
+    await w.find('.qx-picker button').trigger('click')
+    await flushPromises()
+    expect(w.router.currentRoute.value.query).toEqual({ ref: 'PXD9/0123456789ab' })
+  })
+
+  it('keeps the search in the URL and finds it again coming back from a dataset', async () => {
+    const w = await open({})
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    await w.find('.qx-picker input').setValue('mouse')
+    // a facet picked before the words are written (once typing pauses) keeps them
+    await w.findAll('.qc-facet')[0].find('.qc-opt').trigger('click')
+    await flushPromises()
+    expect(w.find('.qx-picker input').element.value).toBe('mouse')
+    vi.advanceTimersByTime(300)
+    vi.useRealTimers()
+    await flushPromises()
+    expect(w.router.currentRoute.value.query).toEqual({ q: 'mouse', collection: 'msnet' })
+    await w.find('.qc-row').trigger('click')
+    await flushPromises()
+    w.router.back()
+    await flushPromises()
+    expect(w.find('.qx-picker input').element.value).toBe('mouse')
+    expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['PXD2'])
+  })
+
+  it('searches the catalogue from an open dataset', async () => {
+    const w = await open({ ref: 'PXD1/abc' })
+    await w.find('.qx-picker input').setValue('gastric')
+    await w.find('.qx-picker input').trigger('keyup.enter')
+    await flushPromises()
+    expect(w.router.currentRoute.value.query).toEqual({ q: 'gastric' })
     expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['PXD048538'])
   })
 
@@ -130,6 +177,11 @@ describe('QpxExplore', () => {
     const tab = w.findAll('.qx-tab').find((b) => b.text() === 'PTMs')
     expect(tab.attributes('disabled')).toBeDefined()
     expect(tab.attributes('title')).toBe('This dataset has no feature or psm table')
+  })
+
+  it('links each qpx file to its download', async () => {
+    const w = await open({ ref: 'PXD1/abc' })
+    expect(w.find('.qx-file-list a').attributes('href')).toBe('https://browse.quantms.org/quantms/datasets/PXD1/abc/x.pg.parquet')
   })
 
   it('counts protein groups and runs from the overview, not the loaded rows', async () => {

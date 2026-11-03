@@ -12,7 +12,10 @@
           the difference is large enough to matter, and it points the way that signals a problem: fewer identifications,
           more contaminants or missed cleavages, or intensity or mass error off either way.
         </p>
-        <label class="rq-toggle"><input v-model="onlyFlagged" type="checkbox" :disabled="!data.n_flagged" /> Only flagged runs</label>
+        <div class="rq-tools">
+          <label class="rq-toggle"><input v-model="onlyFlagged" type="checkbox" :disabled="!data.n_flagged" /> Only flagged runs</label>
+          <QxExport :name="`${datasetRef.replace('/', '_')}-run-qc`" :csv="runCsv" />
+        </div>
       </div>
       <QxRunChart
         v-if="data.rows.length > 1"
@@ -40,6 +43,7 @@
 // Per-run QC metrics with outlier flags (GET /qc/runs).
 import { computed, nextTick, ref, watch } from 'vue'
 import QxTable from './QxTable.vue'
+import QxExport from './QxExport.vue'
 import QxProgress from './QxProgress.vue'
 import QxRunChart from './QxRunChart.vue'
 import { qpxQc } from '../qpx.js'
@@ -98,11 +102,13 @@ const shown = computed(() => (data.value?.rows || [])
 const flagOf = (row, column) => (row.flags || []).find((f) => f.metric === column)
 const flagTitle = (f) => `${colLabel(f.metric)} is ${f.direction} (robust z ${f.z})`
 const flagText = (row) => row.flags.map((f) => `${colLabel(f.metric)} ${f.direction}`).join(', ') || '—'
+const runCsv = () => ({ columns: columns.value, rows: shown.value.map((r) => ({ ...r, flags: flagText(r) })) })
 </script>
 
 <style scoped>
 .rq-progress { max-width: 420px; margin: 24px 0; }
 .rq-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; }
+.rq-tools { display: inline-flex; align-items: center; gap: 12px; }
 .rq-summary { margin: 0; font-size: 13px; color: var(--text-secondary); max-width: 760px; }
 .rq-toggle { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
 .rq-warn { color: var(--qual-medium); font-weight: 600; }

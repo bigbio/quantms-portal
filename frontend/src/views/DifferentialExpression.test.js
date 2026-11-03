@@ -10,7 +10,7 @@ vi.mock('chart.js', () => {
     Chart,
     ScatterController: {}, LineController: {}, PointElement: {}, LineElement: {},
     BarController: {}, BarElement: {}, DoughnutController: {}, ArcElement: {},
-    CategoryScale: {}, LinearScale: {}, Tooltip: {}, Legend: {},
+    CategoryScale: {}, LinearScale: {}, Tooltip: {}, Legend: {}, Filler: {},
   }
 })
 

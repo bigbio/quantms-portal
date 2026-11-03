@@ -28,13 +28,19 @@ const LABELS = {
   charge2_pct: 'Charge 2+',
   contaminant_pct: 'Contaminants',
   median_log10_intensity: 'Intensity (log10)',
+  protein: 'Protein',
+  name: 'Name',
+  log2fc: 'log2 FC',
+  p_value: 'p',
+  adj_pvalue: 'Adjusted p',
+  shared_samples: 'Shared samples',
 }
 
 export function colLabel(key) {
   return LABELS[key] || String(key).replace(/_/g, ' ')
 }
 
-const PROBABILITY = /(qvalue|q_value|posterior_error|^pep$|fdr)/i
+const PROBABILITY = /(qvalue|q_value|p_?value|posterior_error|^pep$|fdr)/i
 const IDENTIFIER = /(scan|_id$|^id$|index|fraction)/i
 const PERCENT = /coverage|_pct$|percent/i
 // Raw (not log) intensities span many orders of magnitude.

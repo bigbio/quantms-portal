@@ -18,13 +18,18 @@
     <!-- Identification charts -->
     <p class="qo-lead">{{ lead }}</p>
     <div class="qo-grid" :style="gridCols(visibleCharts.length)">
-      <section v-for="c in visibleCharts" :key="c.part" class="qo-panel">
-        <h3 class="qo-h">{{ c.title }}</h3>
+      <section v-for="c in visibleCharts" :key="c.part" :ref="(el) => { panels[c.part] = el }" class="qo-panel">
+        <div class="qo-panel-head">
+          <h3 class="qo-h">{{ c.title }}</h3>
+          <QxExport v-if="parts[c.part].loaded && !parts[c.part].error" :name="`${fileStem}-${c.part}`"
+                    :png="() => panels[c.part]" :csv="() => chartTable(splitParts(c) ? splitData(c) : pooledLine(c) ? lineData(c) : barData(c), c.title)" />
+        </div>
         <p class="qo-note">{{ noteOf(c) }}</p>
         <div v-if="parts[c.part].error" class="qo-empty">{{ parts[c.part].error }}</div>
         <div v-else-if="!parts[c.part].loaded" class="qo-skeleton" :style="{ height: `${c.height}px` }"></div>
         <StatsChart v-else-if="splitParts(c)" :type="c.hist != null || c.part === 'length' ? 'line' : 'bar'"
                     :data="splitData(c)" :options="splitOptions(c)" :height="c.height" />
+        <StatsChart v-else-if="pooledLine(c)" type="line" :data="lineData(c)" :options="lineOptions(c)" :height="c.height" />
         <StatsChart v-else type="bar" :data="barData(c)" :options="barOptions(c)" :height="c.height" />
       </section>
     </div>
@@ -34,9 +39,10 @@
     <template v-if="metaFields.length || namingFields.length">
       <h3 class="qo-h qo-h-section">Samples</h3>
       <div v-if="metaFields.length" class="qo-grid" :style="gridCols(metaFields.length)">
-        <section v-for="f in metaFields" :key="f.key" class="qo-panel" :class="{ 'qo-active': colouring && colouring.key === f.key }">
+        <section v-for="f in metaFields" :key="f.key" :ref="(el) => { panels[f.key] = el }" class="qo-panel" :class="{ 'qo-active': colouring && colouring.key === f.key }">
           <div class="qo-panel-head">
             <h3 class="qo-h">{{ f.title }}</h3>
+            <QxExport v-if="f.scale" :name="`${fileStem}-${f.key}`" :png="() => panels[f.key]" :csv="() => chartTable(metaData(f), f.title)" />
             <span v-if="colouring && colouring.key === f.key" class="qo-using">colours the charts</span>
             <button v-else type="button" class="qo-use" @click="$emit('colour-by', f.key)">Colour by this</button>
           </div>
@@ -61,6 +67,8 @@
 // technical difference that follows the biology shows up.
 import { computed, reactive, watch } from 'vue'
 import StatsChart from './StatsChart.vue'
+import QxExport from './QxExport.vue'
+import { chartTable } from '../utils/exportChart.js'
 import QxProgress from './QxProgress.vue'
 import { qpxRunSql, qpxStats } from '../qpx.js'
 import { chartColor } from '../utils/chartColors.js'
@@ -93,6 +101,10 @@ function load(ref) {
   }
 }
 watch(() => props.datasetRef, (r) => { if (r) load(r) }, { immediate: true })
+
+// each chart's panel, for its PNG download
+const panels = {}
+const fileStem = computed(() => props.datasetRef.replace('/', '_'))
 
 const fmt = (v) => (v == null ? '—' : Number(v).toLocaleString(undefined, { maximumFractionDigits: 1 }))
 const source = computed(() => parts.summary.data?.source)
@@ -150,7 +162,7 @@ function gridCols(n) {
 function bars(labels, values, colours = chartColor('pooled')) {
   return {
     labels,
-    datasets: [{ data: values, backgroundColor: colours, borderRadius: 4, borderSkipped: 'start', maxBarThickness: 24 }],
+    datasets: [{ data: values, backgroundColor: colours, borderRadius: 3, borderSkipped: 'start', maxBarThickness: 16 }],
   }
 }
 
@@ -362,12 +374,36 @@ function barData(c) {
   return bars(rows.map(([k]) => label(k)), rows.map(([, n]) => n), c.runs ? rows.map(([k]) => runColour(k)) : undefined)
 }
 
+// A whole-dataset distribution over many bins, or runs that all take one colour,
+// as a line over a light fill: dozens of touching navy bars read as one block.
+function pooledLine(c) {
+  if (c.runs) return !props.colouring || runsMixed.value
+  return c.hist != null || c.part === 'length'
+}
+
+function lineData(c) {
+  const { labels, datasets } = barData(c)
+  const navy = chartColor('pooled')
+  return {
+    labels,
+    datasets: [{ data: datasets[0].data, borderColor: navy, backgroundColor: `${navy}1f`, fill: 'origin',
+      borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, pointHitRadius: 6, tension: 0 }],
+  }
+}
+
+function lineOptions(c) {
+  const opts = {
+    plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+    interaction: { mode: 'index', intersect: false },
+    scales: { y: { beginAtZero: true } },
+  }
+  // runs ranked most first: no tick labels, the tooltip names the run
+  if (c.runs) opts.scales.x = { ticks: { display: false }, grid: { display: false } }
+  return opts
+}
+
 function barOptions(c) {
   const opts = { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-  if (c.hist != null) {
-    // a histogram: bars touch
-    opts.datasets = { bar: { categoryPercentage: 1, barPercentage: 1, borderRadius: 1 } }
-  }
   if (c.runs) {
     // hundreds of runs: no tick labels, the tooltip names the run
     opts.scales.x = { ticks: { display: false }, grid: { display: false } }

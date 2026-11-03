@@ -23,7 +23,7 @@ const grey = (group, extra) => ({ group, colour: chartColor('other'), ...extra }
 
 // Looked-up groups are kept in the browser between visits (without their colour,
 // which comes from the tables below), so a page shows them at once next time.
-const STORE = 'chart-groups:1'
+const STORE = 'chart-groups:2'
 function stored(key) {
   try { return JSON.parse(localStorage.getItem(`${STORE}:${key}`)) } catch { return null }
 }
@@ -62,11 +62,12 @@ export const SEVERAL_ORGANISMS = 'Several organisms'
 export const NOT_IN_UNIPROT = 'Not found in UniProt'
 
 async function taxon(query) {
-  const params = new URLSearchParams({ query, fields: 'scientific_name,lineage', format: 'json', size: '1' })
+  const params = new URLSearchParams({ query, fields: 'scientific_name,common_name,lineage', format: 'json', size: '1' })
   return (await getJSON(`${UNIPROT_TAXONOMY}?${params}`)).results[0] || null
 }
 
-// { group, colour, match }: `match` is the UniProt taxon the name was matched to.
+// { group, colour, match, common }: `match` is the UniProt taxon the name was matched
+// to, `common` its common name (Human, Baker's yeast) where it has one.
 // An entry listing several organisms ("A; B; C") belongs to no one group.
 export const taxonGroup = cached('taxon', async (name) => {
   if (name.includes(';')) return { group: SEVERAL_ORGANISMS }
@@ -74,7 +75,7 @@ export const taxonGroup = cached('taxon', async (name) => {
   if (!hit) return { group: NOT_IN_UNIPROT }
   const lineage = new Set([hit.scientificName, ...hit.lineage.map((l) => l.scientificName)])
   const g = TAXON_GROUPS.find((x) => x.taxa.some((t) => lineage.has(t)))
-  return g ? { group: g.label, match: hit.scientificName } : { group: NOT_IN_UNIPROT }
+  return g ? { group: g.label, match: hit.scientificName, common: hit.commonName } : { group: NOT_IN_UNIPROT }
 }, colourIn(TAXON_GROUPS))
 
 // --- tissues --------------------------------------------------------------------

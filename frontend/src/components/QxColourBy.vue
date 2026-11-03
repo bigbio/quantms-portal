@@ -7,28 +7,32 @@
           <option v-for="f in fields" :key="f.key" :value="f.key">{{ f.title }} ({{ f.distinct }})</option>
         </select>
       </label>
-      <ul class="cb-legend" @mouseleave="$emit('update:highlight', '')">
+      <ul class="cb-legend" @mouseleave="leave">
         <li v-for="g in groups" :key="g.family || g.items[0].label" class="cb-group">
           <button
             v-if="g.family"
             type="button"
             class="cb-family"
-            :class="{ dim: highlight && highlight !== g.family && !g.items.some((l) => l.label === highlight) }"
-            :title="`Highlight ${g.family}`"
-            @mouseenter="$emit('update:highlight', g.family)"
-            @focus="$emit('update:highlight', g.family)"
-            @blur="$emit('update:highlight', '')"
+            :class="{ dim: highlight && highlight !== g.family && !g.items.some((l) => l.label === highlight), pinned: pinned === g.family }"
+            :aria-pressed="pinned === g.family"
+            :title="pinned === g.family ? 'Click to release' : `Highlight ${g.family}; click to keep it highlighted`"
+            @mouseenter="show(g.family)"
+            @focus="show(g.family)"
+            @blur="leave"
+            @click="pin(g.family)"
           >{{ g.family }}</button>
           <button
             v-for="l in g.items"
             :key="l.label"
             type="button"
             class="cb-key"
-            :class="{ dim: highlight && highlight !== l.label && highlight !== g.family }"
-            :title="`Highlight ${l.label}`"
-            @mouseenter="$emit('update:highlight', l.label)"
-            @focus="$emit('update:highlight', l.label)"
-            @blur="$emit('update:highlight', '')"
+            :class="{ dim: highlight && highlight !== l.label && highlight !== g.family, pinned: pinned === l.label }"
+            :aria-pressed="pinned === l.label"
+            :title="pinned === l.label ? 'Click to release' : `Highlight ${l.label}; click to keep it highlighted`"
+            @mouseenter="show(l.label)"
+            @focus="show(l.label)"
+            @blur="leave"
+            @click="pin(l.label)"
           >
             <i :style="{ background: l.colour }" />{{ l.label }}<span>{{ l.n.toLocaleString() }}</span>
           </button>
@@ -42,8 +46,9 @@
 <script setup>
 // Picks the sample annotation the Explorer charts are coloured by and shows its
 // legend, values of one biological group under the group's name; hovering or
-// focusing a key highlights that value or group in every chart.
-import { computed } from 'vue'
+// focusing a key highlights that value or group in every chart, and clicking it
+// keeps it highlighted until it is clicked again.
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   fields: { type: Array, required: true },
@@ -54,7 +59,18 @@ const props = defineProps({
   // how the colours are chosen, or that they are still being looked up
   note: { type: String, default: '' },
 })
-defineEmits(['update:modelValue', 'update:highlight'])
+const emit = defineEmits(['update:modelValue', 'update:highlight'])
+
+// The kept highlight. Hovering shows another one until the pointer leaves. A
+// highlight the page still has when this legend mounts (another tab's) is a kept one.
+const pinned = ref(props.highlight)
+watch(() => props.modelValue, () => { pinned.value = '' })
+const show = (label) => emit('update:highlight', label)
+const leave = () => emit('update:highlight', pinned.value)
+function pin(label) {
+  pinned.value = pinned.value === label ? '' : label
+  emit('update:highlight', pinned.value)
+}
 
 // Consecutive entries of one family form a group; entries without one stand alone.
 const groups = computed(() => {
@@ -77,10 +93,11 @@ const groups = computed(() => {
 .cb-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0; padding: 0; list-style: none; flex: 1; min-width: 0; }
 .cb-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px 2px; }
 .cb-key, .cb-family { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid transparent; border-radius: 6px;
-  background: none; font: inherit; color: var(--text-primary); cursor: default; transition: opacity 0.15s; }
+  background: none; font: inherit; color: var(--text-primary); cursor: pointer; transition: opacity 0.15s; }
 .cb-family { padding-right: 2px; font-size: 12px; color: var(--text-muted); }
 .cb-key:hover, .cb-key:focus-visible, .cb-family:hover, .cb-family:focus-visible { border-color: var(--border); outline: none; }
 .cb-key.dim, .cb-family.dim { opacity: 0.4; }
+.cb-key.pinned, .cb-family.pinned { border-color: var(--text-secondary); background: var(--bg-alt); }
 .cb-key i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 .cb-key span { color: var(--text-muted); font-family: var(--mono); font-size: 12px; }
 .cb-note { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }

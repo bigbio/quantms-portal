@@ -88,3 +88,14 @@ export function ramp(n, hex = CATEGORICAL[0]) {
   if (n === 1) return [hex]
   return Array.from({ length: n }, (_, i) => atLightness(hex, 0.84 - (0.46 * i) / (n - 1)))
 }
+
+// The neutral midpoint of a diverging scale (z-scores, correlations).
+export const DIVERGING_MID = '#dfe3e8'
+
+// The colour a fraction `t` (0–1) of the way from `a` to `b`, in OKLab.
+export function mix(a, b, t) {
+  const A = oklab(a)
+  const B = oklab(b)
+  const rgb = linearRgb(A.map((v, i) => v + (B[i] - v) * t))
+  return `#${rgb.map((c) => Math.round(toGamma(Math.min(1, Math.max(0, c))) * 255).toString(16).padStart(2, '0')).join('')}`
+}
