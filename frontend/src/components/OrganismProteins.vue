@@ -56,12 +56,9 @@ const props = defineProps({
   failed: { type: Boolean, default: false },
 })
 
-const MODEL_ORGANISMS = [
-  'Homo sapiens', 'Mus musculus', 'Rattus norvegicus', 'Danio rerio',
-  'Drosophila melanogaster', 'Arabidopsis thaliana', 'Saccharomyces cerevisiae', 'Escherichia coli',
-]
+const MODEL_ORGANISMS = ['Homo sapiens', 'Mus musculus', 'Rattus norvegicus', 'Arabidopsis thaliana', 'Saccharomyces cerevisiae']
 // Bar lengths of the loading placeholder, as fractions of the longest bar.
-const SKELETON = [1, 0.9, 0.62, 0.55, 0.4, 0.5, 0.3, 0.15]
+const SKELETON = [1, 0.9, 0.4, 0.7, 0.25]
 
 // A model's row is its exact name or a strain of it ("Escherichia coli K-12"), the one with most datasets.
 const rows = computed(() => {
