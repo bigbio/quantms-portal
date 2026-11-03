@@ -54,7 +54,7 @@ upload links and finalizes the dataset for you.
 4. **Add it to a collection** using the reference the publish step prints:
 
    ```bash
-   quantms-portal collection add differential-expression --ref PXD012345/<hash>
+   quantms-portal collection add msnet --ref PXD012345/<hash>
    ```
 
 Once published and added to a collection, the dataset is picked up by the portal's

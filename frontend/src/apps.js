@@ -1,5 +1,5 @@
 import { apiGet } from './api.js'
-import { OBSOLETE_APPS, GATEWAY_BASE, DATASET_SEARCH_BASE, PEPTIDE_SEARCH_BASE, COMPASS_BASE, CELL_LINES_BASE, QPX_BASE } from './config.js'
+import { GATEWAY_BASE, DATASET_SEARCH_BASE, PEPTIDE_SEARCH_BASE, COMPASS_BASE, CELL_LINES_BASE, QPX_BASE } from './config.js'
 
 // Curated catalog of the interactive analysis apps, shared by the home page and
 // the Applications page. Kept static (rather than the gateway /apps catalog,
@@ -54,14 +54,7 @@ export const APPS = [
     docs: `${COMPASS_BASE}/docs`,
     description: 'Cross-species proteome coverage, evidence tiers, and the gaps quantms reanalysis could still close.',
   },
-  {
-    id: 'differential-expression',
-    title: 'Differential Expression',
-    to: '/differential-expression',
-    description: 'Pick a dataset, contrast conditions, and explore differential expression — volcano, table, heatmap, and QC.',
-    obsoleteNote: 'Retired: its datasets were old pre-qpx reanalyses. It will return once the collection is rebuilt.',
-  },
-].map((a) => ({ ...a, obsolete: OBSOLETE_APPS.has(a.id) }))
+]
 
 // Gateway registry entries that are not analysis apps: the gateway itself and
 // the Collections page, which the main navigation links to.
@@ -74,6 +67,6 @@ export async function registryApps() {
   const { apps = [] } = await apiGet(GATEWAY_BASE, '/apps')
   const curated = new Set(APPS.map((a) => a.id))
   return apps
-    .filter((a) => a.enabled && a.kind !== 'gateway' && !NOT_APPS.has(a.id) && !curated.has(a.id) && !OBSOLETE_APPS.has(a.id))
+    .filter((a) => a.enabled && a.kind !== 'gateway' && !NOT_APPS.has(a.id) && !curated.has(a.id))
     .map((a) => ({ id: a.id, title: a.title, description: a.description || '', docs: a.docs_url, registry: true }))
 }

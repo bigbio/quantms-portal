@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
-  APPS, MCP_ENDPOINTS, BUILDS, prRun, prResult, checkApp, checkMcp, checkSearchIndex, checkCatalogue, buildResult, fetchBuilds, overall, ago,
+  APPS, MCP_ENDPOINTS, BUILDS, BUILDS_CACHE_MS, prRun, prResult, checkApp, checkMcp, checkSearchIndex, checkCatalogue, buildResult, fetchBuilds, overall, ago,
 } from './status.js'
 
 const res = (body, { status = 200, type = 'cors' } = {}) => ({
@@ -59,6 +59,14 @@ describe('data checks', () => {
     expect(await checkSearchIndex(stats('2026-11-02T06:00:00Z'), NOW)).toEqual({ state: 'up', detail: 'built 6 h ago · 284,437 proteins' })
     expect((await checkSearchIndex(stats('2026-10-20T06:00:00Z'), NOW)).state).toBe('degraded')
   })
+  it('gives up on a response whose body never finishes', async () => {
+    vi.useFakeTimers()
+    const stalled = async () => ({ ok: true, status: 200, type: 'cors', json: () => new Promise(() => {}) })
+    const pending = checkCatalogue(stalled)
+    await vi.advanceTimersByTimeAsync(10000)
+    expect((await pending).state).toBe('down')
+    vi.useRealTimers()
+  })
   it('is down when the catalogue is empty', async () => {
     expect((await checkCatalogue(fake({ '/datasets': res({ total: 142 }) }))).detail).toBe('142 datasets')
     expect((await checkCatalogue(fake({ '/datasets': res({ total: 0 }) }))).state).toBe('down')
@@ -106,12 +114,35 @@ describe('builds', () => {
     expect(prResult(pr, undefined, NOW).detail).toBe(`#9 ${'x'.repeat(57)}…: no test run`)
   })
 
-  it('says so when GitHub rate-limits, and does not cache that', async () => {
+  it('says so when GitHub rate-limits, and does not ask again within the cache window', async () => {
     const store = new Map()
     const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }
-    const out = await fetchBuilds(async () => res({}, { status: 403 }), storage, NOW)
+    const limited = vi.fn(async () => res({}, { status: 403 }))
+    const out = await fetchBuilds(limited, storage, NOW)
     expect(out[0].result.detail).toBe('GitHub rate limit reached, try later')
-    expect(store.size).toBe(0)
+    const calls = limited.mock.calls.length
+    await fetchBuilds(limited, storage, NOW + 60000)
+    expect(limited.mock.calls.length).toBe(calls)
+  })
+
+  it('keeps the last known result of a build GitHub cannot answer now', async () => {
+    const store = new Map()
+    const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }
+    const good = async (url) => (url.includes('/pulls?')
+      ? res([{ number: 1, title: 't', head: { sha: 'a' }, html_url: 'h' }])
+      : res({ workflow_runs: BUILDS.map((b) => ({ name: b.workflow, conclusion: 'success', status: 'completed', html_url: 'u', updated_at: '2026-11-02T10:00:00Z' })) }))
+    await fetchBuilds(good, storage, NOW)
+    const later = NOW + BUILDS_CACHE_MS + 1
+    const out = await fetchBuilds(async () => res({}, { status: 403 }), storage, later)
+    expect(out[0].result).toMatchObject({ state: 'up', detail: 'passed 2 h ago (GitHub rate limit reached now)' })
+    const again = await fetchBuilds(async () => res({}, { status: 403 }), storage, later + BUILDS_CACHE_MS + 1)
+    expect(again[0].result.detail).toBe('passed 2 h ago (GitHub rate limit reached now)')
+  })
+
+  it('works when the browser blocks storage', async () => {
+    const blocked = { getItem: () => { throw new Error('SecurityError') }, setItem: () => { throw new Error('SecurityError') } }
+    const out = await fetchBuilds(async () => res({}, { status: 403 }), blocked, NOW)
+    expect(out).toHaveLength(BUILDS.length)
   })
 })
 

@@ -581,6 +581,7 @@ function resetDerived() {
   sqlInfo.value = ''
   schemaViews.value = []
   exampleBusy.value = ''
+  tabLoaded.clear()
 }
 
 //: Start-page examples, by accession; the catalogue gives their current version, so
@@ -838,7 +839,7 @@ function wholeOnce(id) {
   const key = `${visibleRef.value}|whole:${id}`
   if (tabLoaded.has(key) || overview.value.available_views[view] === false) return
   tabLoaded.add(key)
-  loadWhole(id, fetcher, id)
+  loadWhole(id, fetcher, id).then(() => { if (meta[id].error) tabLoaded.delete(key) })
 }
 
 // Features (its PTM filter) and PTMs share one PTM list.

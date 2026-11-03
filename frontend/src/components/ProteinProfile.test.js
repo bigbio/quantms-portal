@@ -48,6 +48,21 @@ describe('ProteinProfile', () => {
     expect(mapMounts).toBe(1)
   })
 
+  it('hides missing coverage and high-confidence figures instead of showing zero', async () => {
+    apiGet.mockImplementation((base, path, params) => {
+      if (path === '/protein/profile') {
+        return Promise.resolve({ ...profileFor(params.accession, 9), coverage_pct: null, gpp: { n_datasets: null, n_peptides: 4 },
+          uniprot_url: 'javascript:alert(1)' })
+      }
+      return Promise.resolve({ obs_distribution: { bins: [], n: 0 } })
+    })
+    const w = mount(ProteinProfile, { props: { accession: 'P04637', gppMin: null }, global: { stubs } })
+    await flushPromises()
+    expect(w.find('.pp-coverage').exists()).toBe(false)
+    expect(w.findAll('.pp-stat-gpp').map((n) => n.text())).toEqual(['4 high-confidence'])
+    expect(w.findAll('a').map((a) => a.attributes('href')).some((h) => h?.startsWith('javascript'))).toBe(false)
+  })
+
   it('fetches the shared /stats document once across instances', async () => {
     mount(ProteinProfile, { props: { accession: 'P04637' }, global: { stubs } })
     mount(ProteinProfile, { props: { accession: 'P69905' }, global: { stubs } })

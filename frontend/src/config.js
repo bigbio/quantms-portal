@@ -19,7 +19,6 @@ export const API_BASE = (env.VITE_API_BASE || 'https://api.quantms.org').replace
 export const DATASET_SEARCH_BASE = `${API_BASE}/dataset-search`
 export const PEPTIDE_SEARCH_BASE = `${API_BASE}/peptide-search`
 export const COMPASS_BASE = `${API_BASE}/compass`
-export const DE_BASE = (env.VITE_DE_BASE || `${API_BASE}/differential-expression`).replace(/\/$/, '')
 export const CELL_LINES_BASE = (env.VITE_CELL_LINES_BASE || `${API_BASE}/cell-lines`).replace(/\/$/, '')
 export const QPX_BASE = `${API_BASE}/qpx-explore`
 
@@ -39,11 +38,6 @@ export const STATS_PATH = '/quantms/apps/statistics/stats.json'
 // DYNAMIC (computed per-build by the backend and exposed at /stats → gpp.default_min);
 // this constant is only the FALLBACK used when the backend reports no GPP data.
 export const GPP_FALLBACK_MIN = 0.15
-
-// Apps retired from the portal but kept in the codebase so they can be recovered.
-// Differential Expression: its source collection was removed (stale pre-qpx results);
-// re-enable by dropping the id here and restoring the route in router.js.
-export const OBSOLETE_APPS = new Set(['differential-expression'])
 
 // PRIDE FTP folder holding the released models; the Models page lists it live.
 export const MODELS_FTP = 'https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/quantms-models/'
