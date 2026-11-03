@@ -4,22 +4,23 @@ import { mount } from '@vue/test-utils'
 import OrganismProteins from './OrganismProteins.vue'
 
 const row = (organism, datasets, proteins) => ({ organism, datasets, proteins, peptides: 1 })
-// stats.json order: most datasets first.
 const STATS = {
   generated_at: '2026-11-03T00:40:14Z',
   species: [
     row('Homo sapiens', 191, 20446),
     row('Mus musculus', 8, 21015),
-    row('Danio rerio', 2, 14231),
-    row('Arabidopsis thaliana', 1, 14742),
-    row('Bacillus subtilis; Phage M13; Escherichia coli K24', 1, 21988),
+    row('Escherichia coli K-12', 2, 1365),
+    row('Bacillus subtilis; Escherichia coli K24', 1, 21988),
     row('Gossypium hirsutum', 1, 33562),
+    row('Drosophila', 1, 9051),
+    row('Drosophila melanogaster', 1, 3062),
   ],
 }
 
 describe('OrganismProteins', () => {
-  it('shows the most-studied organisms, not the largest proteomes, and names mixtures', () => {
-    const names = mount(OrganismProteins, { props: { stats: STATS } }).findAll('.bar-name').map((n) => n.text())
-    expect(names).toEqual(['Homo sapiens', 'Mus musculus', 'Danio rerio', 'Arabidopsis thaliana', 'Mixed (3 organisms)'])
+  it('shows the model organisms present, in a fixed order, skipping mixtures and non-models', () => {
+    const w = mount(OrganismProteins, { props: { stats: STATS } })
+    expect(w.findAll('.bar-name').map((n) => n.text())).toEqual(['Homo sapiens', 'Mus musculus', 'Drosophila melanogaster', 'Escherichia coli'])
+    expect(w.findAll('.bar-value').map((n) => n.text())).toEqual(['20.4K', '21K', '3.1K', '1.4K'])
   })
 })
