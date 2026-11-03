@@ -18,6 +18,8 @@ export const API_BASE = (env.VITE_API_BASE || 'https://api.quantms.org').replace
 // App backends derived from the API hub.
 export const DATASET_SEARCH_BASE = `${API_BASE}/dataset-search`
 export const PEPTIDE_SEARCH_BASE = `${API_BASE}/peptide-search`
+// A protein profile nobody has asked for since the pod started takes 30-50 s.
+export const PROTEIN_PROFILE_TIMEOUT_MS = 90000
 export const COMPASS_BASE = `${API_BASE}/compass`
 export const CELL_LINES_BASE = (env.VITE_CELL_LINES_BASE || `${API_BASE}/cell-lines`).replace(/\/$/, '')
 export const QPX_BASE = `${API_BASE}/qpx-explore`
