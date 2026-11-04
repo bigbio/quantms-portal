@@ -224,6 +224,18 @@ describe('QpxExplore', () => {
     expect(urls().filter((u) => u.includes('/runs')).length).toBe(1)
   })
 
+  it('reloads a tab when the same dataset is opened again', async () => {
+    const w = await open({ ref: 'PXD1/abc', tab: 'proteins' })
+    const proteinLoads = () => global.fetch.mock.calls.filter((c) => String(c[0]).includes('/proteins')).length
+    expect(proteinLoads()).toBe(1)
+    await w.router.push({ path: '/apps/qpx-explore', query: {} })
+    await flushPromises()
+    await w.router.push({ path: '/apps/qpx-explore', query: { ref: 'PXD1/abc', tab: 'proteins' } })
+    await flushPromises()
+    expect(proteinLoads()).toBe(2)
+    expect(w.text()).toContain('P1')
+  })
+
   it('sends sort parameters when a protein column is clicked', async () => {
     const w = await open({ ref: 'PXD1/abc', tab: 'proteins' })
     await w.findAll('th button')[1].trigger('click')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel, niceTicks } from './format.js'
+import { formatBig, formatNum, formatBytes, cleanInstrument, datasetClassLabel, niceTicks, organismLabel } from './format.js'
 
 describe('formatBig', () => {
   it('abbreviates with K/M/B and trims trailing .0', () => {
@@ -8,6 +8,12 @@ describe('formatBig', () => {
     expect(formatBig(1500)).toBe('1.5K')
     expect(formatBig(2_000_000)).toBe('2M')
     expect(formatBig(1_500_000_000)).toBe('1.5B')
+    expect(formatBig(999_950)).toBe('1M')
+    expect(formatBig(999_950_000)).toBe('1B')
+    expect(formatBig(999_940)).toBe('999.9K')
+    expect(formatBytes(1024 * 1023.96)).toBe('1.0 MB')
+    expect(formatBytes(1024 * 1024)).toBe('1.0 MB')
+    expect(formatBytes(512)).toBe('512 B')
   })
   it('returns an em-dash for null/NaN', () => {
     expect(formatBig(null)).toBe('—')
@@ -64,5 +70,13 @@ describe('niceTicks', () => {
     expect(niceTicks(-3.2, 4.9)).toEqual([-2, 0, 2, 4])
     expect(niceTicks(0.61, 0.98)).toEqual([0.7, 0.8, 0.9])
     expect(niceTicks(1, 1)).toEqual([1])
+  })
+})
+
+describe('organismLabel', () => {
+  it('names a multi-organism value as one mixed entry', () => {
+    expect(organismLabel('Bacillus subtilis; Phage M13; Escherichia coli K24')).toBe('Mixed (3 organisms)')
+    expect(organismLabel('Homo sapiens')).toBe('Homo sapiens')
+    expect(organismLabel(null)).toBe('')
   })
 })

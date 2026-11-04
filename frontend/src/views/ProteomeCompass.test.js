@@ -73,6 +73,19 @@ describe('ProteomeCompass view', () => {
     expect(w.find('.card').text()).toBe('NEW1')
   })
 
+  it('does not show the previous protein when a lookup fails', async () => {
+    apiGet.mockImplementation((base, path) => path === '/profile/BAD1'
+      ? Promise.reject(new Error('502'))
+      : Promise.resolve({ uniprot_acc: 'P04637' }))
+    const { w } = await mountAt('/apps/compass?acc=P04637')
+    expect(w.find('.card').text()).toBe('P04637')
+    await w.find('input[aria-label="UniProt accession"]').setValue('BAD1')
+    await w.find('button.btn').trigger('click')
+    await flushPromises()
+    expect(w.text()).toContain('Lookup failed.')
+    expect(w.find('.card').exists()).toBe(false)
+  })
+
   it('retries a failed view from the error banner', async () => {
     apiGet.mockRejectedValueOnce(new Error('down'))
     const { w } = await mountAt('/apps/compass?mode=proteomes')

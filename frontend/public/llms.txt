@@ -1,6 +1,6 @@
 # quantms Portal
 
-> Quantitative proteomics data portal. 251 standardized mass spectrometry datasets reanalyzed with the quantms pipeline and distributed in QPX format.
+> Quantitative proteomics data portal. Standardized mass spectrometry datasets reanalyzed with the quantms pipeline and distributed in QPX format.
 
 ## Collections
 
@@ -9,9 +9,11 @@
 
 ## Data Access
 
-- Registry API: https://portal.quantms.org/data/registry.json
-- Collection index: https://portal.quantms.org/data/collections/{collection}/collection.json
-- Dataset detail: https://portal.quantms.org/data/collections/{collection}/datasets/{accession}.json
+- Collections: https://publish.quantms.org/collections and https://publish.quantms.org/collections/{collection}
+- Dataset catalogue (search, paginated): https://api.quantms.org/dataset-search/datasets?page=1&page_size=50
+- Dataset detail: https://api.quantms.org/dataset-search/datasets/{accession}
+- Portal statistics: https://browse.quantms.org/quantms/apps/statistics/stats.json
+- MCP for AI agents: https://publish.quantms.org/mcp/ (collections) and https://api.quantms.org/{dataset-search,peptide-search,qpx-explore,compass}/mcp
 - FTP root: https://ftp.pride.ebi.ac.uk/pub/databases/pride/resources/proteomes/
 
 ## Cancer Cell Line Proteome

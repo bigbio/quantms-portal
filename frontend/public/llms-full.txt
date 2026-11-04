@@ -1,6 +1,6 @@
 # quantms Portal — Full Reference
 
-> Data portal hosting 251 standardized proteomics datasets across 4 collections in QPX Parquet format.
+> Data portal hosting standardized proteomics datasets, grouped in collections, in QPX Parquet format.
 
 ## Overview
 
@@ -20,23 +20,25 @@ The quantms Portal provides access to reanalyzed quantitative proteomics dataset
 
 ## Data Access
 
-### Static JSON API
-All data is available as static JSON files — no backend required.
+### HTTP API
+Live JSON endpoints; the numbers change as datasets are published.
 
-# Registry (list all collections)
-GET https://portal.quantms.org/data/registry.json
+# Collections, and one collection's summary
+GET https://publish.quantms.org/collections
+GET https://publish.quantms.org/collections/{collection}
 
-# Collection summary
-GET https://portal.quantms.org/data/collections/{collection}/collection.json
-
-# Dataset listing (paginated, 50 per page)
-GET https://portal.quantms.org/data/collections/{collection}/datasets-page-1.json
+# Dataset catalogue (search and filter, paginated)
+GET https://api.quantms.org/dataset-search/datasets?page=1&page_size=50
 
 # Dataset detail
-GET https://portal.quantms.org/data/collections/{collection}/datasets/{accession}.json
+GET https://api.quantms.org/dataset-search/datasets/{accession}
 
 # Portal statistics
-GET https://portal.quantms.org/data/portal-stats.json
+GET https://browse.quantms.org/quantms/apps/statistics/stats.json
+
+### MCP
+AI agents can connect over MCP: https://publish.quantms.org/mcp/ (collections and datasets),
+and https://api.quantms.org/{dataset-search,peptide-search,qpx-explore,compass}/mcp.
 
 ### Raw Data
 Original raw files and processed QPX Parquet files are available via PRIDE FTP:

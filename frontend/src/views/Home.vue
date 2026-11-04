@@ -94,7 +94,7 @@
     <div class="container">
       <h2 class="rule-title">Applications</h2>
       <p class="section-lede">Live services over the quantms data.</p>
-      <AppGrid :apps="[...apps, ...registry]" />
+      <AppGrid :apps="[...APPS, ...registry]" />
       <p class="api-hub">
         API documentation: <a :href="apiDocsUrl" target="_blank" rel="noopener">api.quantms.org/docs</a>
         (collections, dataset search and peptide search) and the “API docs” link of each application.
@@ -125,7 +125,6 @@ import { APPS, registryApps } from '../apps.js'
 import { DATASET_SEARCH_BASE, BROWSE_BASE, STATS_PATH, API_DOCS_URL } from '../config.js'
 
 const apiDocsUrl = API_DOCS_URL
-const apps = APPS.filter((a) => !a.obsolete)
 // Registry-only apps; when the gateway is unreachable the curated list stands alone.
 const registry = ref([])
 const router = useRouter()

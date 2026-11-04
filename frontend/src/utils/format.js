@@ -6,10 +6,15 @@ import { CATEGORICAL, categorySlot } from './chartColors.js'
 export function formatBig(n) {
   if (n == null || n === '' || Number.isNaN(Number(n))) return '—'
   const v = Number(n)
-  if (v >= 1_000_000_000) return (v / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B'
-  if (v >= 1_000_000) return (v / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M'
-  if (v >= 1_000) return (v / 1_000).toFixed(1).replace(/\.0$/, '') + 'K'
-  return String(v)
+  const units = ['', 'K', 'M', 'B']
+  let x = v
+  let i = 0
+  // Step up once more when rounding reaches 1000 (999,950 is "1M", not "1000K").
+  while (i < units.length - 1 && Math.abs(i ? Number(x.toFixed(1)) : x) >= 1000) {
+    x /= 1000
+    i++
+  }
+  return i ? x.toFixed(1).replace(/\.0$/, '') + units[i] : String(v)
 }
 
 // Full localized number, with an em-dash for empty/zero.
@@ -24,7 +29,8 @@ export function formatBytes(b) {
   const u = ['B', 'KB', 'MB', 'GB', 'TB']
   let i = 0
   let v = Number(b)
-  while (v >= 1024 && i < u.length - 1) {
+  const shown = (x) => Number(x.toFixed(x >= 10 || i === 0 ? 0 : 1))
+  while (shown(v) >= 1024 && i < u.length - 1) {
     v /= 1024
     i++
   }
@@ -118,7 +124,6 @@ const COLLECTION_SLOTS = {
   celllines: 5,
   'single-cell-expression': 6,
   'single-cell': 6,
-  'differential-expression': 7,
 }
 export function collectionTag(name) {
   return `tag-cat-${categorySlot(name, COLLECTION_SLOTS)}`
@@ -156,4 +161,10 @@ export function niceTicks(lo, hi, n = 5) {
   const out = []
   for (let t = Math.ceil(lo / step) * step; t <= hi + step * 1e-9; t += step) out.push(Number(t.toPrecision(12)))
   return out
+}
+
+// Organism label for charts: a ';'-joined multi-organism value reads as one "Mixed" entry.
+export function organismLabel(v) {
+  const orgs = String(v ?? '').split(';').map((s) => s.trim()).filter(Boolean)
+  return orgs.length > 1 ? `Mixed (${orgs.length} organisms)` : String(v ?? '')
 }

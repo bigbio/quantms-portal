@@ -50,14 +50,13 @@ describe('Home', () => {
     expect(w.find('.facts-note').text()).toContain('index generated 2026-10-27')
   })
 
-  it('charts the organisms with the most distinct proteins and says what was ranked', async () => {
+  it('charts the model organisms and says what is counted', async () => {
     const w = await mountHome()
     const names = w.findAll('.organism-card .bar-name').map((n) => n.text())
-    expect(names).toEqual(['Homo sapiens', 'Triticum aestivum', 'Mus musculus', 'Gossypium hirsutum', 'Danio rerio'])
+    expect(names).toEqual(['Homo sapiens', 'Mus musculus'])
     expect(w.find('.organism-card .bar-meta').text()).toBe('191 datasets')
     const caption = w.find('.organism-card figcaption').text()
-    expect(caption).toContain('largest of the 6 organisms listed individually')
-    expect(caption).toContain('(29 more are reported only as a combined group)')
+    expect(caption).toContain('Common model organisms')
     expect(caption).toContain('Index generated 2026-10-27')
   })
 

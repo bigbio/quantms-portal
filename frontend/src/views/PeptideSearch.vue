@@ -685,6 +685,9 @@ const proteinTab = ref('peptides')
 const nProteinPeptides = ref(null)
 watch(profileProtein, () => {
   proteinTab.value = 'peptides'
+})
+// A new cutoff can bring peptides back, so the table remounts and asks again.
+watch([profileProtein, profileGppMin], () => {
   nProteinPeptides.value = null
 })
 const showDatasetResults = computed(() =>
