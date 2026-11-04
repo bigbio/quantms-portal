@@ -81,7 +81,7 @@ describe('QpxExplore', () => {
     await w.find('.qx-picker input').setValue('MSV0000858')
     expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['MSV000085836'])
     expect(w.find('.qx-picker-hint').text()).toBe('Enter opens MSV000085836/hash1')
-    await w.find('.qx-picker input').trigger('keyup.enter')
+    await w.find('form.qx-picker').trigger('submit')
     await flushPromises()
     expect(w.router.currentRoute.value.query).toEqual({ ref: 'MSV000085836/hash1' })
   })
@@ -89,7 +89,7 @@ describe('QpxExplore', () => {
   it('opens a dataset ref inside a pasted link', async () => {
     const w = await open({})
     await w.find('.qx-picker input').setValue('https://browse.quantms.org/quantms/datasets/PXD9/0123456789ab/')
-    await w.find('.qx-picker button').trigger('click')
+    await w.find('form.qx-picker').trigger('submit')
     await flushPromises()
     expect(w.router.currentRoute.value.query).toEqual({ ref: 'PXD9/0123456789ab' })
   })
@@ -117,7 +117,7 @@ describe('QpxExplore', () => {
   it('searches the catalogue from an open dataset', async () => {
     const w = await open({ ref: 'PXD1/abc' })
     await w.find('.qx-picker input').setValue('gastric')
-    await w.find('.qx-picker input').trigger('keyup.enter')
+    await w.find('form.qx-picker').trigger('submit')
     await flushPromises()
     expect(w.router.currentRoute.value.query).toEqual({ q: 'gastric' })
     expect(w.findAll('.qc-row').map((r) => r.find('.qc-acc').text())).toEqual(['PXD048538'])

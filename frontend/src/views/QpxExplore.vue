@@ -16,22 +16,21 @@
         <router-link to="/docs/applications" class="qx-doc-link">Apps overview →</router-link>
       </p>
 
-      <!-- Dataset box: a dataset ref opens it, other words search the catalogue -->
-      <div class="qx-picker">
+      <!-- The catalogue filters as you type; submit opens a ref or the only match.
+           From an open dataset, words return to the catalogue search. -->
+      <form class="qx-picker" role="search" @submit.prevent="submit">
         <input
           v-model="refInput"
           type="search"
+          enterkeyhint="go"
           class="qx-input qx-picker-input"
           placeholder="Accession, keyword or dataset ref"
           aria-label="Search datasets or enter a dataset ref"
           spellcheck="false"
-          @keyup.enter="submit"
         />
-        <button class="page-btn primary" :disabled="!canSubmit || loading" @click="submit">
-          {{ loading ? 'Opening…' : pickTarget || catalogue ? 'Explore' : 'Search' }}
-        </button>
         <span v-if="pickTarget && pickTarget !== visibleRef" class="qx-picker-hint">Enter opens <code>{{ pickTarget }}</code></span>
-      </div>
+        <span v-else-if="canSubmit" class="qx-picker-hint">Enter searches the catalogue</span>
+      </form>
 
       <!-- Not loaded: the catalogue to pick from, kept alive so that coming back from a dataset lists it at once -->
       <KeepAlive>
