@@ -219,3 +219,12 @@ export function runAnnotation(sampleAccessions, sampleById, field) {
   if (values.size > 1) return { mixed: true, value: null }
   return { mixed: false, value: values.size ? [...values][0] : null }
 }
+
+const naturally = new Intl.Collator(undefined, { numeric: true }).compare
+
+// Sample accessions in the colouring's legend order, then by name.
+export function orderByGroup(accessions, colouring) {
+  if (!colouring) return [...accessions].sort(naturally)
+  const rank = (a) => colouring.scale.rankOf(colouring.value(a))
+  return [...accessions].sort((a, b) => rank(a) - rank(b) || naturally(a, b))
+}

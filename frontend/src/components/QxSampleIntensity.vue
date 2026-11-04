@@ -29,6 +29,7 @@
             </select>
           </label>
           <label class="si-toggle"><input v-model="asTable" type="checkbox" /> Show as table</label>
+          <QxExport :name="`${datasetRef.replace('/', '_')}-sample-intensity`" :csv="() => ({ columns: tableColumns, rows: tableRows })" />
         </div>
       </div>
 
@@ -72,6 +73,7 @@
 // apart, or a group confounded with plexes, shows up.
 import { computed, ref, watch } from 'vue'
 import QxTable from './QxTable.vue'
+import QxExport from './QxExport.vue'
 import QxProgress from './QxProgress.vue'
 import { qpxQc } from '../qpx.js'
 import { chartColor } from '../utils/chartColors.js'

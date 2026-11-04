@@ -152,6 +152,17 @@ export function datasetClassLabel(v) {
   return DATASET_CLASS_LABELS[v] || String(v)
 }
 
+// About `n` round axis ticks (steps of 1, 2 or 5 × 10^k) between lo and hi.
+export function niceTicks(lo, hi, n = 5) {
+  const raw = (hi - lo) / n
+  if (!(raw > 0)) return [lo]
+  const mag = 10 ** Math.floor(Math.log10(raw))
+  const step = [1, 2, 5, 10].map((s) => s * mag).find((s) => s >= raw)
+  const out = []
+  for (let t = Math.ceil(lo / step) * step; t <= hi + step * 1e-9; t += step) out.push(Number(t.toPrecision(12)))
+  return out
+}
+
 // Organism label for charts: a ';'-joined multi-organism value reads as one "Mixed" entry.
 export function organismLabel(v) {
   const orgs = String(v ?? '').split(';').map((s) => s.trim()).filter(Boolean)

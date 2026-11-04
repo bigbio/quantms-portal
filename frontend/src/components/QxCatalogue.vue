@@ -1,8 +1,8 @@
 <template>
   <section class="qc" :aria-busy="loading">
     <p class="qc-lead">
-      Every dataset in the quantms catalogue, read live from dataset search. Filter by collection,
-      organism or instrument, then click a row to open it here — or enter a dataset ref above.
+      Every dataset in the quantms catalogue, read live from dataset search. Search above, filter by
+      collection, organism or instrument, then click a row to open it here.
     </p>
 
     <div v-if="error" class="notice">
@@ -55,15 +55,10 @@
       <p v-if="taxaFailed" class="qc-note">Taxonomic groups could not be looked up in UniProt; organisms are grey.</p>
 
       <div class="filter-bar qc-bar">
-        <input
-          v-model="q"
-          type="search"
-          class="filter-search qc-search"
-          placeholder="Search accession, title, keyword, tissue, disease…"
-          aria-label="Search datasets"
-        />
-        <button v-if="hasFilters" class="page-btn" @click="clear">Clear filters</button>
-        <span class="result-count">{{ filtered.length.toLocaleString() }} of {{ all.length.toLocaleString() }} datasets</span>
+        <button v-if="hasFilters" class="page-btn" @click="clear">Clear search and filters</button>
+        <span class="result-count">
+          {{ filtered.length.toLocaleString() }} of {{ all.length.toLocaleString() }} datasets<template v-if="sort.key === 'relevance' && filtered.length > 1">, best matches first</template>
+        </span>
       </div>
 
       <div class="dataset-table-wrap">
@@ -89,11 +84,18 @@
               @click="$emit('open', d.dataset_ref)"
               @keydown.enter.prevent="$emit('open', d.dataset_ref)"
             >
-              <td><code class="qc-acc">{{ d.accession }}</code></td>
+              <td>
+                <code class="qc-acc">{{ d.accession }}</code>
+                <!-- an accession with several datasets: their refs tell them apart -->
+                <small v-if="refsOf.get(d.accession) > 1" class="qc-hash">/{{ d.dataset_ref.split('/')[1] }}</small>
+              </td>
               <td class="qc-title-cell">
                 <span v-if="d.title && d.title !== d.accession" class="qc-title" :title="d.title">{{ d.title }}</span>
                 <span class="qc-tags">
                   <span v-for="c in collectionsOf(d)" :key="c" class="tag" :class="collectionTag(c)">{{ collectionTitle(c) }}</span>
+                </span>
+                <span v-for="(n, i) in matches.get(d).notes.slice(0, 2)" :key="i" class="qc-why">
+                  {{ n.name }}: {{ n.parts[0] }}<mark>{{ n.parts[1] }}</mark>{{ n.parts[2] }}
                 </span>
               </td>
               <td class="qc-dot-cell" :title="taxonOf(d.organism).group"><i :style="{ background: taxonOf(d.organism).colour }" />{{ organismLabel(d.organism) }}</td>
@@ -118,12 +120,15 @@
 
 <script setup>
 // Start page of the explorer: the whole dataset catalogue as a filterable table.
-// The catalogue is small enough to load whole, so filters, facet counts and totals
-// answer at once; organisms take their taxonomic group's colour (UniProt) and
-// instruments their mass analyser's, as on the Statistics page.
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+// The catalogue is small enough to load whole, so search, filters, facet counts and
+// totals answer at once; organisms take their taxonomic group's colour (UniProt) and
+// instruments their mass analyser's, as on the Statistics page. The search text is
+// typed in the page's box above; the facets picked live in the URL with it.
+import { computed, onActivated, onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import QxProgress from './QxProgress.vue'
 import { apiGet } from '../api.js'
+import { field, matchFields, queryTerms } from '../catalogueSearch.js'
 import { DATASET_SEARCH_BASE } from '../config.js'
 import { analyserGroup, taxonGroup, useGroups } from '../chartGroups.js'
 import { chartColor } from '../utils/chartColors.js'
@@ -132,8 +137,9 @@ import { cleanInstrument, collectionColour, collectionTag, formatBig, formatByte
 const props = defineProps({
   // [{ accession, title, kind, why }], resolved to their current version from the catalogue
   examples: { type: Array, default: () => [] },
+  query: { type: String, default: '' },
 })
-defineEmits(['open'])
+const emit = defineEmits(['open', 'update:query', 'query'])
 
 const PAGE = 25
 const FACET_ROWS = 6
@@ -174,20 +180,46 @@ const taxonOf = (o) => taxa.value[o] || { group: taxaFailed.value ? 'Not looked 
 
 // --- filtering ------------------------------------------------------------------------
 
-const q = ref('')
-const filters = reactive({ collection: '', organism: '', instrument: '' })
+const route = useRoute()
+const FACETS = ['collection', 'organism', 'instrument']
+const facetsFromUrl = () => Object.fromEntries(FACETS.map((k) => [k, typeof route.query[k] === 'string' ? route.query[k] : '']))
+const filters = reactive(facetsFromUrl())
+// kept alive by the page: back in view, the URL may hold other facets
+onActivated(() => Object.assign(filters, facetsFromUrl()))
+watch(() => ({ ...filters }), (f) => emit('query', Object.fromEntries(FACETS.map((k) => [k, f[k] || null]))))
 const expanded = reactive({})
-const hasFilters = computed(() => !!(q.value || filters.collection || filters.organism || filters.instrument))
+const terms = computed(() => queryTerms(props.query))
+const hasFilters = computed(() => !!(terms.value.length || filters.collection || filters.organism || filters.instrument))
 function toggle(key, value) { filters[key] = filters[key] === value ? '' : value }
 function clear() {
-  q.value = ''
+  emit('update:query', '')
   Object.assign(filters, { collection: '', organism: '', instrument: '' })
 }
 
-const haystack = (d) => [d.accession, d.title, d.organism, instrumentLabel(d), ...collectionsOf(d),
-  ...(d.keywords || []), ...(d.tissues || []), ...(d.diseases || [])].join(' ').toLowerCase()
-const matchesQuery = (d) => !q.value.trim() || haystack(d).includes(q.value.trim().toLowerCase())
-const passes = (d, skip) => matchesQuery(d)
+// What a dataset is searched by; the weights rank where a term was found.
+const searchFields = computed(() => new Map(all.value.map((d) => {
+  const taxon = taxa.value[d.organism] || {}
+  return [d, [
+    ...field('accession', 10, true, d.accession),
+    ...field('dataset ref', 8, true, d.dataset_ref),
+    ...field('title', 6, true, d.title),
+    ...field('organism', 5, true, d.organism),
+    ...field('organism', 4, false, [taxon.common, taxon.group]),
+    ...field('tissue', 5, false, d.tissues),
+    ...field('disease', 5, false, d.diseases),
+    ...field('collection', 4, true, collectionsOf(d).flatMap((c) => [c, collectionTitle(c)])),
+    ...field('instrument', 4, true, instrumentLabel(d)),
+    ...field('mass analyser', 3, false, instrumentLabel(d) && analyserGroup(instrumentLabel(d)).group),
+    ...field('keyword', 3, false, d.keywords),
+    ...field('publication', 3, false, d.publication?.doi),
+    ...field('source', 2, false, d.source),
+    ...field('summary', 2, false, d.summary),
+    ...field('description', 1, false, d.description),
+  ]]
+})))
+const NO_QUERY = { score: 0, notes: [] }
+const matches = computed(() => new Map(all.value.map((d) => [d, terms.value.length ? matchFields(searchFields.value.get(d), terms.value) : NO_QUERY])))
+const passes = (d, skip) => !!matches.value.get(d)
   && (skip === 'collection' || !filters.collection || collectionsOf(d).includes(filters.collection))
   && (skip === 'organism' || !filters.organism || d.organism === filters.organism)
   && (skip === 'instrument' || !filters.instrument || instrumentLabel(d) === filters.instrument)
@@ -245,6 +277,11 @@ const COLUMNS = [
   { key: 'size', label: 'Size', sort: 'total_size', num: true },
 ]
 const sort = reactive({ key: 'peptides', dir: 'desc' })
+// a search lists its best matches first, until a column is picked
+watch(() => terms.value.length > 0, (searching) => {
+  if (searching) Object.assign(sort, { key: 'relevance', dir: 'desc' })
+  else if (sort.key === 'relevance') Object.assign(sort, { key: 'peptides', dir: 'desc' })
+}, { immediate: true })
 function sortBy(c) {
   if (sort.key === c.sort) sort.dir = sort.dir === 'asc' ? 'desc' : 'asc'
   else Object.assign(sort, { key: c.sort, dir: c.num ? 'desc' : 'asc' })
@@ -253,15 +290,24 @@ const ariaSort = (c) => (c.sort && sort.key === c.sort ? (sort.dir === 'asc' ? '
 const sorted = computed(() => {
   const k = sort.key
   const sign = sort.dir === 'asc' ? 1 : -1
+  if (k === 'relevance') {
+    const m = matches.value
+    return [...filtered.value].sort((a, b) => m.get(b).score - m.get(a).score || (b.peptides || 0) - (a.peptides || 0))
+  }
   return [...filtered.value].sort((a, b) => sign * (k === 'accession'
     ? a.accession.localeCompare(b.accession, undefined, { numeric: true })
     : (a[k] || 0) - (b[k] || 0)))
 })
+const refsOf = computed(() => all.value.reduce((m, d) => m.set(d.accession, (m.get(d.accession) || 0) + 1), new Map()))
+
+// The dataset Enter in the search box opens: the only one left.
+const only = computed(() => (filtered.value.length === 1 ? filtered.value[0].dataset_ref : ''))
+defineExpose({ only })
 
 const page = ref(1)
 const pages = computed(() => Math.max(1, Math.ceil(sorted.value.length / PAGE)))
 const pageRows = computed(() => sorted.value.slice((page.value - 1) * PAGE, page.value * PAGE))
-watch([q, () => ({ ...filters }), () => sort.key, () => sort.dir], () => { page.value = 1 })
+watch([terms, () => ({ ...filters }), () => sort.key, () => sort.dir], () => { page.value = 1 })
 </script>
 
 <style scoped>
@@ -299,7 +345,6 @@ watch([q, () => ({ ...filters }), () => sort.key, () => sort.dir], () => { page.
 .qc-more:hover, .qc-more:focus-visible { text-decoration: underline; }
 .qc-note { font-size: 12px; color: var(--text-muted); margin: 0 0 8px; }
 .qc-bar { margin-top: 12px; }
-.qc-search { width: 320px; max-width: 100%; }
 .qc-table th.num { text-align: right; }
 .qc-table .td-num { white-space: nowrap; }
 .qc-sort { all: unset; cursor: pointer; white-space: nowrap; }
@@ -308,6 +353,9 @@ watch([q, () => ({ ...filters }), () => sort.key, () => sort.dir], () => { page.
 .qc-row { cursor: pointer; }
 .qc-row:focus-visible { outline: 2px solid var(--indigo); outline-offset: -2px; }
 .qc-acc { font-family: var(--mono); font-size: 13px; color: var(--indigo); white-space: nowrap; }
+.qc-hash { display: block; font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.qc-why { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
+.qc-why mark { background: var(--brand-tint); color: var(--text-primary); border-radius: 2px; padding: 0 1px; }
 .qc-title-cell { min-width: 260px; max-width: 460px; }
 .qc-title { display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; }
 .qc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }

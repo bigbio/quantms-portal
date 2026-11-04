@@ -24,6 +24,7 @@ import {
   LinearScale,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js'
 
 Chart.register(
@@ -31,7 +32,7 @@ Chart.register(
   LineController, LineElement, PointElement,
   DoughnutController, ArcElement,
   CategoryScale, LinearScale,
-  Tooltip, Legend,
+  Tooltip, Legend, Filler,
 )
 
 const props = defineProps({

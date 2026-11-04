@@ -742,6 +742,9 @@ body {
 }
 
 /* ─── Footer ─── */
+/* the content is at least a screen tall, so the footer starts below the fold
+   while a page loads instead of being pushed down when its data lands */
+#main-content { min-height: 100vh; }
 .footer {
   background: var(--brand-ink);
   color: #c5d3e2;

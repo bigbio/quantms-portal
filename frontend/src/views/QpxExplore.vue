@@ -16,30 +16,37 @@
         <router-link to="/docs/applications" class="qx-doc-link">Apps overview →</router-link>
       </p>
 
-      <!-- Dataset selector -->
-      <div class="qx-picker">
+      <!-- The catalogue filters as you type; submit opens a ref or the only match.
+           From an open dataset, words return to the catalogue search. -->
+      <form class="qx-picker" role="search" @submit.prevent="submit">
         <input
           v-model="refInput"
-          class="qx-input"
-          placeholder="e.g. MSV000085836/8e4c044b513d"
+          type="search"
+          enterkeyhint="go"
+          class="qx-input qx-picker-input"
+          placeholder="Accession, keyword or dataset ref"
+          aria-label="Search datasets or enter a dataset ref"
           spellcheck="false"
-          @keyup.enter="loadRef"
         />
-        <button class="page-btn primary" :disabled="!refInput.trim() || loading" @click="loadRef">
-          {{ loading ? 'Opening…' : 'Explore' }}
-        </button>
-      </div>
+        <span v-if="pickTarget && pickTarget !== visibleRef" class="qx-picker-hint">Enter opens <code>{{ pickTarget }}</code></span>
+        <span v-else-if="canSubmit" class="qx-picker-hint">Enter searches the catalogue</span>
+      </form>
 
-      <!-- Not loaded: the catalogue to pick from -->
-      <QxCatalogue v-if="!loaded && !loading && !error && !refFromQuery(route.query)" :examples="START_EXAMPLES" @open="(r) => router.push({ query: { ref: r } })" />
+      <!-- Not loaded: the catalogue to pick from, kept alive so that coming back from a dataset lists it at once -->
+      <KeepAlive>
+        <QxCatalogue
+          v-if="!loaded && !loading && !error && !refFromQuery(route.query)" ref="catalogue" v-model:query="refInput"
+          :examples="START_EXAMPLES" @open="(r) => router.push({ query: { ref: r } })" @query="setQuery"
+        />
+      </KeepAlive>
 
       <!-- Loading -->
-      <QxProgress v-else-if="loading" class="qx-opening" label="Opening the dataset with DuckDB…" />
+      <QxProgress v-if="loading" class="qx-opening" label="Opening the dataset with DuckDB…" />
 
       <!-- Error -->
       <div v-else-if="error" class="notice">
         {{ error }}
-        <button class="page-btn" style="margin-left: 12px" @click="loadRef">Retry</button>
+        <button class="page-btn" style="margin-left: 12px" @click="loadRef(refFromQuery(route.query))">Retry</button>
       </div>
 
       <!-- Loaded -->
@@ -103,7 +110,8 @@
           <details v-if="filesList.length" class="qx-files">
             <summary>qpx files ({{ filesList.length }})</summary>
             <ul class="qx-file-list">
-              <li v-for="f in filesList" :key="f">{{ f }}</li>
+              <!-- the browse host redirects a file's path to a signed download -->
+              <li v-for="f in filesList" :key="f"><a :href="`${browseUrl(visibleRef)}${encodeURIComponent(f)}`">{{ f }}</a></li>
             </ul>
           </details>
           <p v-if="missingViews.length" class="qx-hint">
@@ -118,6 +126,21 @@
           <QxRunQc :dataset-ref="visibleRef" :colouring="colouring" />
           <h3 class="qx-section">Samples</h3>
           <QxSampleIntensity :dataset-ref="visibleRef" :colouring="colouring" />
+        </div>
+
+        <!-- Analyses over sample-level protein values -->
+        <div v-else-if="ANALYSIS_TABS.includes(tab)" class="qx-tab-body">
+          <QxProgress v-if="!analysisReady" label="Reading the runs and samples…" class="qx-opening" />
+          <template v-else>
+            <QxColourBy v-if="tab !== 'compare' && colourChoices.length" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
+            <QxSimilarity v-if="tab === 'similarity'" :dataset-ref="visibleRef" :design="design" :colouring="colouring" />
+            <template v-else-if="tab === 'compare'">
+              <QxCompare v-if="colourChoices.length" :dataset-ref="visibleRef" :design="design" :samples="meta.samples.rows" :fields="colourChoices"
+                         :preferred="colourField" @open-protein="openProteinTab" @query="setQuery" />
+              <p v-else class="qx-hint">No sample annotation divides these samples into groups of two or more.</p>
+            </template>
+            <QxHeatmap v-else :dataset-ref="visibleRef" :design="design" :samples="meta.samples.rows" :colouring="colouring" @query="setQuery" />
+          </template>
         </div>
 
         <!-- Runs / Samples: small tables, loaded whole and sorted here -->
@@ -149,12 +172,16 @@
           <div v-if="selectedProtein" ref="detailEl" class="qx-prot-detail">
             <div class="qx-detail-head">
               <strong class="qx-mono">{{ selectedProtein }}</strong>
-              <button class="page-btn" @click="selectedProtein = ''">Close</button>
+              <button class="page-btn" @click="closeProtein">Close</button>
             </div>
             <p v-if="proteinDetail.error" class="notice">{{ proteinDetail.error }}</p>
-            <div v-else-if="proteinDetail.loading" class="qt-state-inline">Loading peptides and per-run evidence…</div>
-            <template v-else>
-              <div class="qx-block-label">
+            <template v-if="analysisReady && overview.available_views.pg !== false">
+              <QxColourBy v-if="colourChoices.length" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
+              <QxProteinSamples :dataset-ref="visibleRef" :design="design" :protein="selectedProtein" :samples="meta.samples.rows" :colouring="colouring" @open-protein="openProtein" />
+            </template>
+            <div v-if="proteinDetail.loading" class="qt-state-inline">Loading peptides and per-run evidence…</div>
+            <template v-else-if="!proteinDetail.error">
+              <div class="qx-block-label" style="margin-top: 16px">
                 Per run (summed feature intensity)
                 <span v-if="proteinDetail.expr && proteinDetail.expr.group_intensity != null" class="muted qx-normal">
                   · group intensity {{ formatCell(proteinDetail.expr.group_intensity, 'intensity').text }}
@@ -336,13 +363,15 @@
             </div>
           </div>
         </div>
+
+        <CiteCredit class="qx-cite" :refs="citeRefs" />
       </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick, onMounted, watch } from 'vue'
+import { ref, reactive, computed, defineAsyncComponent, nextTick, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   qpxOverview, qpxRuns, qpxSamples, qpxSearchProteins,
@@ -357,6 +386,13 @@ import QxRunQc from '../components/QxRunQc.vue'
 import QxSampleIntensity from '../components/QxSampleIntensity.vue'
 import QxCatalogue from '../components/QxCatalogue.vue'
 import QxColourBy from '../components/QxColourBy.vue'
+// the analyses load with their first use, not with the start page
+const QxSimilarity = defineAsyncComponent(() => import('../components/QxSimilarity.vue'))
+const QxCompare = defineAsyncComponent(() => import('../components/QxCompare.vue'))
+const QxHeatmap = defineAsyncComponent(() => import('../components/QxHeatmap.vue'))
+const QxProteinSamples = defineAsyncComponent(() => import('../components/QxProteinSamples.vue'))
+import CiteCredit from '../components/CiteCredit.vue'
+import { analysisDesign } from '../qpxAnalysis.js'
 import { apiGet } from '../api.js'
 import { DATASET_SEARCH_BASE, browseUrl } from '../config.js'
 import { formatCell } from '../qpxFormat.js'
@@ -370,6 +406,9 @@ const router = useRouter()
 const tabs = [
   { id: 'overview', label: 'Overview' },
   { id: 'qc', label: 'QC', needs: 'feature' },
+  { id: 'similarity', label: 'Sample map', needs: 'pg' },
+  { id: 'compare', label: 'Compare groups', needs: 'pg' },
+  { id: 'heatmap', label: 'Heatmap', needs: 'pg' },
   { id: 'runs', label: 'Runs', needs: 'run' },
   { id: 'samples', label: 'Samples', needs: 'sample' },
   { id: 'proteins', label: 'Proteins', needs: 'pg' },
@@ -426,6 +465,8 @@ const examples = [
   },
 ]
 const PAGE = 200
+// Tabs that analyse sample-level protein values (qpxAnalysis.js); they need the run and sample tables.
+const ANALYSIS_TABS = ['similarity', 'compare', 'heatmap']
 
 const refInput = ref('')
 const visibleRef = ref('')
@@ -439,6 +480,8 @@ const filesList = ref([])
 // The dataset's catalogue entry (dataset search), describing its current version.
 const dsInfo = ref(null)
 const isCurrent = computed(() => dsInfo.value?.dataset_ref === visibleRef.value)
+// one array per dataset: the citation block reloads whenever it gets a new one
+const citeRefs = computed(() => [visibleRef.value])
 
 //: Large tables: sorted and filtered on the backend, PAGE rows at a time.
 const newServerTab = (sortKey, dir) => ({ rows: [], columns: [], loading: false, error: '', q: '', sort: { key: sortKey, dir } })
@@ -506,9 +549,18 @@ const colourField = ref('')
 const highlight = ref('')
 const colourChoices = computed(() => colourFields(meta.samples.rows))
 watch(colourChoices, (c) => {
-  if (!c.some((f) => f.key === colourField.value)) colourField.value = c.length ? c[0].key : ''
+  if (c.some((f) => f.key === colourField.value)) return
+  const wanted = route.query.colour
+  colourField.value = c.some((f) => f.key === wanted) ? wanted : c.length ? c[0].key : ''
 })
-watch(colourField, () => { highlight.value = '' })
+watch(colourField, (key) => {
+  highlight.value = ''
+  if (loaded.value && key && key !== route.query.colour) setQuery({ colour: key })
+})
+
+// How the analyses correct the values: by the plex's pooled reference, within the plex, or not.
+const analysisReady = computed(() => meta.runs.rows.length > 0 && !meta.runs.loading && !meta.samples.loading)
+const design = computed(() => analysisDesign(meta.runs.rows, meta.samples.rows))
 // Biological groups of the grouped fields' values (organ system, taxon, ...),
 // looked up live; until they arrive a grouped field colours nothing.
 const sampleGroups = useSampleGroups(() => meta.samples.rows, () => colourField.value)
@@ -546,7 +598,9 @@ const colouring = computed(() => {
     key: field.key,
     title: field.title,
     scale: scales.value[field.key],
-    highlight: highlight.value,
+    // read when used, so hovering the legend updates what is dimmed without
+    // rebuilding the colouring every chart is computed from
+    get highlight() { return highlight.value },
     value: (acc) => annotation(byId.get(acc), field.key),
     run: (name) => runAnnotation(runSamples.get(name) || [], byId, field.key),
   }
@@ -598,9 +652,7 @@ const START_EXAMPLES = [
 // Bumped on every dataset open; a response for an older open is dropped.
 let loadGen = 0
 
-async function loadRef() {
-  const ref = refInput.value.trim()
-  if (!ref) return
+async function loadRef(ref) {
   const parts = ref.split('/')
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
     error.value = 'Dataset ref must look like "accession/phash", e.g. MSV000085836/8e4c044b513d.'
@@ -627,6 +679,7 @@ async function loadRef() {
     const wanted = tabs.find((t) => t.id === qtab)
     if (wanted && tabAvailable(wanted)) tab.value = qtab
     ensureTabData(tab.value)
+    if (tab.value === 'proteins' && typeof route.query.protein === 'string') openProtein(route.query.protein)
   } catch (e) {
     if (gen !== loadGen) return
     loaded.value = false
@@ -794,10 +847,21 @@ async function runSql() {
   }
 }
 
+function openProteinTab(acc) {
+  setTab('proteins')
+  openProtein(acc)
+}
+
+function closeProtein() {
+  selectedProtein.value = ''
+  setQuery({ protein: null })
+}
+
 async function openProtein(acc) {
   const ref = visibleRef.value
   const current = () => ref === visibleRef.value && acc === selectedProtein.value
   selectedProtein.value = acc
+  setQuery({ protein: acc })
   proteinDetail.value = { loading: true, error: '', peptides: [] }
   await nextTick()
   if (detailEl.value && detailEl.value.scrollIntoView) detailEl.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -821,9 +885,12 @@ const TAB_LOADERS = {
   // the sample colouring needs the run and sample tables
   overview: () => { wholeOnce('runs'); wholeOnce('samples') },
   qc: () => { wholeOnce('runs'); wholeOnce('samples') },
+  similarity: () => { wholeOnce('runs'); wholeOnce('samples') },
+  compare: () => { wholeOnce('runs'); wholeOnce('samples') },
+  heatmap: () => { wholeOnce('runs'); wholeOnce('samples') },
   runs: () => wholeOnce('runs'),
   samples: () => wholeOnce('samples'),
-  proteins: () => loadServer('proteins'),
+  proteins: () => { loadServer('proteins'); wholeOnce('runs'); wholeOnce('samples') },
   peptides: () => loadServer('peptides'),
   features: () => { loadServer('features'); ptmsOnce() },
   ptms: () => ptmsOnce(),
@@ -857,10 +924,25 @@ function ensureTabData(id) {
 function setTab(id) {
   tab.value = id
   ensureTabData(id)
-  const qtab = tabFromQuery(route.query)
-  if (qtab !== id) {
-    router.replace({ query: { ...route.query, tab: id } })
+  if (tabFromQuery(route.query) !== id) setQuery({ tab: id })
+}
+
+// Changes to the URL's query made in one tick go out as one replace, so one
+// does not undo another, and each waits for the one before to reach the route;
+// a null value removes the key.
+let queryPatch = null
+let replacing = Promise.resolve()
+function setQuery(patch) {
+  if (!queryPatch) {
+    queryPatch = {}
+    replacing = replacing.then(() => {
+      const q = { ...route.query, ...queryPatch }
+      queryPatch = null
+      for (const k of Object.keys(q)) if (q[k] == null || q[k] === '') delete q[k]
+      return router.replace({ query: q })
+    })
   }
+  Object.assign(queryPatch, patch)
 }
 
 // Deep-link helpers: ?ref=accession/phash (or ?dataset_ref=…) and ?tab=<id>.
@@ -877,19 +959,54 @@ function tabFromQuery(q) {
   return tabs.some((tb) => tb.id === t) ? t : ''
 }
 
+const qFromQuery = (q) => (typeof q.q === 'string' ? q.q : '')
+
+// The box above takes a dataset ref (also inside a pasted link) or words that
+// search the catalogue; Enter opens the ref, or the one dataset the words leave.
+// With a dataset open, words go back to the catalogue to search it.
+const REF_IN_TEXT = /([A-Za-z][\w-]*)\/([0-9a-f]{12})(?![0-9a-f])/
+const catalogue = ref(null)
+const pickTarget = computed(() => {
+  const text = refInput.value.trim()
+  const m = text.match(REF_IN_TEXT)
+  return m ? `${m[1]}/${m[2]}` : (text && catalogue.value?.only) || ''
+})
+const canSubmit = computed(() => {
+  const text = refInput.value.trim()
+  return catalogue.value ? !!pickTarget.value : !!text && text !== visibleRef.value
+})
+function submit() {
+  const text = refInput.value.trim()
+  if (pickTarget.value) router.push({ query: { ref: pickTarget.value } })
+  else if (text && !catalogue.value) router.push({ query: { q: text } })
+}
+// On the start page the box holds the catalogue search, kept in the URL so that
+// coming back from a dataset finds it again; written once typing pauses (browsers
+// limit how often a page may rewrite its URL).
+const onStartPage = () => !visibleRef.value && !refFromQuery(route.query)
+let qTimer = 0
+watch(refInput, (text) => {
+  clearTimeout(qTimer)
+  qTimer = 0
+  if (onStartPage()) {
+    qTimer = setTimeout(() => {
+      qTimer = 0
+      if (onStartPage()) setQuery({ q: text.trim() || null })
+    }, 300)
+  }
+})
+
 onMounted(() => {
   const r = refFromQuery(route.query)
-  if (r) {
-    refInput.value = r
-    loadRef()
-  }
+  if (r) loadRef(r)
+  else refInput.value = qFromQuery(route.query)
 })
 
 // Back to a URL without a ref (browser back, the Explorer link): show the start page.
 function closeDataset() {
   loadGen++
   visibleRef.value = ''
-  refInput.value = ''
+  refInput.value = qFromQuery(route.query)
   overview.value = null
   loaded.value = false
   loading.value = false
@@ -900,10 +1017,13 @@ function closeDataset() {
 watch(() => route.query, (q) => {
   const r = refFromQuery(q)
   if (r && r !== visibleRef.value) {
-    refInput.value = r
-    loadRef()
-  } else if (!r && visibleRef.value) {
+    loadRef(r)
+  } else if (!r && (visibleRef.value || error.value)) {
     closeDataset()
+  } else if (!r && !qTimer && refInput.value.trim() !== qFromQuery(q)) {
+    // the Explorer link: a start page without a search (but a URL change while
+    // the box's own words wait to be written does not take them away)
+    refInput.value = qFromQuery(q)
   }
 })
 </script>
@@ -914,6 +1034,9 @@ watch(() => route.query, (q) => {
 .qx-doc-link { margin-left: 8px; font-size: 13px; }
 
 .qx-picker { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+.qx-picker-input { flex: 1 1 360px; max-width: 620px; }
+.qx-picker-hint { font-size: 13px; color: var(--text-muted); }
+.qx-picker-hint code { font-family: var(--mono); color: var(--indigo); }
 .qx-input {
   font-family: var(--mono);
   padding: 8px 12px;
@@ -1000,6 +1123,7 @@ watch(() => route.query, (q) => {
 .qx-sql:focus { outline: none; border-color: var(--indigo); }
 .qx-sql-hint { font-size: 12px; }
 .qx-sql-result { margin-top: 4px; }
+.qx-cite { margin-top: 28px; }
 
 @media (max-width: 820px) {
   .qx-input { min-width: 100%; }

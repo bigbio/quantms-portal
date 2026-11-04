@@ -24,9 +24,10 @@ const determinate = computed(() => props.value != null)
 .qp { display: flex; flex-direction: column; gap: 6px; }
 .qp-track { position: relative; height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
 .qp-fill { height: 100%; border-radius: 2px; background: var(--indigo); transition: width 0.25s ease; }
-.qp-indeterminate { position: absolute; top: 0; bottom: 0; width: 35%; border-radius: 2px; background: var(--indigo);
+.qp-indeterminate { position: absolute; top: 0; bottom: 0; left: 0; width: 35%; border-radius: 2px; background: var(--indigo);
   animation: qp-slide 1.1s ease-in-out infinite; }
 .qp-label { font-size: 12px; color: var(--text-muted); }
-@keyframes qp-slide { from { left: -35%; } to { left: 100%; } }
-@media (prefers-reduced-motion: reduce) { .qp-indeterminate { animation: none; left: 0; width: 100%; opacity: 0.4; } }
+/* transform, not left: the bar moves without laying the page out every frame */
+@keyframes qp-slide { from { transform: translateX(-100%); } to { transform: translateX(286%); } }
+@media (prefers-reduced-motion: reduce) { .qp-indeterminate { animation: none; width: 100%; opacity: 0.4; } }
 </style>
