@@ -1,5 +1,6 @@
 <template>
   <section class="ps">
+    <div v-show="view !== 'coexpr'">
     <div class="ps-head">
       <div class="qx-block-label">Across samples</div>
       <QxExport v-if="strip" :name="`${fileStem}-${fileProtein}-samples`" :png="() => plot" :csv="stripCsv" />
@@ -36,8 +37,10 @@
         </div>
       </div>
     </template>
+    </div>
 
-    <div class="ps-head ps-coexpr-head">
+    <div v-show="view !== 'samples'">
+    <div class="ps-head" :class="{ 'ps-coexpr-head': view === 'all' }">
       <div class="qx-block-label">Co-expressed proteins</div>
       <QxExport v-if="coexpr.rows && coexpr.rows.length" :name="`${fileStem}-${fileProtein}-coexpression`" :csv="coexprCsv" />
     </div>
@@ -57,6 +60,7 @@
         </template>
       </QxTable>
     </template>
+    </div>
   </section>
 </template>
 
@@ -78,6 +82,8 @@ const props = defineProps({
   design: { type: Object, required: true },
   protein: { type: String, required: true },
   samples: { type: Array, required: true },
+  // 'samples' or 'coexpr' shows one part; both stay mounted so switching keeps their results.
+  view: { type: String, default: 'all' },
   colouring: { type: Object, default: null },
 })
 defineEmits(['open-protein'])
