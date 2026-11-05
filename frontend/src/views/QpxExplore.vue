@@ -175,32 +175,47 @@
               <button class="page-btn" @click="closeProtein">Close</button>
             </div>
             <p v-if="proteinDetail.error" class="notice">{{ proteinDetail.error }}</p>
-            <template v-if="analysisReady && overview.available_views.pg !== false">
-              <QxColourBy v-if="colourChoices.length" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
-              <QxProteinSamples :dataset-ref="visibleRef" :design="design" :protein="selectedProtein" :samples="meta.samples.rows" :colouring="colouring" @open-protein="openProtein" />
+            <div class="qx-subtabs" role="tablist">
+              <button
+                v-for="t in proteinViews"
+                :key="t.id"
+                role="tab"
+                class="qx-subtab"
+                :class="{ active: shownProteinView === t.id }"
+                :aria-selected="shownProteinView === t.id"
+                @click="proteinView = t.id"
+              >{{ t.label }}</button>
+            </div>
+            <template v-if="samplesAvailable">
+              <QxColourBy v-if="colourChoices.length" v-show="shownProteinView === 'samples'" v-model="colourField" v-model:highlight="highlight" :fields="colourChoices" :legend="colouring ? colouring.scale.legend : []" :note="colourNote" />
+              <QxProteinSamples v-show="shownProteinView === 'samples' || shownProteinView === 'coexpr'" :view="shownProteinView" :dataset-ref="visibleRef" :design="design" :protein="selectedProtein" :samples="meta.samples.rows" :colouring="colouring" @open-protein="openProtein" />
             </template>
-            <div v-if="proteinDetail.loading" class="qt-state-inline">Loading peptides and per-run evidence…</div>
-            <template v-else-if="!proteinDetail.error">
-              <div class="qx-block-label" style="margin-top: 16px">
-                Per run (summed feature intensity)
-                <span v-if="proteinDetail.expr && proteinDetail.expr.group_intensity != null" class="muted qx-normal">
-                  · group intensity {{ formatCell(proteinDetail.expr.group_intensity, 'intensity').text }}
-                </span>
-              </div>
-              <QxTable
-                :columns="['run', 'n_features', 'summed_intensity', 'max_feature_intensity']"
-                :rows="(proteinDetail.expr && proteinDetail.expr.per_run) || []"
-                sort-key="summed_intensity"
-                empty-text="No per-run feature evidence for this protein."
-              />
-              <div class="qx-block-label" style="margin-top: 16px">Supporting peptides</div>
-              <QxTable
-                :columns="['sequence', 'charge', 'run_file_name', 'rt', 'peptide_qvalue']"
-                :rows="proteinDetail.peptides"
-                sort-key="peptide_qvalue"
-                sort-dir="asc"
-                empty-text="No supporting peptides found."
-              />
+            <template v-if="shownProteinView === 'runs' || shownProteinView === 'peptides'">
+              <div v-if="proteinDetail.loading" class="qt-state-inline">Loading peptides and per-run evidence…</div>
+              <template v-else-if="!proteinDetail.error">
+                <template v-if="shownProteinView === 'runs'">
+                  <div class="qx-block-label">
+                    Per run (summed feature intensity)
+                    <span v-if="proteinDetail.expr && proteinDetail.expr.group_intensity != null" class="muted qx-normal">
+                      · group intensity {{ formatCell(proteinDetail.expr.group_intensity, 'intensity').text }}
+                    </span>
+                  </div>
+                  <QxTable
+                    :columns="['run', 'n_features', 'summed_intensity', 'max_feature_intensity']"
+                    :rows="(proteinDetail.expr && proteinDetail.expr.per_run) || []"
+                    sort-key="summed_intensity"
+                    empty-text="No per-run feature evidence for this protein."
+                  />
+                </template>
+                <QxTable
+                  v-else
+                  :columns="['sequence', 'charge', 'run_file_name', 'rt', 'peptide_qvalue']"
+                  :rows="proteinDetail.peptides"
+                  sort-key="peptide_qvalue"
+                  sort-dir="asc"
+                  empty-text="No supporting peptides found."
+                />
+              </template>
             </template>
           </div>
 
@@ -561,6 +576,19 @@ watch(colourField, (key) => {
 // How the analyses correct the values: by the plex's pooled reference, within the plex, or not.
 const analysisReady = computed(() => meta.runs.rows.length > 0 && !meta.runs.loading && !meta.samples.loading)
 const design = computed(() => analysisDesign(meta.runs.rows, meta.samples.rows))
+// The selected protein's panels are tabs, so the detail stays short above the protein list.
+const proteinView = ref('samples')
+const samplesAvailable = computed(() => analysisReady.value && overview.value?.available_views?.pg !== false)
+const proteinViews = computed(() => {
+  const count = (n) => (proteinDetail.value.loading || proteinDetail.value.error ? '' : ` (${n.toLocaleString()})`)
+  return [
+    ...(samplesAvailable.value ? [{ id: 'samples', label: 'Across samples' }, { id: 'coexpr', label: 'Co-expressed proteins' }] : []),
+    { id: 'runs', label: `Per run${count(proteinDetail.value.expr?.per_run?.length || 0)}` },
+    { id: 'peptides', label: `Supporting peptides${count(proteinDetail.value.peptides.length)}` },
+  ]
+})
+const shownProteinView = computed(() =>
+  (proteinViews.value.some((t) => t.id === proteinView.value) ? proteinView.value : proteinViews.value[0].id))
 // Biological groups of the grouped fields' values (organ system, taxon, ...),
 // looked up live; until they arrive a grouped field colours nothing.
 const sampleGroups = useSampleGroups(() => meta.samples.rows, () => colourField.value)
@@ -1078,6 +1106,10 @@ watch(() => route.query, (q) => {
 .qx-tab:disabled { color: var(--text-muted); opacity: 0.45; cursor: not-allowed; }
 
 .qx-tab-body { margin-top: 4px; }
+.qx-subtabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+.qx-subtab { padding: 6px 10px; border: none; background: none; cursor: pointer; font-size: 13px; font-weight: 600;
+  color: var(--text-secondary); border-bottom: 2px solid transparent; }
+.qx-subtab.active { color: var(--indigo); border-bottom-color: var(--indigo); }
 .qx-section { font-size: 16px; font-weight: 600; margin: 18px 0 10px; }
 .qx-dataset { display: flex; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; margin-bottom: 16px;
   padding-bottom: 14px; border-bottom: 1px solid var(--border); }
