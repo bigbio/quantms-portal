@@ -36,6 +36,13 @@ describe('colourScale', () => {
     expect(s.matches('lymph node', 'Digestive system')).toBe(false)
   })
 
+  it('gives the values of different grey groups different shades', () => {
+    const NOT_FOUND = { group: 'Not found in UBERON', colour: '#a3acb6' }
+    const groupOf = (v) => ({ ascites: NONE, 'adjacent normal tissue': NOT_FOUND })[v]
+    const s = colourScale(samples(['ascites', 'adjacent normal tissue']), 'organism_part', groupOf)
+    expect(['adjacent normal tissue', 'ascites'].map(s.colourOf)).toEqual(shades(NOT_FOUND.colour, 2))
+  })
+
   it('draws one group per biological group when there are too many values', () => {
     const tissues = ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9']
     const s = colourScale(samples(tissues), 'organism_part', (v) => (v === 't9' ? BLOOD : DIGESTIVE))

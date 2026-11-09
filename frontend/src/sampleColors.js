@@ -113,10 +113,15 @@ export function colourScale(samples, field, groupOf = null) {
       f.members.push([v, n])
     }
     const families = [...fams.values()].sort((a, b) => order(a.label) - order(b.label) || a.label.localeCompare(b.label))
+    // The grey groups (outside the group table) share one run of shades, so no two
+    // of their values look alike; each takes its first shade in the legend.
+    const isGrey = (f) => order(f.label) === grouped.groups.length
+    const greys = shades(chartColor('other'), families.filter(isGrey).reduce((n, f) => n + f.members.length, 0))
     colours = new Map()
     const familyOf = new Map()
     for (const f of families) {
-      const tones = shades(f.colour, f.members.length)
+      const tones = isGrey(f) ? greys.splice(0, f.members.length) : shades(f.colour, f.members.length)
+      if (isGrey(f)) f.colour = tones[0]
       f.members.forEach(([v], i) => { colours.set(v, tones[i]); familyOf.set(v, f.label) })
     }
     family = (v) => familyOf.get(v) ?? null
