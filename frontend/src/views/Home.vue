@@ -119,18 +119,18 @@ import AppGrid from '../components/AppGrid.vue'
 import OrganismProteins from '../components/OrganismProteins.vue'
 import LiveValue from '../components/LiveValue.vue'
 import { apiGet } from '../api.js'
-import { countDistinctDatasets } from '../catalog.js'
+import { countDistinctDatasets, getCollections, lastCollections } from '../catalog.js'
 import { formatBig } from '../utils/format.js'
 import { APPS, registryApps } from '../apps.js'
-import { DATASET_SEARCH_BASE, BROWSE_BASE, STATS_PATH, API_DOCS_URL } from '../config.js'
+import { BROWSE_BASE, STATS_PATH, API_DOCS_URL } from '../config.js'
 
 const apiDocsUrl = API_DOCS_URL
 // Registry-only apps; when the gateway is unreachable the curated list stands alone.
 const registry = ref([])
 const router = useRouter()
 
-const collections = ref([])
-const loadingCollections = ref(true)
+const collections = ref(lastCollections() || [])
+const loadingCollections = ref(!collections.value.length)
 const collectionsError = ref(false)
 // Published catalogue: { collections, datasets, accessions }.
 const catalog = ref(null)
@@ -161,12 +161,11 @@ function useExample(ex) {
 }
 
 async function loadCollections() {
-  loadingCollections.value = true
+  loadingCollections.value = !collections.value.length
   collectionsError.value = false
   catalogFailed.value = false
   try {
-    const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
-    collections.value = data.collections || []
+    collections.value = await getCollections()
   } catch (e) {
     collectionsError.value = true
     catalogFailed.value = true
