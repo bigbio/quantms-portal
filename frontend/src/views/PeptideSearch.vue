@@ -10,12 +10,12 @@
         </p>
       </div>
 
-      <!-- Stats ribbon -->
-      <div v-if="stats" class="ps-stats">
-        <div><div class="stat-value" style="font-size: 22px">{{ formatBig(stats.datasets) }}</div><div class="stat-label">Datasets</div></div>
-        <div><div class="stat-value" style="font-size: 22px">{{ formatBig(stats.peptides) }}</div><div class="stat-label">Peptides</div></div>
-        <div><div class="stat-value" style="font-size: 22px">{{ formatBig(stats.peptidoforms) }}</div><div class="stat-label">Peptidoforms</div></div>
-        <div><div class="stat-value" style="font-size: 22px">{{ formatBig(stats.rows) }}</div><div class="stat-label">Observations</div></div>
+      <!-- Stats ribbon: placeholders hold its space until /stats answers -->
+      <div v-if="!statsFailed" class="ps-stats">
+        <div><div class="stat-value" style="font-size: 22px"><LiveValue :value="stats && formatBig(stats.datasets)" /></div><div class="stat-label">Datasets</div></div>
+        <div><div class="stat-value" style="font-size: 22px"><LiveValue :value="stats && formatBig(stats.peptides)" /></div><div class="stat-label">Peptides</div></div>
+        <div><div class="stat-value" style="font-size: 22px"><LiveValue :value="stats && formatBig(stats.peptidoforms)" /></div><div class="stat-label">Peptidoforms</div></div>
+        <div><div class="stat-value" style="font-size: 22px"><LiveValue :value="stats && formatBig(stats.rows)" /></div><div class="stat-label">Observations</div></div>
       </div>
 
       <!-- Search mode toggle -->
@@ -80,16 +80,16 @@
             :title="`This modification is classified as ${selectedModClass.label.toLowerCase()}${selectedModClass.biological ? ' (real post-translational biology)' : ' — chemistry, labelling or artifact, not biology'}`"
           >{{ selectedModClass.label }}</span>
 
-          <select v-model="organism" class="facet-select" aria-label="Organism" title="Organism — scoped to the current results">
+          <select v-model="organism" class="facet-select ps-facet-async" aria-label="Organism" title="Organism — scoped to the current results">
             <option value="">All organisms</option>
             <option v-for="o in organismOptions" :key="o.value" :value="o.value">{{ o.value }} ({{ o.datasets }})</option>
           </select>
           <input v-model="tissue" type="text" class="filter-search ps-tissue" placeholder="Tissue / organism part" aria-label="Tissue or organism part" />
-          <select v-model="instrument" class="facet-select" aria-label="Instrument" title="Instrument">
+          <select v-model="instrument" class="facet-select ps-facet-async" aria-label="Instrument" title="Instrument">
             <option value="">All instruments</option>
             <option v-for="i in facets.instrument" :key="i.value" :value="i.value">{{ cleanInstrument(i.value) }}</option>
           </select>
-          <select v-model="collection" class="facet-select" aria-label="Collection" title="Collection">
+          <select v-model="collection" class="facet-select ps-facet-async" aria-label="Collection" title="Collection">
             <option value="">All collections</option>
             <option v-for="c in facets.collection" :key="c.value" :value="c.value">{{ c.value }}</option>
           </select>
@@ -281,6 +281,7 @@ import { getPeptideStats } from '../utils/peptideStats.js'
 import { safeHref } from '../utils/links.js'
 import { PEPTIDE_SEARCH_BASE, GPP_FALLBACK_MIN } from '../config.js'
 import { formatNum, formatBig, cleanInstrument, collectionTag, ptmClassInfo, isBiologicalPtm } from '../utils/format.js'
+import LiveValue from '../components/LiveValue.vue'
 import PeptideProfile from '../components/PeptideProfile.vue'
 import ProteinProfile from '../components/ProteinProfile.vue'
 import ProteinPeptides from '../components/ProteinPeptides.vue'
@@ -323,6 +324,7 @@ let gppMinPinned = false
 
 const facets = ref({ organism: [], collection: [], instrument: [] })
 const stats = ref(null)
+const statsFailed = ref(false)
 const result = ref(null)
 const query = ref('')
 const loading = ref(false)
@@ -527,7 +529,8 @@ async function init() {
     // by the URL or a user edit.
     if (!gppMinPinned) gppMin.value = gppDefault.value
   } catch (e) {
-    // stats are optional; ignore
+    // stats are optional: drop the ribbon
+    statsFailed.value = true
   }
   try {
     // Modification vocabulary drives the residue cascade. Best-effort: if it is
@@ -760,6 +763,10 @@ onMounted(() => {
 }
 .ps-tissue {
   width: 190px;
+}
+/* their options arrive after the first paint; a fixed width keeps the row from re-wrapping */
+.ps-facet-async {
+  width: 16rem;
 }
 .ps-stats {
   display: flex;
