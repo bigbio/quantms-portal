@@ -115,6 +115,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* below a short page's footer the canvas shows, so it takes the footer's colour */
+  background: var(--brand-ink);
 }
 body {
   font-family: var(--font);
@@ -766,8 +768,10 @@ body {
 
 /* ─── Footer ─── */
 /* the content is at least a screen tall, so the footer starts below the fold
-   while a page loads instead of being pushed down when its data lands */
+   while a page loads instead of being pushed down when its data lands; pages
+   that rarely fill the screen (route meta `short`) keep it under their content */
 #main-content { min-height: 100vh; }
+#main-content.short { min-height: 0; }
 .footer {
   background: var(--brand-ink);
   color: #c5d3e2;

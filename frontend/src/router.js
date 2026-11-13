@@ -9,13 +9,13 @@ const docTitles = Object.fromEntries(DOCS_NAV.flatMap((g) => g.items.map((i) => 
 
 export const routes = [
   { path: '/', component: Home, meta: { title: null } },
-  { path: '/collections', component: () => import('./views/Collections.vue'), meta: { title: 'Collections' } },
+  { path: '/collections', component: () => import('./views/Collections.vue'), meta: { title: 'Collections', short: true } },
   { path: '/collections/:name', component: () => import('./views/CollectionDetail.vue'), meta: { title: (r) => `${r.params.name} collection` } },
   { path: '/collections/:name/:pxd', component: () => import('./views/DatasetDetail.vue'), meta: { title: (r) => `${r.params.pxd} dataset` } },
   { path: '/collections/:name/:pxd/:hash', component: () => import('./views/DatasetDetail.vue'), meta: { title: (r) => `${r.params.pxd} dataset` } },
   { path: '/apps/dataset-search', component: () => import('./views/DatasetSearch.vue'), meta: { title: 'Dataset Search' } },
-  { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue'), meta: { title: 'Peptide & Protein Search' } },
-  { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue'), meta: { title: 'Proteome Compass' } },
+  { path: '/apps/peptide-search', component: () => import('./views/PeptideSearch.vue'), meta: { title: 'Peptide & Protein Search', short: true } },
+  { path: '/apps/compass', component: () => import('./views/ProteomeCompass.vue'), meta: { title: 'Proteome Compass', short: true } },
   { path: '/apps/cell-lines', component: () => import('./views/CellLines.vue'), meta: { title: 'Cancer Cell Line Proteome' } },
   { path: '/apps/qpx-explore', component: () => import('./views/QpxExplore.vue'), meta: { title: 'qpx Dataset Explorer' } },
   { path: '/cell-lines', redirect: (to) => ({ path: '/apps/cell-lines', query: to.query }) },
@@ -31,7 +31,7 @@ export const routes = [
   { path: '/api', redirect: '/docs/ai-mcp' },
   { path: '/docs', redirect: '/docs/introduction' },
   { path: '/docs/:page', component: () => import('./views/DocsPage.vue'), meta: { title: (r) => `${docTitles[r.params.page] || 'Documentation'} · Docs` } },
-  { path: '/baseline', component: () => import('./views/BaselineExpression.vue'), meta: { title: 'Baseline Expression' } },
+  { path: '/baseline', component: () => import('./views/BaselineExpression.vue'), meta: { title: 'Baseline Expression', short: true } },
   { path: '/models', component: () => import('./views/Models.vue'), meta: { title: 'Models' } },
   { path: '/contact', component: () => import('./views/Contact.vue'), meta: { title: 'Contact' } },
   { path: '/status', component: () => import('./views/Status.vue'), meta: { title: 'Status' } },
@@ -39,7 +39,7 @@ export const routes = [
   { path: '/differential-expression', redirect: '/applications' },
   { path: '/applications', component: () => import('./views/Applications.vue'), meta: { title: 'Applications' } },
   // Catch-all: unknown URLs render a real "not found" page instead of a blank one.
-  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: 'Page not found' } },
+  { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('./views/NotFound.vue'), meta: { title: 'Page not found', short: true } },
 ]
 
 // Height of the fixed navbar, so anchored headings aren't hidden under it.

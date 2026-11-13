@@ -1,7 +1,7 @@
 <template>
   <a class="skip-link" href="#main-content">Skip to content</a>
   <NavBar />
-  <main id="main-content">
+  <main id="main-content" :class="{ short: $route.meta.short }">
     <router-view />
   </main>
   <AppFooter />

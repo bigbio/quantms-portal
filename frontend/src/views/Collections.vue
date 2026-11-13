@@ -27,19 +27,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import CollectionsTable from '../components/CollectionsTable.vue'
-import { apiGet } from '../api.js'
-import { DATASET_SEARCH_BASE } from '../config.js'
+import { getCollections, lastCollections } from '../catalog.js'
 
-const collections = ref([])
-const loading = ref(true)
+const collections = ref(lastCollections() || [])
+const loading = ref(!collections.value.length)
 const error = ref(false)
 
 async function load() {
-  loading.value = true
+  loading.value = !collections.value.length
   error.value = false
   try {
-    const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
-    collections.value = data.collections || []
+    collections.value = await getCollections()
   } catch (e) {
     error.value = true
   } finally {

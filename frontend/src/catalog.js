@@ -1,6 +1,21 @@
 import { apiGet } from './api.js'
 import { DATASET_SEARCH_BASE } from './config.js'
 
+// The collection list from the last visit, shown while the fresh one loads so a
+// returning visitor's table does not change height when the data arrives.
+const COLLECTIONS_KEY = 'collections:1'
+
+export function lastCollections() {
+  try { return JSON.parse(localStorage.getItem(COLLECTIONS_KEY)) } catch { return null }
+}
+
+export async function getCollections() {
+  const data = await apiGet(DATASET_SEARCH_BASE, '/collections')
+  const list = data.collections || []
+  try { localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(list)) } catch { /* storage full or blocked */ }
+  return list
+}
+
 // Distinct datasets (dataset_ref) and source accessions in the published catalogue.
 // Unlike the sum of per-collection dataset_count, a dataset listed in more than one
 // collection is counted once.
